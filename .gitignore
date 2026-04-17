@@ -1,0 +1,79 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+.project
+.classpath
+.settings/
+
+# Java / Maven / Spring Boot
+target/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+HELP.md
+
+# Node / React
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.next/
+.turbo/
+
+# React Native
+# OSX
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata
+
+# Android
+.gradle/
+local.properties
+*.hprof
+.cxx/
+*.keystore
+!debug.keystore
+
+# iOS
+ios/Pods/
+ios/build/
+DerivedData
+
+# Metro
+.metro-health-check*
+
+# Coverage
+coverage/
+
+# Secrets
+*.pem
+*.key
+secrets.json
+application-local.yml
+
+# Temp
+tmp/
+temp/

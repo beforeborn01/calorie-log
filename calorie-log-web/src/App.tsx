@@ -1,0 +1,84 @@
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import HomePage from './pages/home/HomePage';
+import ProfilePage from './pages/profile/ProfilePage';
+import ProfileSetupPage from './pages/profile/ProfileSetupPage';
+import AddFoodPage from './pages/food/AddFoodPage';
+import GoalSetupPage from './pages/goal/GoalSetupPage';
+import StatisticsPage from './pages/statistics/StatisticsPage';
+import { useAuthStore } from './store/auth';
+import { tokenStore } from './api/client';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const token = tokenStore.get();
+  if (!token) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function App() {
+  const profile = useAuthStore((s) => s.profile);
+  return (
+    <ConfigProvider locale={zhCN}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                {profile && !profile.profileComplete ? <Navigate to="/profile/setup" replace /> : <HomePage />}
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile/setup"
+            element={
+              <ProtectedRoute>
+                <ProfileSetupPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/food/add"
+            element={
+              <ProtectedRoute>
+                <AddFoodPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/goal"
+            element={
+              <ProtectedRoute>
+                <GoalSetupPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/statistics"
+            element={
+              <ProtectedRoute>
+                <StatisticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ConfigProvider>
+  );
+}
+
+export default App;

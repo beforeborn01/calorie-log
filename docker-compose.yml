@@ -1,0 +1,97 @@
+# 食养记 - 本地开发 / 生产部署 docker-compose
+# 参考：nova (/Users/bc/code/jiigan/clicktrain/nova/docker-compose.yml)
+#
+# 使用：
+#   docker compose up -d                # 启动全部
+#   docker compose up -d postgres redis # 只启动依赖（IDE 跑 Spring Boot）
+#   docker compose logs -f app
+#   docker compose down                 # 停止（保留数据卷）
+#   docker compose down -v              # 停止并清空数据卷
+
+services:
+  # ------- PostgreSQL 16 -------
+  postgres:
+    image: postgres:16-alpine
+    container_name: calorie-log-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-calorie_log_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-calorie_log_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ------- Redis 7 -------
+  redis:
+    image: redis:7-alpine
+    container_name: calorie-log-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6380}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ------- 后端应用（可选，本地开发也可在 IDE 启动） -------
+  app:
+    build:
+      context: ./calorie-log-server
+      dockerfile: Dockerfile
+    image: calorie-log-server:latest
+    container_name: calorie-log-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      JAVA_OPTS: >-
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75.0
+        -XX:InitialRAMPercentage=50.0
+        -XX:+UseG1GC
+      # 数据源（容器内通过 service 名互访）
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-calorie_log_db}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      # 安全
+      JWT_SECRET: ${JWT_SECRET:-dev-only-insecure-secret-please-override-in-production-environment-00000000}
+      # 微信（未配置时走 dev mock）
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+      # 火山引擎短信
+      VOLC_ACCESS_KEY_ID: ${VOLC_ACCESS_KEY_ID:-}
+      VOLC_ACCESS_KEY_SECRET: ${VOLC_ACCESS_KEY_SECRET:-}
+      VOLC_SMS_SIGN_NAME: ${VOLC_SMS_SIGN_NAME:-}
+      VOLC_SMS_TEMPLATE_ID: ${VOLC_SMS_TEMPLATE_ID:-}
+      # 百度 AI（Phase 5）
+      BAIDU_AI_API_KEY: ${BAIDU_AI_API_KEY:-}
+      BAIDU_AI_SECRET_KEY: ${BAIDU_AI_SECRET_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  postgres-data:
+  redis-data:

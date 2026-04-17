@@ -41,4 +41,18 @@ public interface DietRecordMapper extends BaseMapper<DietRecord> {
     List<DietRecord> findInRange(@Param("userId") Long userId,
                                  @Param("from") LocalDate from,
                                  @Param("to") LocalDate to);
+
+    /** 返回 userIds 中在 {@code date} 当天有饮食记录的用户 ID 子集（一次 IN 查询）。 */
+    @Select("""
+        <script>
+        SELECT DISTINCT user_id FROM t_diet_record
+        WHERE record_date = #{date} AND deleted_at IS NULL
+          AND user_id IN
+          <foreach collection='userIds' item='id' open='(' separator=',' close=')'>
+            #{id}
+          </foreach>
+        </script>
+        """)
+    List<Long> findUserIdsWithRecord(@Param("userIds") List<Long> userIds,
+                                     @Param("date") LocalDate date);
 }

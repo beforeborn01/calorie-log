@@ -101,6 +101,8 @@ export default function AppLayout() {
         theme="light"
         width={220}
         trigger={null}
+        breakpoint="lg"
+        collapsedWidth={64}
       >
         <div style={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18 }}>
           {collapsed ? '🥗' : '🥗 食养记'}

@@ -8,20 +8,25 @@ import com.calorielog.module.food.dto.CreateFoodRequest;
 import com.calorielog.module.food.dto.FoodResponse;
 import com.calorielog.module.food.entity.Food;
 import com.calorielog.module.food.mapper.FoodMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FoodService {
 
     private final FoodMapper foodMapper;
     private final StringRedisTemplate redis;
-    // Redis cache for hot keyword search results keyed by (userId, keyword, page, size)
+    private final ObjectMapper objectMapper;
+    // 热键缓存：仅对内置食物（userId 维度不参与 key，自定义食物命中不缓存以避免脏读）
     private static final String FOOD_SEARCH_CACHE = "food:search:";
     private static final Duration CACHE_TTL = Duration.ofHours(1);
 
@@ -30,10 +35,35 @@ public class FoodService {
             return PageResult.of(java.util.Collections.emptyList(), 0, page, size);
         }
         keyword = keyword.trim();
+        // 1. 仅对第 1 页、size<=20、keyword 长度 >=2 的通用查询启用缓存
+        //    用户态自定义食物不走缓存（createCustom 不做失效更简单）
+        boolean cacheable = page == 1 && size <= 20 && keyword.length() >= 2;
+        // 自定义食物按 userId 维度命中，必须把 user 纳入 key 避免跨用户泄漏
+        String cacheKey = cacheable ? FOOD_SEARCH_CACHE + userId + ":" + keyword + ":" + size : null;
+        if (cacheable) {
+            String raw = redis.opsForValue().get(cacheKey);
+            if (raw != null) {
+                try {
+                    return objectMapper.readValue(raw, new TypeReference<PageResult<FoodResponse>>() {});
+                } catch (Exception ex) {
+                    log.warn("food search cache parse failed: {}", ex.getMessage());
+                }
+            }
+        }
+
         Page<Food> p = new Page<>(page, size);
         var result = foodMapper.searchByKeyword(p, keyword, userId);
         var list = result.getRecords().stream().map(FoodResponse::of).collect(Collectors.toList());
-        return PageResult.of(list, result.getTotal(), result.getCurrent(), result.getSize());
+        PageResult<FoodResponse> out = PageResult.of(list, result.getTotal(), result.getCurrent(), result.getSize());
+
+        if (cacheable) {
+            try {
+                redis.opsForValue().set(cacheKey, objectMapper.writeValueAsString(out), CACHE_TTL);
+            } catch (Exception ex) {
+                log.warn("food search cache write failed: {}", ex.getMessage());
+            }
+        }
+        return out;
     }
 
     public FoodResponse getById(Long userId, Long id) {

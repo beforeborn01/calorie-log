@@ -4,7 +4,7 @@ import { DownloadOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icon
 import dayjs, { Dayjs } from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { getDailyRecords } from '../../api/record';
-import { tokenStore } from '../../api/client';
+import apiClient from '../../api/client';
 import type { DietRecord } from '../../types';
 
 const MEAL_LABEL: Record<number, string> = { 1: '早餐', 2: '午餐', 3: '晚餐', 4: '加餐' };
@@ -58,14 +58,15 @@ export default function HistoryPage() {
   const onExport = async () => {
     const from = range[0].format('YYYY-MM-DD');
     const to = range[1].format('YYYY-MM-DD');
-    const base = import.meta.env.VITE_API_BASE_URL || '/api/v1';
-    const url = `${base}/export/records?startDate=${from}&endDate=${to}`;
     try {
-      const resp = await fetch(url, { headers: { Authorization: `Bearer ${tokenStore.get()}` } });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const blob = await resp.blob();
+      // 复用 axios client 的鉴权 + 401 续期逻辑；返回 Blob 绕过统一 JSON 解包拦截
+      const resp = await apiClient.get('/export/records', {
+        params: { startDate: from, endDate: to },
+        responseType: 'blob',
+        transformResponse: [(data) => data],
+      });
       const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
+      link.href = URL.createObjectURL(resp.data);
       link.download = `饮食记录_${from}_${to}.csv`;
       link.click();
       URL.revokeObjectURL(link.href);

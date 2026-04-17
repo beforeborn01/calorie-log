@@ -136,16 +136,16 @@ public class RankingService {
         Map<Long, Long> m = new HashMap<>();
         switch (type) {
             case TYPE_EXP -> {
+                Map<Long, UserExperience> byUser = batchExperiencesByUserId(userIds);
                 for (Long uid : userIds) {
-                    UserExperience e = experienceMapper.selectOne(
-                            new QueryWrapper<UserExperience>().eq("user_id", uid));
+                    UserExperience e = byUser.get(uid);
                     m.put(uid, e == null || e.getTotalExp() == null ? 0L : e.getTotalExp());
                 }
             }
             case TYPE_STREAK -> {
+                Map<Long, UserExperience> byUser = batchExperiencesByUserId(userIds);
                 for (Long uid : userIds) {
-                    UserExperience e = experienceMapper.selectOne(
-                            new QueryWrapper<UserExperience>().eq("user_id", uid));
+                    UserExperience e = byUser.get(uid);
                     m.put(uid, e == null || e.getContinuousDays() == null ? 0L : e.getContinuousDays().longValue());
                 }
             }
@@ -196,12 +196,16 @@ public class RankingService {
     }
 
     private Map<Long, UserExperience> loadExperiences(List<Long> ids) {
+        return batchExperiencesByUserId(ids);
+    }
+
+    /** 一次 IN 查询拉所有 user_experience，避免 N 次 selectOne。 */
+    private Map<Long, UserExperience> batchExperiencesByUserId(List<Long> ids) {
         Map<Long, UserExperience> m = new HashMap<>();
-        for (Long id : ids) {
-            UserExperience e = experienceMapper.selectOne(
-                    new QueryWrapper<UserExperience>().eq("user_id", id));
-            if (e != null) m.put(id, e);
-        }
+        if (ids == null || ids.isEmpty()) return m;
+        List<UserExperience> rows = experienceMapper.selectList(
+                new QueryWrapper<UserExperience>().in("user_id", ids));
+        for (UserExperience e : rows) m.put(e.getUserId(), e);
         return m;
     }
 

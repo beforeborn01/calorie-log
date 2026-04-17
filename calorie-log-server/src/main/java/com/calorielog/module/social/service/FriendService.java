@@ -82,7 +82,7 @@ public class FriendService {
         fr.setStatus(FriendRequest.STATUS_PENDING);
         fr.setCreatedAt(LocalDateTime.now());
         friendRequestMapper.insert(fr);
-        return toRequestResponse(fr, "outgoing");
+        return toRequestResponse(fr, "outgoing", null);
     }
 
     public List<FriendRequestResponse> listRequests(Long currentUserId, String direction) {
@@ -96,10 +96,20 @@ public class FriendService {
         }
         w.orderByDesc("created_at");
         List<FriendRequest> all = friendRequestMapper.selectList(w);
+        if (all.isEmpty()) return List.of();
+
+        java.util.Set<Long> uids = new java.util.HashSet<>();
+        for (FriendRequest r : all) {
+            uids.add(r.getFromUserId());
+            uids.add(r.getToUserId());
+        }
+        Map<Long, User> userMap = new HashMap<>();
+        for (User u : userMapper.selectBatchIds(uids)) userMap.put(u.getId(), u);
+
         List<FriendRequestResponse> out = new ArrayList<>(all.size());
         for (FriendRequest r : all) {
             String dir = r.getFromUserId().equals(currentUserId) ? "outgoing" : "incoming";
-            out.add(toRequestResponse(r, dir));
+            out.add(toRequestResponse(r, dir, userMap));
         }
         return out;
     }
@@ -128,7 +138,7 @@ public class FriendService {
         } else {
             throw new BizException(ErrorCode.PARAM_INVALID, "action 仅支持 accept/reject");
         }
-        return toRequestResponse(fr, "incoming");
+        return toRequestResponse(fr, "incoming", null);
     }
 
     void createFriendship(Long a, Long b) {
@@ -159,13 +169,14 @@ public class FriendService {
         Map<Long, User> users = new HashMap<>();
         for (User u : userMapper.selectBatchIds(friendIds)) users.put(u.getId(), u);
         Map<Long, UserExperience> exps = new HashMap<>();
-        for (Long id : friendIds) {
-            UserExperience e = experienceMapper.selectOne(
-                    new QueryWrapper<UserExperience>().eq("user_id", id));
-            if (e != null) exps.put(id, e);
+        for (UserExperience e : experienceMapper.selectList(
+                new QueryWrapper<UserExperience>().in("user_id", friendIds))) {
+            exps.put(e.getUserId(), e);
         }
+        // 今日是否记录饮食：一次 IN 查询拉完
+        java.util.Set<Long> recordedToday = new java.util.HashSet<>(
+                dietRecordMapper.findUserIdsWithRecord(friendIds, LocalDate.now()));
 
-        LocalDate today = LocalDate.now();
         List<FriendResponse> out = new ArrayList<>(rows.size());
         for (Friendship f : rows) {
             User u = users.get(f.getFriendId());
@@ -181,7 +192,7 @@ public class FriendService {
             r.setTotalExp(e == null || e.getTotalExp() == null ? 0L : e.getTotalExp());
             r.setContinuousDays(e == null || e.getContinuousDays() == null ? 0 : e.getContinuousDays());
             r.setLastRecordDate(e == null ? null : e.getLastRecordDate());
-            r.setRecordedToday(!dietRecordMapper.findByDate(f.getFriendId(), today).isEmpty());
+            r.setRecordedToday(recordedToday.contains(f.getFriendId()));
             out.add(r);
         }
         return out;
@@ -197,6 +208,7 @@ public class FriendService {
         if (b != null) friendshipMapper.deleteById(b.getId());
     }
 
+    @Transactional
     public FriendResponse updateRemark(Long currentUserId, Long friendUserId, String remark) {
         Friendship f = friendshipMapper.selectOne(
                 new QueryWrapper<Friendship>().eq("user_id", currentUserId).eq("friend_id", friendUserId));
@@ -226,7 +238,7 @@ public class FriendService {
         return cnt != null && cnt > 0;
     }
 
-    private FriendRequestResponse toRequestResponse(FriendRequest r, String direction) {
+    private FriendRequestResponse toRequestResponse(FriendRequest r, String direction, Map<Long, User> userMap) {
         FriendRequestResponse out = new FriendRequestResponse();
         out.setId(r.getId());
         out.setFromUserId(r.getFromUserId());
@@ -236,8 +248,8 @@ public class FriendService {
         out.setCreatedAt(r.getCreatedAt());
         out.setHandledAt(r.getHandledAt());
         out.setDirection(direction);
-        User from = userMapper.selectById(r.getFromUserId());
-        User to = userMapper.selectById(r.getToUserId());
+        User from = userMap != null ? userMap.get(r.getFromUserId()) : userMapper.selectById(r.getFromUserId());
+        User to = userMap != null ? userMap.get(r.getToUserId()) : userMapper.selectById(r.getToUserId());
         out.setFromNickname(from == null || from.getNickname() == null ? "用户" + r.getFromUserId() : from.getNickname());
         out.setToNickname(to == null || to.getNickname() == null ? "用户" + r.getToUserId() : to.getNickname());
         return out;

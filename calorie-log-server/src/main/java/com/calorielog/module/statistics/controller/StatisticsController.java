@@ -5,8 +5,10 @@ import com.calorielog.common.security.CurrentUser;
 import com.calorielog.module.statistics.dto.DailyStatisticsResponse;
 import com.calorielog.module.statistics.dto.DietScoreResponse;
 import com.calorielog.module.statistics.dto.DietSuggestionResponse;
+import com.calorielog.module.statistics.dto.PeriodReportResponse;
 import com.calorielog.module.statistics.service.DietScoreService;
 import com.calorielog.module.statistics.service.DietSuggestionService;
+import com.calorielog.module.statistics.service.PeriodReportService;
 import com.calorielog.module.statistics.service.StatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 
 @Tag(name = "统计")
 @RestController
@@ -28,6 +31,7 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
     private final DietScoreService dietScoreService;
     private final DietSuggestionService dietSuggestionService;
+    private final PeriodReportService periodReportService;
 
     @Operation(summary = "当日统计（热量 / 目标 / TDEE / 缺口 / 评分）")
     @GetMapping("/daily")
@@ -48,5 +52,18 @@ public class StatisticsController {
     public Result<DietSuggestionResponse> suggestions(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return Result.success(dietSuggestionService.getSuggestions(CurrentUser.requireUserId(), date));
+    }
+
+    @Operation(summary = "周报（startDate 起 7 天）")
+    @GetMapping("/weekly")
+    public Result<PeriodReportResponse> weekly(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate) {
+        return Result.success(periodReportService.weekly(CurrentUser.requireUserId(), startDate));
+    }
+
+    @Operation(summary = "月报（yearMonth=2026-04）")
+    @GetMapping("/monthly")
+    public Result<PeriodReportResponse> monthly(@RequestParam String yearMonth) {
+        return Result.success(periodReportService.monthly(CurrentUser.requireUserId(), YearMonth.parse(yearMonth)));
     }
 }

@@ -9,6 +9,11 @@ import ProfileSetupPage from './pages/profile/ProfileSetupPage';
 import AddFoodPage from './pages/food/AddFoodPage';
 import GoalSetupPage from './pages/goal/GoalSetupPage';
 import StatisticsPage from './pages/statistics/StatisticsPage';
+import BodyPage from './pages/body/BodyPage';
+import StrengthPage from './pages/strength/StrengthPage';
+import ReportsPage from './pages/reports/ReportsPage';
+import SettingsPage from './pages/settings/SettingsPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import { useAuthStore } from './store/auth';
 import { tokenStore } from './api/client';
 
@@ -71,6 +76,39 @@ function App() {
             element={
               <ProtectedRoute>
                 <StatisticsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route
+            path="/body"
+            element={
+              <ProtectedRoute>
+                <BodyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/strength"
+            element={
+              <ProtectedRoute>
+                <StrengthPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reports"
+            element={
+              <ProtectedRoute>
+                <ReportsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />

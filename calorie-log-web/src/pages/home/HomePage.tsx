@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, DatePicker, Modal, Progress, Space, Typography, message } from 'antd';
-import { BarChartOutlined, DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
+import { BarChartOutlined, DashboardOutlined, DeleteOutlined, EditOutlined, HeartOutlined, LeftOutlined, PlusOutlined, RightOutlined, SettingOutlined, ThunderboltOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteRecord, getDailyRecords, updateRecord } from '../../api/record';
@@ -120,12 +120,24 @@ export default function HomePage() {
           <DatePicker value={date} onChange={(d) => d && setDate(d)} />
           <Button icon={<RightOutlined />} onClick={() => setDate(date.add(1, 'day'))} />
         </Space>
-        <Space>
+        <Space wrap>
           <Button icon={<TrophyOutlined />} onClick={() => navigate('/goal')}>
             目标
           </Button>
           <Button icon={<BarChartOutlined />} onClick={() => navigate('/statistics')}>
             统计
+          </Button>
+          <Button icon={<HeartOutlined />} onClick={() => navigate('/body')}>
+            体重
+          </Button>
+          <Button icon={<ThunderboltOutlined />} onClick={() => navigate('/strength')}>
+            力量
+          </Button>
+          <Button icon={<DashboardOutlined />} onClick={() => navigate('/reports')}>
+            报表
+          </Button>
+          <Button icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
+            设置
           </Button>
           <Button icon={<UserOutlined />} onClick={() => navigate('/profile')}>
             我的

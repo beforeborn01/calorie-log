@@ -173,4 +173,37 @@ public class AuthService {
         if (identifier.length() <= 4) return "用户" + identifier;
         return "用户" + identifier.substring(identifier.length() - 4);
     }
+
+    @Transactional
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = userMapper.selectById(userId);
+        if (user == null) throw new BizException(ErrorCode.USER_NOT_FOUND);
+        if (user.getPasswordHash() == null
+                || !passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            throw new BizException(ErrorCode.PASSWORD_INCORRECT);
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userMapper.updateById(user);
+        invalidateAllTokens(userId);
+    }
+
+    @Transactional
+    public void resetPassword(String identifier, String verifyCode, String newPassword) {
+        IdentifierUtils.IdentifierType type = IdentifierUtils.detect(identifier);
+        if (type == IdentifierUtils.IdentifierType.UNKNOWN) {
+            throw new BizException(ErrorCode.IDENTIFIER_FORMAT_INVALID);
+        }
+        verifyCodeService.verify(identifier, "reset_password", verifyCode);
+        User user = findByIdentifier(identifier, type);
+        if (user == null) throw new BizException(ErrorCode.USER_NOT_FOUND);
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userMapper.updateById(user);
+        invalidateAllTokens(user.getId());
+    }
+
+    private void invalidateAllTokens(Long userId) {
+        String key = JwtAuthenticationFilter.TOKEN_INVALIDATE_USER_PREFIX + userId;
+        redis.opsForValue().set(key, String.valueOf(System.currentTimeMillis()),
+                Duration.ofDays(30));
+    }
 }

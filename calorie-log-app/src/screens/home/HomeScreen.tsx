@@ -118,6 +118,10 @@ export default function HomeScreen({ navigation }: Props) {
         <Appbar.Action icon="chevron-right" onPress={() => setDate(date.add(1, 'day'))} />
         <Appbar.Action icon="target" onPress={() => navigation.navigate('GoalSetup')} />
         <Appbar.Action icon="chart-bar" onPress={() => navigation.navigate('Statistics')} />
+        <Appbar.Action icon="heart-pulse" onPress={() => navigation.navigate('Body')} />
+        <Appbar.Action icon="dumbbell" onPress={() => navigation.navigate('Strength')} />
+        <Appbar.Action icon="calendar-clock" onPress={() => navigation.navigate('Reports')} />
+        <Appbar.Action icon="cog" onPress={() => navigation.navigate('Settings')} />
         <Appbar.Action icon="account" onPress={() => navigation.navigate('Profile')} />
       </Appbar.Header>
       <ScrollView contentContainerStyle={{ padding: 16 }}>

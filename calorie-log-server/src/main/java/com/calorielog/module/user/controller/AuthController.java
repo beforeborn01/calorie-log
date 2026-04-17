@@ -4,6 +4,7 @@ import com.calorielog.common.result.Result;
 import com.calorielog.module.user.dto.LoginRequest;
 import com.calorielog.module.user.dto.RefreshRequest;
 import com.calorielog.module.user.dto.RegisterRequest;
+import com.calorielog.module.user.dto.ResetPasswordRequest;
 import com.calorielog.module.user.dto.SendCodeRequest;
 import com.calorielog.module.user.dto.TokenResponse;
 import com.calorielog.module.user.dto.WechatBindRequest;
@@ -83,5 +84,12 @@ public class AuthController {
     @PostMapping("/wechat/bind")
     public Result<TokenResponse> wechatBind(@Valid @RequestBody WechatBindRequest req) {
         return Result.success(wechatAuthService.bindPhone(req));
+    }
+
+    @Operation(summary = "忘记密码：凭验证码重置")
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        authService.resetPassword(req.getIdentifier(), req.getVerifyCode(), req.getNewPassword());
+        return Result.success();
     }
 }

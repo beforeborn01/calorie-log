@@ -92,6 +92,9 @@ export default function LoginScreen({ navigation }: Props) {
       <Button onPress={() => navigation.navigate('Register')} style={{ marginTop: 12 }}>
         还没有账号？立即注册
       </Button>
+      <Button onPress={() => navigation.navigate('ResetPassword')} style={{ marginTop: 4 }}>
+        忘记密码
+      </Button>
     </ScrollView>
   );
 }

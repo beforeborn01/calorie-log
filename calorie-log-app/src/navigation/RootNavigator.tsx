@@ -16,6 +16,9 @@ import SettingsScreen from '../screens/settings/SettingsScreen';
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
 import FriendsScreen from '../screens/social/FriendsScreen';
 import RankingScreen from '../screens/social/RankingScreen';
+import RecognizeScreen from '../screens/ai/RecognizeScreen';
+import CookingScreen from '../screens/ai/CookingScreen';
+import CookingFavoritesScreen from '../screens/ai/FavoritesScreen';
 import { useAuthStore } from '../store/auth';
 import { setUnauthorizedHandler } from '../api/client';
 import { ActivityIndicator, View } from 'react-native';
@@ -36,6 +39,9 @@ export type RootStackParamList = {
   Settings: undefined;
   Friends: undefined;
   Ranking: undefined;
+  Recognize: undefined;
+  Cooking: undefined;
+  CookingFavorites: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -87,6 +93,13 @@ export default function RootNavigator() {
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Friends" component={FriendsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Ranking" component={RankingScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Recognize" component={RecognizeScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Cooking" component={CookingScreen} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="CookingFavorites"
+              component={CookingFavoritesScreen}
+              options={{ headerShown: false }}
+            />
           </>
         )}
       </Stack.Navigator>

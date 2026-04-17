@@ -22,6 +22,17 @@ app:
   auth:
     mock-verify-code: "123456"
     mock-verify-code-enabled: true
+  ai:
+    mock-enabled: true
+    baidu:
+      api-key: ${BAIDU_AI_KEY:}
+      secret-key: ${BAIDU_AI_SECRET:}
+    doubao:
+      api-key: ${DOUBAO_API_KEY:}
+      endpoint: ${DOUBAO_ENDPOINT:https://ark.cn-beijing.volces.com/api/v3/chat/completions}
+      model: ${DOUBAO_MODEL:doubao-pro-32k}
+  social:
+    invite-base-url: https://calorielog.cn/invite
 
 springdoc:
   api-docs:

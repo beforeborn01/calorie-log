@@ -60,6 +60,15 @@ public enum ErrorCode {
     // 并发 408xx
     CONCURRENT_MODIFICATION(48001, "操作冲突，请重试"),
 
+    // AI 409xx
+    AI_IMAGE_TOO_LARGE(49001, "图片过大，请压缩后重试（最大 2MB）"),
+    AI_IMAGE_INVALID(49002, "图片格式错误或无法解析"),
+    AI_RECOGNITION_FAILED(49003, "食物识别失败，请手动录入"),
+    AI_RECOGNITION_EMPTY(49004, "未识别到食物"),
+    AI_LLM_UNAVAILABLE(49005, "烹饪推荐服务暂不可用"),
+    AI_FAVORITE_EXISTS(49006, "已收藏该烹饪方法"),
+    AI_FAVORITE_NOT_FOUND(49007, "收藏记录不存在"),
+
     // 服务端 500xx
     INTERNAL_ERROR(50000, "服务器内部错误"),
     EXTERNAL_SERVICE_ERROR(50001, "外部服务异常"),

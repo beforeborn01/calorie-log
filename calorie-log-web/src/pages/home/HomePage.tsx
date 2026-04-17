@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, DatePicker, Modal, Progress, Space, Tag, Typography, message } from 'antd';
-import { BarChartOutlined, CrownOutlined, DashboardOutlined, DeleteOutlined, EditOutlined, HeartOutlined, LeftOutlined, PlusOutlined, RightOutlined, SettingOutlined, TeamOutlined, ThunderboltOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
+import { BarChartOutlined, CameraOutlined, CrownOutlined, DashboardOutlined, DeleteOutlined, EditOutlined, ExperimentOutlined, HeartOutlined, LeftOutlined, PlusOutlined, RightOutlined, SettingOutlined, TeamOutlined, ThunderboltOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteRecord, getDailyRecords, updateRecord } from '../../api/record';
@@ -147,6 +147,12 @@ export default function HomePage() {
           </Button>
           <Button icon={<CrownOutlined />} onClick={() => navigate('/ranking')}>
             排行榜
+          </Button>
+          <Button icon={<CameraOutlined />} onClick={() => navigate('/recognize')}>
+            拍照识别
+          </Button>
+          <Button icon={<ExperimentOutlined />} onClick={() => navigate('/cooking')}>
+            烹饪推荐
           </Button>
           <Button icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
             设置

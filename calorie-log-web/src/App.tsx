@@ -16,6 +16,9 @@ import SettingsPage from './pages/settings/SettingsPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import FriendsPage from './pages/social/FriendsPage';
 import RankingPage from './pages/social/RankingPage';
+import RecognizePage from './pages/ai/RecognizePage';
+import CookingPage from './pages/ai/CookingPage';
+import FavoritesPage from './pages/ai/FavoritesPage';
 import { useAuthStore } from './store/auth';
 import { tokenStore } from './api/client';
 
@@ -127,6 +130,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <RankingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/recognize"
+            element={
+              <ProtectedRoute>
+                <RecognizePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cooking"
+            element={
+              <ProtectedRoute>
+                <CookingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <FavoritesPage />
               </ProtectedRoute>
             }
           />

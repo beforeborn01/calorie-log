@@ -129,6 +129,8 @@ export default function HomeScreen({ navigation }: Props) {
         <Appbar.Action icon="calendar-clock" onPress={() => navigation.navigate('Reports')} />
         <Appbar.Action icon="account-multiple" onPress={() => navigation.navigate('Friends')} />
         <Appbar.Action icon="trophy" onPress={() => navigation.navigate('Ranking')} />
+        <Appbar.Action icon="camera" onPress={() => navigation.navigate('Recognize')} />
+        <Appbar.Action icon="silverware-fork-knife" onPress={() => navigation.navigate('Cooking')} />
         <Appbar.Action icon="cog" onPress={() => navigation.navigate('Settings')} />
         <Appbar.Action icon="account" onPress={() => navigation.navigate('Profile')} />
       </Appbar.Header>

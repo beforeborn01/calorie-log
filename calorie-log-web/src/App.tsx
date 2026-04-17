@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
+import AppLayout from './layout/AppLayout';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import HomePage from './pages/home/HomePage';
@@ -19,6 +20,7 @@ import RankingPage from './pages/social/RankingPage';
 import RecognizePage from './pages/ai/RecognizePage';
 import CookingPage from './pages/ai/CookingPage';
 import FavoritesPage from './pages/ai/FavoritesPage';
+import HistoryPage from './pages/history/HistoryPage';
 import { useAuthStore } from './store/auth';
 import { tokenStore } from './api/client';
 
@@ -28,30 +30,20 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function App() {
+function LayoutGate() {
   const profile = useAuthStore((s) => s.profile);
+  if (profile && !profile.profileComplete) return <Navigate to="/profile/setup" replace />;
+  return <AppLayout />;
+}
+
+function App() {
   return (
     <ConfigProvider locale={zhCN}>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                {profile && !profile.profileComplete ? <Navigate to="/profile/setup" replace /> : <HomePage />}
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/profile/setup"
             element={
@@ -61,102 +53,28 @@ function App() {
             }
           />
           <Route
-            path="/food/add"
             element={
               <ProtectedRoute>
-                <AddFoodPage />
+                <LayoutGate />
               </ProtectedRoute>
             }
-          />
-          <Route
-            path="/goal"
-            element={
-              <ProtectedRoute>
-                <GoalSetupPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/statistics"
-            element={
-              <ProtectedRoute>
-                <StatisticsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route
-            path="/body"
-            element={
-              <ProtectedRoute>
-                <BodyPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/strength"
-            element={
-              <ProtectedRoute>
-                <StrengthPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute>
-                <ReportsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <SettingsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/friends"
-            element={
-              <ProtectedRoute>
-                <FriendsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/ranking"
-            element={
-              <ProtectedRoute>
-                <RankingPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/recognize"
-            element={
-              <ProtectedRoute>
-                <RecognizePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/cooking"
-            element={
-              <ProtectedRoute>
-                <CookingPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/favorites"
-            element={
-              <ProtectedRoute>
-                <FavoritesPage />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route path="/" element={<HomePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/food/add" element={<AddFoodPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/goal" element={<GoalSetupPage />} />
+            <Route path="/statistics" element={<StatisticsPage />} />
+            <Route path="/body" element={<BodyPage />} />
+            <Route path="/strength" element={<StrengthPage />} />
+            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/friends" element={<FriendsPage />} />
+            <Route path="/ranking" element={<RankingPage />} />
+            <Route path="/recognize" element={<RecognizePage />} />
+            <Route path="/cooking" element={<CookingPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

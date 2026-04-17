@@ -10,17 +10,22 @@ import com.calorielog.module.user.dto.TokenResponse;
 import com.calorielog.module.user.dto.WechatBindRequest;
 import com.calorielog.module.user.dto.WechatLoginRequest;
 import com.calorielog.module.user.dto.WechatLoginResponse;
+import com.calorielog.module.user.dto.WechatPollResponse;
+import com.calorielog.module.user.dto.WechatQrCodeResponse;
 import com.calorielog.module.user.service.AuthService;
 import com.calorielog.module.user.service.VerifyCodeService;
 import com.calorielog.module.user.service.WechatAuthService;
+import com.calorielog.module.user.service.WechatQrLoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
@@ -35,6 +40,7 @@ public class AuthController {
     private final AuthService authService;
     private final VerifyCodeService verifyCodeService;
     private final WechatAuthService wechatAuthService;
+    private final WechatQrLoginService wechatQrLoginService;
 
     @Operation(summary = "发送验证码")
     @PostMapping("/send-code")
@@ -90,6 +96,26 @@ public class AuthController {
     @PostMapping("/reset-password")
     public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
         authService.resetPassword(req.getIdentifier(), req.getVerifyCode(), req.getNewPassword());
+        return Result.success();
+    }
+
+    @Operation(summary = "网页扫码登录：申请 ticket + 二维码")
+    @GetMapping("/wechat/qrcode")
+    public Result<WechatQrCodeResponse> wechatQrCode() {
+        return Result.success(wechatQrLoginService.createTicket());
+    }
+
+    @Operation(summary = "网页扫码登录：轮询状态")
+    @GetMapping("/wechat/poll")
+    public Result<WechatPollResponse> wechatPoll(@RequestParam String ticket) {
+        return Result.success(wechatQrLoginService.poll(ticket));
+    }
+
+    @Operation(summary = "仅 dev：模拟扫码确认", description = "targetUserId 可省略（默认绑定第一个启用账号）")
+    @PostMapping("/wechat/mock-confirm")
+    public Result<Void> wechatMockConfirm(@RequestParam String ticket,
+                                          @RequestParam(required = false) Long targetUserId) {
+        wechatQrLoginService.mockConfirm(ticket, targetUserId);
         return Result.success();
     }
 }

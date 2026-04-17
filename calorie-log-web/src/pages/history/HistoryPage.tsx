@@ -1,0 +1,154 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Button, Card, DatePicker, Space, Statistic, Table, Tag, Typography, message } from 'antd';
+import { DownloadOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import dayjs, { Dayjs } from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import { getDailyRecords } from '../../api/record';
+import { tokenStore } from '../../api/client';
+import type { DietRecord } from '../../types';
+
+const MEAL_LABEL: Record<number, string> = { 1: '早餐', 2: '午餐', 3: '晚餐', 4: '加餐' };
+const MEAL_COLOR: Record<number, string> = { 1: 'blue', 2: 'green', 3: 'purple', 4: 'orange' };
+
+interface Row extends DietRecord {
+  key: string;
+}
+
+export default function HistoryPage() {
+  const navigate = useNavigate();
+  const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(6, 'day'), dayjs()]);
+  const [rows, setRows] = useState<Row[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const reload = async () => {
+    setLoading(true);
+    try {
+      const [from, to] = range;
+      const days: string[] = [];
+      for (let d = from; d.isBefore(to) || d.isSame(to, 'day'); d = d.add(1, 'day')) {
+        days.push(d.format('YYYY-MM-DD'));
+      }
+      // 并发取每日列表
+      const dailies = await Promise.all(days.map((d) => getDailyRecords(d).catch(() => null)));
+      const list: Row[] = [];
+      dailies.forEach((d, idx) => {
+        if (!d) return;
+        for (const r of [...(d.breakfast ?? []), ...(d.lunch ?? []), ...(d.dinner ?? []), ...(d.snacks ?? [])]) {
+          list.push({ ...r, recordDate: days[idx], key: `${days[idx]}-${r.id}` });
+        }
+      });
+      setRows(list);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range]);
+
+  const stats = useMemo(() => {
+    const total = rows.length;
+    const days = new Set(rows.map((r) => r.recordDate)).size;
+    const calories = rows.reduce((sum, r) => sum + Number(r.calories ?? 0), 0);
+    return { total, days, calories };
+  }, [rows]);
+
+  const onExport = async () => {
+    const from = range[0].format('YYYY-MM-DD');
+    const to = range[1].format('YYYY-MM-DD');
+    const base = import.meta.env.VITE_API_BASE_URL || '/api/v1';
+    const url = `${base}/export/records?startDate=${from}&endDate=${to}`;
+    try {
+      const resp = await fetch(url, { headers: { Authorization: `Bearer ${tokenStore.get()}` } });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const blob = await resp.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `饮食记录_${from}_${to}.csv`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      message.success('已导出');
+    } catch (e: any) {
+      message.error(e?.message || '导出失败');
+    }
+  };
+
+  return (
+    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
+      <Card
+        title="历史饮食记录"
+        extra={
+          <Space>
+            <DatePicker.RangePicker
+              value={range}
+              onChange={(r) => r && r[0] && r[1] && setRange([r[0], r[1]])}
+              allowClear={false}
+            />
+            <Button icon={<ReloadOutlined />} onClick={reload} />
+            <Button icon={<DownloadOutlined />} onClick={onExport}>
+              导出 CSV
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() =>
+                navigate(`/food/add?date=${dayjs().format('YYYY-MM-DD')}&meal=1`)
+              }
+            >
+              添加（Ctrl/⌘ + K）
+            </Button>
+          </Space>
+        }
+      >
+        <Space size="large" style={{ marginBottom: 16 }} wrap>
+          <Statistic title="记录条数" value={stats.total} />
+          <Statistic title="覆盖天数" value={stats.days} />
+          <Statistic title="累计热量" value={stats.calories.toFixed(0)} suffix="kcal" />
+        </Space>
+        <Table
+          size="small"
+          loading={loading}
+          dataSource={rows}
+          pagination={{ pageSize: 20, showSizeChanger: true }}
+          columns={[
+            { title: '日期', dataIndex: 'recordDate', key: 'recordDate', width: 110, sorter: (a, b) => a.recordDate.localeCompare(b.recordDate) },
+            {
+              title: '餐次',
+              dataIndex: 'mealType',
+              key: 'mealType',
+              width: 70,
+              filters: Object.entries(MEAL_LABEL).map(([v, l]) => ({ text: l, value: Number(v) })),
+              onFilter: (value, record) => record.mealType === value,
+              render: (v: number) => <Tag color={MEAL_COLOR[v]}>{MEAL_LABEL[v]}</Tag>,
+            },
+            { title: '食物', dataIndex: 'foodName', key: 'foodName' },
+            {
+              title: '分量',
+              dataIndex: 'quantity',
+              key: 'quantity',
+              width: 80,
+              render: (v: number) => `${Number(v).toFixed(0)} g`,
+              sorter: (a, b) => Number(a.quantity ?? 0) - Number(b.quantity ?? 0),
+            },
+            {
+              title: '热量',
+              dataIndex: 'calories',
+              key: 'calories',
+              width: 90,
+              render: (v: number) => `${Number(v).toFixed(0)} kcal`,
+              sorter: (a, b) => Number(a.calories ?? 0) - Number(b.calories ?? 0),
+            },
+            { title: '蛋白', dataIndex: 'protein', width: 70, render: (v: number) => v != null ? `${Number(v).toFixed(1)}g` : '-' },
+            { title: '碳水', dataIndex: 'carbohydrate', width: 70, render: (v: number) => v != null ? `${Number(v).toFixed(1)}g` : '-' },
+            { title: '脂肪', dataIndex: 'fat', width: 70, render: (v: number) => v != null ? `${Number(v).toFixed(1)}g` : '-' },
+          ]}
+        />
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          CSV 采用 UTF-8 BOM 编码，双击即可在 Excel / Numbers 正常打开。
+        </Typography.Text>
+      </Card>
+    </div>
+  );
+}

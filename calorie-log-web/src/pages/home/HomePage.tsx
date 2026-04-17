@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, DatePicker, Modal, Progress, Space, Tag, Typography, message } from 'antd';
-import { BarChartOutlined, CameraOutlined, CrownOutlined, DashboardOutlined, DeleteOutlined, EditOutlined, ExperimentOutlined, HeartOutlined, LeftOutlined, PlusOutlined, RightOutlined, SettingOutlined, TeamOutlined, ThunderboltOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
+import { CrownOutlined, DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteRecord, getDailyRecords, updateRecord } from '../../api/record';
@@ -126,41 +126,13 @@ export default function HomePage() {
           <DatePicker value={date} onChange={(d) => d && setDate(d)} />
           <Button icon={<RightOutlined />} onClick={() => setDate(date.add(1, 'day'))} />
         </Space>
-        <Space wrap>
-          <Button icon={<TrophyOutlined />} onClick={() => navigate('/goal')}>
-            目标
-          </Button>
-          <Button icon={<BarChartOutlined />} onClick={() => navigate('/statistics')}>
-            统计
-          </Button>
-          <Button icon={<HeartOutlined />} onClick={() => navigate('/body')}>
-            体重
-          </Button>
-          <Button icon={<ThunderboltOutlined />} onClick={() => navigate('/strength')}>
-            力量
-          </Button>
-          <Button icon={<DashboardOutlined />} onClick={() => navigate('/reports')}>
-            报表
-          </Button>
-          <Button icon={<TeamOutlined />} onClick={() => navigate('/friends')}>
-            好友
-          </Button>
-          <Button icon={<CrownOutlined />} onClick={() => navigate('/ranking')}>
-            排行榜
-          </Button>
-          <Button icon={<CameraOutlined />} onClick={() => navigate('/recognize')}>
-            拍照识别
-          </Button>
-          <Button icon={<ExperimentOutlined />} onClick={() => navigate('/cooking')}>
-            烹饪推荐
-          </Button>
-          <Button icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
-            设置
-          </Button>
-          <Button icon={<UserOutlined />} onClick={() => navigate('/profile')}>
-            我的
-          </Button>
-        </Space>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate(`/food/add?date=${dateStr}&meal=1`)}
+        >
+          添加食物（Ctrl/⌘ + K）
+        </Button>
       </div>
 
       {experience && (

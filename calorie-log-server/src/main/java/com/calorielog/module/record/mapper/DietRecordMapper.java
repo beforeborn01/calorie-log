@@ -32,4 +32,13 @@ public interface DietRecordMapper extends BaseMapper<DietRecord> {
         WHERE user_id = #{userId} AND record_date = #{date} AND deleted_at IS NULL
         """)
     Map<String, Object> aggregateByDate(@Param("userId") Long userId, @Param("date") LocalDate date);
+
+    @Select("""
+        SELECT * FROM t_diet_record
+        WHERE user_id = #{userId} AND record_date BETWEEN #{from} AND #{to} AND deleted_at IS NULL
+        ORDER BY record_date ASC, meal_type ASC, id ASC
+        """)
+    List<DietRecord> findInRange(@Param("userId") Long userId,
+                                 @Param("from") LocalDate from,
+                                 @Param("to") LocalDate to);
 }

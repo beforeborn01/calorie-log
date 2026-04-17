@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, DatePicker, Modal, Progress, Space, Typography, message } from 'antd';
-import { BarChartOutlined, DashboardOutlined, DeleteOutlined, EditOutlined, HeartOutlined, LeftOutlined, PlusOutlined, RightOutlined, SettingOutlined, ThunderboltOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Card, DatePicker, Modal, Progress, Space, Tag, Typography, message } from 'antd';
+import { BarChartOutlined, CrownOutlined, DashboardOutlined, DeleteOutlined, EditOutlined, HeartOutlined, LeftOutlined, PlusOutlined, RightOutlined, SettingOutlined, TeamOutlined, ThunderboltOutlined, TrophyOutlined, UserOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { Link, useNavigate } from 'react-router-dom';
 import { deleteRecord, getDailyRecords, updateRecord } from '../../api/record';
+import { getExperience, type Experience } from '../../api/social';
 import type { DailyRecords, DietRecord } from '../../types';
 
 const MEAL_LABELS: Record<number, string> = { 1: '早餐', 2: '午餐', 3: '晚餐', 4: '加餐' };
@@ -13,8 +14,13 @@ export default function HomePage() {
   const [date, setDate] = useState<Dayjs>(dayjs());
   const [daily, setDaily] = useState<DailyRecords | null>(null);
   const [loading, setLoading] = useState(false);
+  const [experience, setExperience] = useState<Experience | null>(null);
 
   const dateStr = date.format('YYYY-MM-DD');
+
+  useEffect(() => {
+    getExperience().then(setExperience).catch(() => undefined);
+  }, [dateStr]);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,6 +142,12 @@ export default function HomePage() {
           <Button icon={<DashboardOutlined />} onClick={() => navigate('/reports')}>
             报表
           </Button>
+          <Button icon={<TeamOutlined />} onClick={() => navigate('/friends')}>
+            好友
+          </Button>
+          <Button icon={<CrownOutlined />} onClick={() => navigate('/ranking')}>
+            排行榜
+          </Button>
           <Button icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
             设置
           </Button>
@@ -144,6 +156,25 @@ export default function HomePage() {
           </Button>
         </Space>
       </div>
+
+      {experience && (
+        <Card size="small" style={{ marginBottom: 16 }}>
+          <Space size="large" wrap>
+            <Typography.Text strong>
+              <CrownOutlined /> Lv{experience.level}
+            </Typography.Text>
+            <Typography.Text type="secondary">
+              {experience.totalExp} / {experience.nextLevelExp} exp（距下一级 {experience.expToNextLevel}）
+            </Typography.Text>
+            <Tag color="blue">连续记录 {experience.continuousDays} 天</Tag>
+          </Space>
+          <Progress
+            percent={Math.round(Number(experience.levelProgress) * 100)}
+            showInfo={false}
+            style={{ marginTop: 8 }}
+          />
+        </Card>
+      )}
 
       <Card loading={loading} style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>

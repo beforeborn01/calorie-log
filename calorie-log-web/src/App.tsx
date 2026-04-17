@@ -14,6 +14,8 @@ import StrengthPage from './pages/strength/StrengthPage';
 import ReportsPage from './pages/reports/ReportsPage';
 import SettingsPage from './pages/settings/SettingsPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import FriendsPage from './pages/social/FriendsPage';
+import RankingPage from './pages/social/RankingPage';
 import { useAuthStore } from './store/auth';
 import { tokenStore } from './api/client';
 
@@ -109,6 +111,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/friends"
+            element={
+              <ProtectedRoute>
+                <FriendsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/ranking"
+            element={
+              <ProtectedRoute>
+                <RankingPage />
               </ProtectedRoute>
             }
           />

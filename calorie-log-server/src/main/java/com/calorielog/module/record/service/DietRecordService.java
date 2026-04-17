@@ -11,6 +11,7 @@ import com.calorielog.module.record.dto.DietRecordResponse;
 import com.calorielog.module.record.dto.UpdateRecordRequest;
 import com.calorielog.module.record.entity.DietRecord;
 import com.calorielog.module.record.mapper.DietRecordMapper;
+import com.calorielog.module.social.service.ExperienceService;
 import com.calorielog.module.statistics.service.DietScoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class DietRecordService {
     private final GrossNetWeightService grossNetWeightService;
     private final DailySummaryService summaryService;
     private final DietScoreService dietScoreService;
+    private final ExperienceService experienceService;
 
     @Transactional
     public DietRecordResponse create(Long userId, CreateRecordRequest req) {
@@ -88,6 +90,7 @@ public class DietRecordService {
         recordMapper.insert(record);
         summaryService.recompute(userId, req.getRecordDate());
         dietScoreService.recomputeAsync(userId, req.getRecordDate());
+        experienceService.awardAsync(userId, req.getRecordDate());
         return DietRecordResponse.of(record);
     }
 

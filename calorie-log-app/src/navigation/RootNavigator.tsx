@@ -14,6 +14,8 @@ import StrengthScreen from '../screens/strength/StrengthScreen';
 import ReportsScreen from '../screens/reports/ReportsScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import ResetPasswordScreen from '../screens/auth/ResetPasswordScreen';
+import FriendsScreen from '../screens/social/FriendsScreen';
+import RankingScreen from '../screens/social/RankingScreen';
 import { useAuthStore } from '../store/auth';
 import { setUnauthorizedHandler } from '../api/client';
 import { ActivityIndicator, View } from 'react-native';
@@ -32,6 +34,8 @@ export type RootStackParamList = {
   Strength: undefined;
   Reports: undefined;
   Settings: undefined;
+  Friends: undefined;
+  Ranking: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -81,6 +85,8 @@ export default function RootNavigator() {
             <Stack.Screen name="Strength" component={StrengthScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Reports" component={ReportsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Friends" component={FriendsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Ranking" component={RankingScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>

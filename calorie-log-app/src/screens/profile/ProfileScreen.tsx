@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ScrollView, Alert, View } from 'react-native';
-import { Avatar, Button, Card, List, Text } from 'react-native-paper';
+import { Avatar, Button, Card, Chip, Divider, List, ProgressBar, Text } from 'react-native-paper';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 import { useAuthStore } from '../../store/auth';
 import { logout } from '../../api/auth';
+import { getExperience, getExpLogs, type ExpLog, type Experience } from '../../api/social';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -14,6 +15,13 @@ const ACTIVITY: Record<number, string> = { 1: '极少', 2: '轻度', 3: '中度'
 export default function ProfileScreen({ navigation }: Props) {
   const profile = useAuthStore((s) => s.profile);
   const doLogout = useAuthStore((s) => s.logout);
+  const [exp, setExp] = useState<Experience | null>(null);
+  const [logs, setLogs] = useState<ExpLog[]>([]);
+
+  useEffect(() => {
+    getExperience().then(setExp).catch(() => undefined);
+    getExpLogs(10).then(setLogs).catch(() => undefined);
+  }, []);
 
   if (!profile) return null;
 
@@ -58,6 +66,39 @@ export default function ProfileScreen({ navigation }: Props) {
         <List.Item title="时区" description={profile.timezone} />
         <List.Item title="微信绑定" description={profile.wechatBound ? '已绑定' : '未绑定'} />
       </Card>
+      {exp && (
+        <Card style={{ marginTop: 16 }}>
+          <Card.Title title="成长体系" />
+          <Card.Content>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Chip compact style={{ marginRight: 8 }}>
+                Lv{exp.level}
+              </Chip>
+              <Text variant="bodyMedium">
+                {exp.totalExp}/{exp.nextLevelExp} exp · 连续 {exp.continuousDays} 天
+              </Text>
+            </View>
+            <ProgressBar progress={Number(exp.levelProgress)} />
+            <Divider style={{ marginVertical: 12 }} />
+            <Text variant="bodySmall" style={{ marginBottom: 6 }}>
+              最近 10 条经验记录
+            </Text>
+            {logs.length === 0 && <Text variant="bodySmall">暂无</Text>}
+            {logs.map((l) => (
+              <View
+                key={l.id}
+                style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}
+              >
+                <Text variant="bodySmall">
+                  {l.expChange >= 0 ? '+' : ''}
+                  {l.expChange} · {l.reasonDetail ?? l.reasonCode}
+                </Text>
+                <Text variant="bodySmall">{l.createdAt.slice(5, 16).replace('T', ' ')}</Text>
+              </View>
+            ))}
+          </Card.Content>
+        </Card>
+      )}
       <Button mode="contained" onPress={() => navigation.navigate('ProfileSetup')} style={{ marginTop: 16 }}>
         修改个人信息
       </Button>

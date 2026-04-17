@@ -6,9 +6,11 @@ import com.calorielog.module.record.entity.DailySummary;
 import com.calorielog.module.record.entity.DietRecord;
 import com.calorielog.module.record.mapper.DietRecordMapper;
 import com.calorielog.module.record.service.DailySummaryService;
+import com.calorielog.module.social.service.RankingService;
 import com.calorielog.module.statistics.dto.DietScoreResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,7 @@ public class DietScoreService {
     private final DailySummaryService dailySummaryService;
     private final DietRecordMapper dietRecordMapper;
     private final GoalService goalService;
+    private final ObjectProvider<RankingService> rankingServiceProvider;
 
     /** 餐次推荐占比：早 25% / 午 35% / 晚 30% / 加餐 10% */
     private static final Map<Integer, Double> MEAL_TARGET_RATIO = Map.of(
@@ -68,6 +71,7 @@ public class DietScoreService {
         try {
             DietScoreResponse resp = compute(userId, date);
             dailySummaryService.updateDietScore(userId, date, resp.getTotalScore());
+            rankingServiceProvider.ifAvailable(r -> r.onDailyScore(userId, date, resp.getTotalScore()));
         } catch (Exception e) {
             log.warn("diet score async recompute failed: userId={} date={}", userId, date, e);
         }

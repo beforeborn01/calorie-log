@@ -5,6 +5,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 import { deleteRecord, getDailyRecords, updateRecord } from '../../api/record';
+import { getExperience, type Experience } from '../../api/social';
 import type { DailyRecords, DietRecord, MealType } from '../../types';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -15,6 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 export default function HomeScreen({ navigation }: Props) {
   const [date, setDate] = useState<Dayjs>(dayjs());
   const [daily, setDaily] = useState<DailyRecords | null>(null);
+  const [exp, setExp] = useState<Experience | null>(null);
   const dateStr = date.format('YYYY-MM-DD');
 
   const load = useCallback(async () => {
@@ -29,6 +31,10 @@ export default function HomeScreen({ navigation }: Props) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    getExperience().then(setExp).catch(() => undefined);
+  }, [dateStr]);
 
   useFocusEffect(
     useCallback(() => {
@@ -121,10 +127,22 @@ export default function HomeScreen({ navigation }: Props) {
         <Appbar.Action icon="heart-pulse" onPress={() => navigation.navigate('Body')} />
         <Appbar.Action icon="dumbbell" onPress={() => navigation.navigate('Strength')} />
         <Appbar.Action icon="calendar-clock" onPress={() => navigation.navigate('Reports')} />
+        <Appbar.Action icon="account-multiple" onPress={() => navigation.navigate('Friends')} />
+        <Appbar.Action icon="trophy" onPress={() => navigation.navigate('Ranking')} />
         <Appbar.Action icon="cog" onPress={() => navigation.navigate('Settings')} />
         <Appbar.Action icon="account" onPress={() => navigation.navigate('Profile')} />
       </Appbar.Header>
       <ScrollView contentContainerStyle={{ padding: 16 }}>
+        {exp && (
+          <Card style={{ marginBottom: 12 }}>
+            <Card.Content>
+              <Text variant="bodyMedium">
+                Lv{exp.level} · {exp.totalExp}/{exp.nextLevelExp} exp · 连续 {exp.continuousDays} 天
+              </Text>
+              <ProgressBar progress={Number(exp.levelProgress)} style={{ marginTop: 6 }} />
+            </Card.Content>
+          </Card>
+        )}
         <Card style={{ marginBottom: 12 }}>
           <Card.Content>
             <Text variant="titleMedium">

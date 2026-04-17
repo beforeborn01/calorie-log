@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Avatar, Button, Card, Descriptions, message } from 'antd';
+import { Avatar, Button, Card, Descriptions, List, Progress, Space, Tag, Typography, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiGet } from '../../api/client';
 import { logout } from '../../api/auth';
+import { getExperience, getExpLogs, type ExpLog, type Experience } from '../../api/social';
 import { useAuthStore } from '../../store/auth';
 import type { UserProfile } from '../../types';
 
@@ -12,6 +13,8 @@ const ACTIVITY_MAP: Record<number, string> = { 1: '极少', 2: '轻度', 3: '中
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [profile, setLocalProfile] = useState<UserProfile | null>(null);
+  const [experience, setExperience] = useState<Experience | null>(null);
+  const [logs, setLogs] = useState<ExpLog[]>([]);
   const setProfile = useAuthStore((s) => s.setProfile);
   const doLogout = useAuthStore((s) => s.logout);
 
@@ -20,6 +23,8 @@ export default function ProfilePage() {
       setLocalProfile(p);
       setProfile(p);
     });
+    getExperience().then(setExperience).catch(() => undefined);
+    getExpLogs(10).then(setLogs).catch(() => undefined);
   }, [setProfile]);
 
   const handleLogout = async () => {
@@ -73,6 +78,40 @@ export default function ProfilePage() {
           </Link>
         </div>
       </Card>
+
+      {experience && (
+        <Card title="成长体系" style={{ marginTop: 16 }}>
+          <Space size="large" wrap>
+            <Tag color="gold">Lv{experience.level}</Tag>
+            <Typography.Text>累计 {experience.totalExp} exp</Typography.Text>
+            <Typography.Text>距下一级 {experience.expToNextLevel} exp</Typography.Text>
+            <Typography.Text>连续记录 {experience.continuousDays} 天</Typography.Text>
+          </Space>
+          <Progress
+            percent={Math.round(Number(experience.levelProgress) * 100)}
+            style={{ marginTop: 8 }}
+          />
+          <List
+            size="small"
+            style={{ marginTop: 12 }}
+            header={<Typography.Text strong>最近 10 条经验记录</Typography.Text>}
+            locale={{ emptyText: '暂无经验变化' }}
+            dataSource={logs}
+            renderItem={(l) => (
+              <List.Item>
+                <Space>
+                  <Tag color={l.expChange >= 0 ? 'green' : 'red'}>
+                    {l.expChange >= 0 ? '+' : ''}
+                    {l.expChange} exp
+                  </Tag>
+                  <Typography.Text>{l.reasonDetail ?? l.reasonCode}</Typography.Text>
+                  <Typography.Text type="secondary">{l.createdAt.slice(0, 16).replace('T', ' ')}</Typography.Text>
+                </Space>
+              </List.Item>
+            )}
+          />
+        </Card>
+      )}
     </div>
   );
 }

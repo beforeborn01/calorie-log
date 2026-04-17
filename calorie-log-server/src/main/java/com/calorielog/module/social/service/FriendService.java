@@ -115,12 +115,14 @@ public class FriendService {
         }
         fr.setHandledAt(LocalDateTime.now());
         if ("accept".equals(req.getAction())) {
+            friendRequestMapper.expirePriorTerminal(fr.getFromUserId(), fr.getToUserId(), fr.getId());
             fr.setStatus(FriendRequest.STATUS_ACCEPTED);
             friendRequestMapper.updateById(fr);
             createFriendship(fr.getFromUserId(), fr.getToUserId());
             rankingService.primeUser(fr.getFromUserId());
             rankingService.primeUser(fr.getToUserId());
         } else if ("reject".equals(req.getAction())) {
+            friendRequestMapper.expirePriorTerminal(fr.getFromUserId(), fr.getToUserId(), fr.getId());
             fr.setStatus(FriendRequest.STATUS_REJECTED);
             friendRequestMapper.updateById(fr);
         } else {
@@ -137,15 +139,14 @@ public class FriendService {
     private void upsertOne(Long userId, Long friendId) {
         Friendship existing = friendshipMapper.selectOne(
                 new QueryWrapper<Friendship>().eq("user_id", userId).eq("friend_id", friendId));
-        if (existing == null) {
-            Friendship f = new Friendship();
-            f.setUserId(userId);
-            f.setFriendId(friendId);
-            f.setCreatedAt(LocalDateTime.now());
-            friendshipMapper.insert(f);
-        }
-        // 已存在直接忽略（包括被软删的情况也不复活，因为被软删就是历史纪录；
-        // 若需要恢复，可以先 physical delete 再 insert —— 当前场景保持稳健即可。）
+        if (existing != null) return;
+        // 若存在被软删的历史行，唯一约束会阻止 INSERT，先复活
+        if (friendshipMapper.reviveIfSoftDeleted(userId, friendId) == 1) return;
+        Friendship f = new Friendship();
+        f.setUserId(userId);
+        f.setFriendId(friendId);
+        f.setCreatedAt(LocalDateTime.now());
+        friendshipMapper.insert(f);
     }
 
     public List<FriendResponse> listFriends(Long currentUserId) {

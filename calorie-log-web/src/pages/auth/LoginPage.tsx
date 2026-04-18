@@ -207,8 +207,8 @@ export default function LoginPage() {
           <div>
             {qrStatus === 'PENDING' && <Tag color="default">等待扫码</Tag>}
             {qrStatus === 'SCANNED' && <Tag color="blue">已扫码，等待确认</Tag>}
-            {qrStatus === 'CONFIRMED' && <Tag color="green">确认成功</Tag>}
-            {qrStatus === 'EXPIRED' && <Tag color="red">二维码已失效</Tag>}
+            {qrStatus === 'CONFIRMED' && <Tag color="blue">确认成功</Tag>}
+            {qrStatus === 'EXPIRED' && <Tag>二维码已失效</Tag>}
             {qrNickname && (
               <Typography.Text type="secondary" style={{ marginLeft: 8 }}>
                 {qrNickname}

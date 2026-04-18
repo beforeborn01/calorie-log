@@ -191,9 +191,9 @@ export default function HomePage() {
               热量 (kcal)
             </Typography.Paragraph>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-              <MacroStat label="蛋白质" value={daily?.totalProtein} unit="g" color="#1677ff" />
-              <MacroStat label="碳水" value={daily?.totalCarb} unit="g" color="#52c41a" />
-              <MacroStat label="脂肪" value={daily?.totalFat} unit="g" color="#faad14" />
+              <MacroStat label="蛋白质" value={daily?.totalProtein} unit="g" />
+              <MacroStat label="碳水" value={daily?.totalCarb} unit="g" />
+              <MacroStat label="脂肪" value={daily?.totalFat} unit="g" />
             </div>
           </div>
         </div>
@@ -207,14 +207,15 @@ export default function HomePage() {
   );
 }
 
-function MacroStat({ label, value, unit, color }: { label: string; value?: number; unit: string; color: string }) {
+function MacroStat({ label, value, unit }: { label: string; value?: number; unit: string }) {
   return (
     <div>
-      <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+      <Typography.Text type="secondary" style={{ fontSize: 12, letterSpacing: '-0.01em' }}>
         {label}
       </Typography.Text>
-      <div style={{ color, fontSize: 18, fontWeight: 600 }}>
-        {value != null ? Number(value).toFixed(1) : '-'} {unit}
+      <div style={{ color: '#1d1d1f', fontSize: 20, fontWeight: 600, letterSpacing: '-0.02em' }}>
+        {value != null ? Number(value).toFixed(1) : '-'}{' '}
+        <span style={{ color: 'rgba(0,0,0,0.48)', fontSize: 13, fontWeight: 400 }}>{unit}</span>
       </div>
     </div>
   );

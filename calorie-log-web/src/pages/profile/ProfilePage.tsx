@@ -44,7 +44,7 @@ export default function ProfilePage() {
       <Card
         title="个人中心"
         extra={
-          <Button danger onClick={handleLogout}>
+          <Button onClick={handleLogout} type="text" style={{ color: 'rgba(0,0,0,0.56)' }}>
             退出登录
           </Button>
         }
@@ -82,7 +82,7 @@ export default function ProfilePage() {
       {experience && (
         <Card title="成长体系" style={{ marginTop: 16 }}>
           <Space size="large" wrap>
-            <Tag color="gold">Lv{experience.level}</Tag>
+            <Tag color="blue">Lv{experience.level}</Tag>
             <Typography.Text>累计 {experience.totalExp} exp</Typography.Text>
             <Typography.Text>距下一级 {experience.expToNextLevel} exp</Typography.Text>
             <Typography.Text>连续记录 {experience.continuousDays} 天</Typography.Text>
@@ -100,7 +100,7 @@ export default function ProfilePage() {
             renderItem={(l) => (
               <List.Item>
                 <Space>
-                  <Tag color={l.expChange >= 0 ? 'green' : 'red'}>
+                  <Tag color={l.expChange >= 0 ? 'blue' : undefined}>
                     {l.expChange >= 0 ? '+' : ''}
                     {l.expChange} exp
                   </Tag>

@@ -99,12 +99,28 @@ export default function AppLayout() {
         collapsed={collapsed}
         onCollapse={setCollapsed}
         theme="light"
-        width={220}
+        width={228}
         trigger={null}
         breakpoint="lg"
-        collapsedWidth={64}
+        collapsedWidth={72}
+        style={{
+          borderRight: '1px solid rgba(0,0,0,0.06)',
+          background: '#ffffff',
+        }}
       >
-        <div style={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 18 }}>
+        <div
+          style={{
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed ? 0 : '0 20px',
+            fontWeight: 600,
+            fontSize: 17,
+            letterSpacing: '-0.01em',
+            color: '#1d1d1f',
+          }}
+        >
           {collapsed ? '🥗' : '🥗 食养记'}
         </div>
         <Menu
@@ -115,39 +131,69 @@ export default function AppLayout() {
             if (item) navigate(item.path);
           }}
           items={NAV.map(({ key, label, icon }) => ({ key, icon, label }))}
+          style={{ border: 'none', padding: '8px 0' }}
         />
       </Sider>
       <Layout>
         <Header
           style={{
-            background: '#fff',
-            padding: '0 16px',
+            height: 56,
+            padding: '0 20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid #f0f0f0',
+            background: 'rgba(255,255,255,0.8)',
+            backdropFilter: 'saturate(180%) blur(20px)',
+            WebkitBackdropFilter: 'saturate(180%) blur(20px)',
+            borderBottom: '1px solid rgba(0,0,0,0.06)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
           }}
         >
           <button
             type="button"
             aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
             title={collapsed ? '展开侧边栏' : '收起侧边栏'}
-            style={{ cursor: 'pointer', fontSize: 18, background: 'none', border: 'none', padding: 0 }}
+            style={{
+              cursor: 'pointer',
+              fontSize: 18,
+              background: 'none',
+              border: 'none',
+              padding: 6,
+              borderRadius: 8,
+              color: 'rgba(0,0,0,0.72)',
+            }}
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </button>
-          <div style={{ color: '#888', fontSize: 12 }}>
-            ⌨︎ 快捷键 <kbd>Ctrl/⌘ + K</kbd> 快速添加食物
+          <div style={{ color: 'rgba(0,0,0,0.48)', fontSize: 12, letterSpacing: '-0.01em' }}>
+            <kbd
+              style={{
+                background: 'rgba(0,0,0,0.06)',
+                borderRadius: 6,
+                padding: '2px 6px',
+                fontSize: 11,
+                fontFamily: 'inherit',
+              }}
+            >
+              ⌘ K
+            </kbd>{' '}
+            快速添加食物
           </div>
           <Dropdown menu={{ items: userMenu }} placement="bottomRight">
             <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Avatar size="small">{profile?.nickname?.[0] ?? 'U'}</Avatar>
-              <Typography.Text>{profile?.nickname ?? '未登录'}</Typography.Text>
+              <Avatar size="small" style={{ background: '#0071e3' }}>
+                {profile?.nickname?.[0] ?? 'U'}
+              </Avatar>
+              <Typography.Text style={{ color: '#1d1d1f' }}>
+                {profile?.nickname ?? '未登录'}
+              </Typography.Text>
             </div>
           </Dropdown>
         </Header>
-        <Content style={{ background: '#f5f5f5' }}>
+        <Content style={{ background: '#f5f5f7' }}>
           <Outlet />
         </Content>
       </Layout>

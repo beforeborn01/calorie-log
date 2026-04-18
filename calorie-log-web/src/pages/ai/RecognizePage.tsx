@@ -137,7 +137,7 @@ export default function RecognizePage() {
         <Typography.Paragraph type="secondary" style={{ marginTop: 12, marginBottom: 0 }}>
           图片上限 2MB。{" "}
           {result?.mocked && (
-            <Tag color="orange">当前为 Mock 数据（未配置百度 AI key）</Tag>
+            <Tag>当前为 Mock 数据（未配置百度 AI key）</Tag>
           )}
         </Typography.Paragraph>
 
@@ -183,11 +183,7 @@ export default function RecognizePage() {
                       <Space>
                         <Typography.Text strong>{c.name}</Typography.Text>
                         <Tag color="blue">置信度 {Math.round(c.probability * 100)}%</Tag>
-                        {c.foodId ? (
-                          <Tag color="green">已匹配食物库</Tag>
-                        ) : (
-                          <Tag color="orange">需要手动录入</Tag>
-                        )}
+                        {c.foodId ? <Tag color="blue">已匹配食物库</Tag> : <Tag>需要手动录入</Tag>}
                       </Space>
                     }
                     description={

@@ -124,7 +124,7 @@ export default function AddFoodPage() {
                 title={
                   <span>
                     {f.name}
-                    {f.isHardToWeigh && <Tag color="gold" style={{ marginLeft: 8 }}>难称重</Tag>}
+                    {f.isHardToWeigh && <Tag style={{ marginLeft: 8 }}>难称重</Tag>}
                   </span>
                 }
                 description={

@@ -97,9 +97,9 @@ export default function CookingPage() {
           title={
             <Space>
               <span>推荐结果</span>
-              <Tag color="geekblue">适配目标：{GOAL_LABEL[data.goalType] ?? data.goalType}</Tag>
-              {data.fromCache && <Tag color="default">缓存</Tag>}
-              {!data.llmGenerated && <Tag color="orange">静态兜底</Tag>}
+              <Tag color="blue">适配目标：{GOAL_LABEL[data.goalType] ?? data.goalType}</Tag>
+              {data.fromCache && <Tag>缓存</Tag>}
+              {!data.llmGenerated && <Tag>静态兜底</Tag>}
             </Space>
           }
           style={{ marginTop: 16 }}
@@ -134,9 +134,7 @@ export default function CookingPage() {
                           </Tag>
                         ))}
                         {m.tags.map((t) => (
-                          <Tag key={t} color="green">
-                            {TAG_LABEL[t] ?? t}
-                          </Tag>
+                          <Tag key={t}>{TAG_LABEL[t] ?? t}</Tag>
                         ))}
                       </Space>
                     }

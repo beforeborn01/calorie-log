@@ -78,9 +78,7 @@ export default function FavoritesPage() {
                           </Tag>
                         ))}
                         {m?.tags?.map((t) => (
-                          <Tag key={t} color="green">
-                            {TAG_LABEL[t] ?? t}
-                          </Tag>
+                          <Tag key={t}>{TAG_LABEL[t] ?? t}</Tag>
                         ))}
                       </Space>
                     }

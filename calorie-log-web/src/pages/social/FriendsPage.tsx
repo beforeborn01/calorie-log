@@ -174,12 +174,8 @@ export default function FriendsPage() {
                           title={
                             <Space>
                               <Typography.Text strong>{f.remark ?? f.nickname}</Typography.Text>
-                              <Tag color="gold">Lv{f.level}</Tag>
-                              {f.recordedToday ? (
-                                <Tag color="green">今日已记录</Tag>
-                              ) : (
-                                <Tag>未记录</Tag>
-                              )}
+                              <Tag color="blue">Lv{f.level}</Tag>
+                              {f.recordedToday ? <Tag color="blue">今日已记录</Tag> : <Tag>未记录</Tag>}
                             </Space>
                           }
                           description={
@@ -229,7 +225,7 @@ export default function FriendsPage() {
                         <div>
                           <div>
                             <Typography.Text strong>{found.nickname}</Typography.Text>
-                            <Tag color="gold" style={{ marginLeft: 8 }}>
+                            <Tag color="blue" style={{ marginLeft: 8 }}>
                               Lv{found.level}
                             </Tag>
                           </div>
@@ -237,7 +233,7 @@ export default function FriendsPage() {
                         </div>
                         <div style={{ marginLeft: 'auto' }}>
                           {found.relation === 'self' && <Tag>这就是你</Tag>}
-                          {found.relation === 'already_friend' && <Tag color="green">已是好友</Tag>}
+                          {found.relation === 'already_friend' && <Tag>已是好友</Tag>}
                           {found.relation === 'request_pending' && <Tag color="blue">请求待确认</Tag>}
                           {found.relation === 'not_friend' && (
                             <Button type="primary" onClick={onSendRequest}>
@@ -298,7 +294,7 @@ export default function FriendsPage() {
                             <Space>
                               <Typography.Text>{r.fromNickname}</Typography.Text>
                               {r.status === 0 && <Tag color="blue">待处理</Tag>}
-                              {r.status === 1 && <Tag color="green">已接受</Tag>}
+                              {r.status === 1 && <Tag color="blue">已接受</Tag>}
                               {r.status === 2 && <Tag>已拒绝</Tag>}
                               {r.status === 3 && <Tag>已过期</Tag>}
                             </Space>
@@ -330,7 +326,7 @@ export default function FriendsPage() {
                             <Space>
                               <Typography.Text type="secondary">{r.message || '（无留言）'}</Typography.Text>
                               {r.status === 0 && <Tag color="blue">等待对方确认</Tag>}
-                              {r.status === 1 && <Tag color="green">已通过</Tag>}
+                              {r.status === 1 && <Tag color="blue">已通过</Tag>}
                               {r.status === 2 && <Tag>已拒绝</Tag>}
                               {r.status === 3 && <Tag>已过期</Tag>}
                             </Space>

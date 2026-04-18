@@ -95,9 +95,9 @@ export default function RankingPage() {
             renderItem={(e) => (
               <List.Item
                 style={{
-                  background: e.isSelf ? '#e6f4ff' : undefined,
+                  background: e.isSelf ? 'rgba(0, 113, 227, 0.06)' : undefined,
                   padding: 12,
-                  borderRadius: 8,
+                  borderRadius: 10,
                 }}
               >
                 <List.Item.Meta
@@ -107,8 +107,9 @@ export default function RankingPage() {
                         width: 40,
                         textAlign: 'center',
                         fontSize: e.rank <= 3 ? 22 : 16,
-                        fontWeight: 700,
-                        color: e.rank === 1 ? '#faad14' : e.rank === 2 ? '#bfbfbf' : e.rank === 3 ? '#d46b08' : undefined,
+                        fontWeight: 600,
+                        letterSpacing: '-0.02em',
+                        color: e.rank <= 3 ? '#1d1d1f' : 'rgba(0,0,0,0.48)',
                       }}
                     >
                       {e.rank}
@@ -117,7 +118,7 @@ export default function RankingPage() {
                   title={
                     <Space>
                       <Typography.Text strong>{e.nickname}</Typography.Text>
-                      <Tag color="gold">Lv{e.level}</Tag>
+                      <Tag>Lv{e.level}</Tag>
                       {e.isSelf && <Tag color="blue">你</Tag>}
                     </Space>
                   }

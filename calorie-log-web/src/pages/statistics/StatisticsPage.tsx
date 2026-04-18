@@ -12,16 +12,17 @@ import {
   type DietSuggestions,
 } from '../../api/statistics';
 
+// 遵循 DESIGN.md 单一强调色：蓝 = 中性信息，default = 弱中性；严重度用粗细/标题表达，不用色板
 const STATUS_COLOR: Record<string, string> = {
-  balanced: 'green',
-  surplus: 'orange',
-  deficit: 'red',
+  balanced: 'default',
+  surplus: 'default',
+  deficit: 'default',
   unknown: 'default',
 };
 
-const SEVERITY_COLOR: Record<string, string> = {
-  critical: 'red',
-  warn: 'orange',
+const SEVERITY_COLOR: Record<string, string | undefined> = {
+  critical: undefined, // default tag
+  warn: undefined,
   info: 'blue',
 };
 
@@ -92,14 +93,7 @@ export default function StatisticsPage() {
                 title="缺口/盈余"
                 value={daily.calorieGap == null ? '-' : Number(daily.calorieGap).toFixed(0)}
                 suffix="kcal"
-                valueStyle={{
-                  color:
-                    daily.calorieGap == null
-                      ? undefined
-                      : daily.calorieGap > 0
-                      ? '#cf1322'
-                      : '#3f8600',
-                }}
+                valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
               />
             </Space>
           </Space>

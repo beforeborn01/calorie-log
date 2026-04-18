@@ -8,7 +8,6 @@ import apiClient from '../../api/client';
 import type { DietRecord } from '../../types';
 
 const MEAL_LABEL: Record<number, string> = { 1: '早餐', 2: '午餐', 3: '晚餐', 4: '加餐' };
-const MEAL_COLOR: Record<number, string> = { 1: 'blue', 2: 'green', 3: 'purple', 4: 'orange' };
 
 interface Row extends DietRecord {
   key: string;
@@ -125,7 +124,7 @@ export default function HistoryPage() {
               width: 70,
               filters: Object.entries(MEAL_LABEL).map(([v, l]) => ({ text: l, value: Number(v) })),
               onFilter: (value, record) => record.mealType === value,
-              render: (v: number) => <Tag color={MEAL_COLOR[v]}>{MEAL_LABEL[v]}</Tag>,
+              render: (v: number) => <Tag>{MEAL_LABEL[v]}</Tag>,
             },
             { title: '食物', dataIndex: 'foodName', key: 'foodName' },
             {

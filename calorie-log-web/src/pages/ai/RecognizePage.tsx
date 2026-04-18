@@ -154,7 +154,7 @@ export default function RecognizePage() {
 
       {result && (
         <Card title={`识别结果（${result.candidates.length} 项）`} style={{ marginTop: 16 }}>
-          {result.fromCache && <Alert type="info" showIcon message="来自缓存（相同图片 7 天内复用）" style={{ marginBottom: 12 }} />}
+          {result.fromCache && <Alert type="info" showIcon title="来自缓存（相同图片 7 天内复用）" style={{ marginBottom: 12 }} />}
           {result.candidates.length === 0 ? (
             <Empty description="未识别到食物，请手动录入" />
           ) : (

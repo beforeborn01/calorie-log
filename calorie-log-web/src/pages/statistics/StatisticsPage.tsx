@@ -89,7 +89,7 @@ export default function StatisticsPage() {
 
       {daily && (
         <Card style={{ marginBottom: 16 }}>
-          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
             <Space>
               {daily.dayType != null && (
                 <Tag color={daily.dayType === 1 ? 'blue' : 'default'}>
@@ -114,7 +114,7 @@ export default function StatisticsPage() {
                 title="缺口/盈余"
                 value={daily.calorieGap == null ? '-' : Number(daily.calorieGap).toFixed(0)}
                 suffix="kcal"
-                valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
+                styles={{ content: { color: '#1d1d1f', fontWeight: 600 } }}
               />
             </Space>
           </Space>
@@ -217,7 +217,7 @@ export default function StatisticsPage() {
       )}
 
       {suggestions && suggestions.suggestions.length === 0 && daily && (
-        <Alert type="success" showIcon message="今日表现很棒！没有发现需要优化的点。" />
+        <Alert type="success" showIcon title="今日表现很棒！没有发现需要优化的点。" />
       )}
     </div>
   );

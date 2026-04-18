@@ -95,13 +95,13 @@ export default function BodyPage() {
             title="体重变化"
             value={trend?.weightChange ?? '-'}
             suffix="kg"
-            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
+            styles={{ content: { color: '#1d1d1f', fontWeight: 600 } }}
           />
           <Statistic
             title="体脂率变化"
             value={trend?.bodyFatChange ?? '-'}
             suffix="%"
-            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
+            styles={{ content: { color: '#1d1d1f', fontWeight: 600 } }}
           />
           <Statistic title="记录条数" value={trend?.records.length ?? 0} />
         </Space>
@@ -197,7 +197,7 @@ export default function BodyPage() {
         open={modalOpen}
         onOk={onAdd}
         onCancel={() => setModalOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={form} layout="vertical" initialValues={{ recordDate: dayjs() }}>
           <Form.Item name="recordDate" label="日期" rules={[{ required: true }]}>

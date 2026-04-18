@@ -73,7 +73,7 @@ export default function GoalSetupPage() {
             style={{ marginBottom: 16 }}
             type="info"
             showIcon
-            message="当前系统计算"
+            title="当前系统计算"
             description={
               <Descriptions size="small" column={2}>
                 <Descriptions.Item label="BMR">{Number(goal.bmr).toFixed(0)} kcal</Descriptions.Item>

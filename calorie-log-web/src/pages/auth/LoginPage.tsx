@@ -175,12 +175,12 @@ export default function LoginPage() {
         footer={null}
         width={360}
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%', alignItems: 'center' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%', alignItems: 'center' }}>
           {qr?.mocked && (
             <Alert
               type="info"
               showIcon
-              message="Dev 模式"
+              title="Dev 模式"
               description="未配置微信开放平台，点击下方按钮模拟扫码确认"
               style={{ width: '100%' }}
             />

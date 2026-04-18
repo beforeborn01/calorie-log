@@ -139,7 +139,7 @@ export default function CookingPage() {
                       </Space>
                     }
                     description={
-                      <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                      <Space orientation="vertical" size={4} style={{ width: '100%' }}>
                         <Typography.Text type="secondary">{m.advantages}</Typography.Text>
                         <Space size="small" wrap>
                           <Tag>约 {Number(m.caloriesPer100g).toFixed(0)} kcal/100g</Tag>
@@ -166,7 +166,7 @@ export default function CookingPage() {
           style={{ marginTop: 16 }}
           type="info"
           showIcon
-          message="说明"
+          title="说明"
           description="推荐会结合你当前的健身目标（增肌/减脂/均衡）给出差异化建议。开发环境使用静态兜底数据；生产环境会走 LLM (豆包) 生成。"
         />
       )}

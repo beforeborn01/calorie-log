@@ -169,11 +169,10 @@ export default function AppLayout() {
       {isMobile && (
         <Drawer
           placement="left"
-          width={260}
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           closable={false}
-          styles={{ body: { padding: 0 }, header: { display: 'none' } }}
+          styles={{ wrapper: { width: 260 }, body: { padding: 0 }, header: { display: 'none' } }}
         >
           {brand(false)}
           {menuEl}

@@ -198,7 +198,7 @@ export default function StrengthPage() {
           setAddOpen(false);
           setNotTraining(false);
         }}
-        destroyOnClose
+        destroyOnHidden
       >
         {notTraining && (
           <Typography.Paragraph type="danger">当前为休息日，无法记录力量训练</Typography.Paragraph>
@@ -233,7 +233,7 @@ export default function StrengthPage() {
         open={customOpen}
         onOk={onCreateCustom}
         onCancel={() => setCustomOpen(false)}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={customForm} layout="vertical" initialValues={{ bodyPart: bodyPartTab }}>
           <Form.Item name="name" label="动作名" rules={[{ required: true }]}>

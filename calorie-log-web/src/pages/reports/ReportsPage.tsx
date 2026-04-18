@@ -64,7 +64,7 @@ export default function ReportsPage() {
       </Space>
 
       {report && report.conclusion && (
-        <Alert type="info" showIcon message={report.conclusion} style={{ marginBottom: 16 }} />
+        <Alert type="info" showIcon title={report.conclusion} style={{ marginBottom: 16 }} />
       )}
 
       <Card loading={loading} title="饮食" style={{ marginBottom: 16 }}>
@@ -163,13 +163,13 @@ export default function ReportsPage() {
             title="体重变化"
             value={report?.weightChange ?? '-'}
             suffix="kg"
-            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
+            styles={{ content: { color: '#1d1d1f', fontWeight: 600 } }}
           />
           <Statistic
             title="体脂变化"
             value={report?.bodyFatChange ?? '-'}
             suffix="%"
-            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
+            styles={{ content: { color: '#1d1d1f', fontWeight: 600 } }}
           />
           <Statistic title="起始" value={`${report?.weightStart ?? '-'} kg`} />
           <Statistic title="终值" value={`${report?.weightEnd ?? '-'} kg`} />

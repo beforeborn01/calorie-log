@@ -84,7 +84,7 @@ export default function FavoritesPage() {
                     }
                     description={
                       m ? (
-                        <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                        <Space orientation="vertical" size={4} style={{ width: '100%' }}>
                           <Typography.Text type="secondary">{m.advantages}</Typography.Text>
                           <Space size="small" wrap>
                             <Tag>约 {Number(m.caloriesPer100g).toFixed(0)} kcal/100g</Tag>

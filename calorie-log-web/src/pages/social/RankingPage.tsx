@@ -43,7 +43,7 @@ export default function RankingPage() {
       </Space>
 
       <Card>
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           <Segmented
             value={type}
             onChange={(v) => setType(v as RankType)}
@@ -70,7 +70,7 @@ export default function RankingPage() {
           {data?.self && (
             <Alert
               type="info"
-              message={
+              title={
                 <Space size="small" wrap>
                   <Typography.Text strong>当前排名：第 {data.self.rank} 位</Typography.Text>
                   <Typography.Text type="secondary">

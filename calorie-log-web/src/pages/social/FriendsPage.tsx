@@ -205,7 +205,7 @@ export default function FriendsPage() {
             key: 'add',
             label: '添加好友',
             children: (
-              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                 <Card title="手机号搜索">
                   <Space.Compact style={{ width: '100%' }}>
                     <Input
@@ -355,7 +355,7 @@ export default function FriendsPage() {
           </Button>,
         ]}
       >
-        <Alert message="链接 7 天内有效，被接受后即失效" type="info" style={{ marginBottom: 12 }} />
+        <Alert title="链接 7 天内有效，被接受后即失效" type="info" style={{ marginBottom: 12 }} />
         <Input.TextArea value={inviteUrl ?? ''} autoSize rows={2} readOnly />
       </Modal>
 

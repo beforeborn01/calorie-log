@@ -20,33 +20,36 @@ export default function HistoryPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const reload = async () => {
-    setLoading(true);
-    try {
-      const [from, to] = range;
-      const days: string[] = [];
-      for (let d = from; d.isBefore(to) || d.isSame(to, 'day'); d = d.add(1, 'day')) {
-        days.push(d.format('YYYY-MM-DD'));
-      }
-      // 并发取每日列表
-      const dailies = await Promise.all(days.map((d) => getDailyRecords(d).catch(() => null)));
-      const list: Row[] = [];
-      dailies.forEach((d, idx) => {
-        if (!d) return;
-        for (const r of [...(d.breakfast ?? []), ...(d.lunch ?? []), ...(d.dinner ?? []), ...(d.snacks ?? [])]) {
-          list.push({ ...r, recordDate: days[idx], key: `${days[idx]}-${r.id}` });
-        }
-      });
-      setRows(list);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    setLoading(true);
+    const [from, to] = range;
+    const days: string[] = [];
+    for (let d = from; d.isBefore(to) || d.isSame(to, 'day'); d = d.add(1, 'day')) {
+      days.push(d.format('YYYY-MM-DD'));
+    }
+    Promise.all(days.map((d) => getDailyRecords(d).catch(() => null)))
+      .then((dailies) => {
+        if (cancelled) return;
+        const list: Row[] = [];
+        dailies.forEach((d, idx) => {
+          if (!d) return;
+          for (const r of [...(d.breakfast ?? []), ...(d.lunch ?? []), ...(d.dinner ?? []), ...(d.snacks ?? [])]) {
+            list.push({ ...r, recordDate: days[idx], key: `${days[idx]}-${r.id}` });
+          }
+        });
+        setRows(list);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [range]);
+
+  // 手动刷新按钮沿用同一 effect：改 range 引用触发
+  const reload = () => setRange([range[0], range[1]]);
 
   const stats = useMemo(() => {
     const total = rows.length;
@@ -87,7 +90,7 @@ export default function HistoryPage() {
               onChange={(r) => r && r[0] && r[1] && setRange([r[0], r[1]])}
               allowClear={false}
             />
-            <Button icon={<ReloadOutlined />} onClick={reload} />
+            <Button aria-label="刷新" title="刷新" icon={<ReloadOutlined />} onClick={reload} />
             <Button icon={<DownloadOutlined />} onClick={onExport}>
               导出 CSV
             </Button>

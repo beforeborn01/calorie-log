@@ -20,4 +20,20 @@ public interface DailySummaryMapper extends BaseMapper<DailySummary> {
     List<DailySummary> findInRange(@Param("userId") Long userId,
                                    @Param("from") LocalDate from,
                                    @Param("to") LocalDate to);
+
+    /** 给一组用户批量拉某日期区间汇总，返回后按 userId 分组即可。 */
+    @Select("""
+        <script>
+        SELECT * FROM t_daily_summary
+        WHERE summary_date BETWEEN #{from} AND #{to}
+          AND user_id IN
+          <foreach collection='userIds' item='id' open='(' separator=',' close=')'>
+            #{id}
+          </foreach>
+        ORDER BY summary_date ASC
+        </script>
+        """)
+    List<DailySummary> findInRangeForUsers(@Param("userIds") List<Long> userIds,
+                                           @Param("from") LocalDate from,
+                                           @Param("to") LocalDate to);
 }

@@ -7,7 +7,10 @@ import com.calorielog.module.social.dto.ExperienceResponse;
 import com.calorielog.module.social.service.ExperienceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/social")
 @RequiredArgsConstructor
+@Validated
 public class ExperienceController {
 
     private final ExperienceService experienceService;
@@ -31,7 +35,8 @@ public class ExperienceController {
 
     @Operation(summary = "经验值流水（最近 N 条）")
     @GetMapping("/experience/logs")
-    public Result<List<ExpLogResponse>> logs(@RequestParam(defaultValue = "30") int limit) {
+    public Result<List<ExpLogResponse>> logs(
+            @RequestParam(defaultValue = "30") @Min(1) @Max(200) int limit) {
         return Result.success(experienceService.recentLogs(CurrentUser.requireUserId(), limit));
     }
 }

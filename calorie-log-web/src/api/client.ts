@@ -68,10 +68,15 @@ async function tryRefresh(): Promise<string | null> {
 
 api.interceptors.response.use(
   (resp) => {
-    const data = resp.data as ApiResult<unknown>;
-    if (data && typeof data.code === 'number' && data.code !== 200) {
-      message.error(data.message || '请求失败');
-      return Promise.reject(new Error(data.message));
+    // 仅 JSON 响应走业务码检查；blob / arraybuffer 直接透传
+    const data = resp.data;
+    if (data && typeof (data as ApiResult<unknown>).code === 'number') {
+      const result = data as ApiResult<unknown>;
+      if (result.code !== 200) {
+        // 业务错误唯一一次 toast
+        message.error(result.message || '请求失败');
+        return Promise.reject(new Error(result.message));
+      }
     }
     return resp;
   },
@@ -83,11 +88,13 @@ api.interceptors.response.use(
       const newToken = await tryRefresh();
       if (newToken) {
         config.headers?.set('Authorization', `Bearer ${newToken}`);
+        // 续签成功：静默重放，不弹提示
         return api.request(config);
       }
       tokenStore.clear();
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         window.location.href = '/login';
+        return Promise.reject(error); // 跳转即可，不再弹"网络错误"
       }
     }
     const msg = error.response?.data?.message || error.message || '网络错误';

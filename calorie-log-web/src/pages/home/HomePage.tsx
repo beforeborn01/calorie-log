@@ -110,8 +110,21 @@ export default function HomePage() {
             </Typography.Text>
           </div>
           <Space>
-            <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(r)} />
-            <Button size="small" danger icon={<DeleteOutlined />} onClick={() => handleDelete(r)} />
+            <Button
+              size="small"
+              aria-label={`编辑 ${r.foodName}`}
+              title="编辑"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(r)}
+            />
+            <Button
+              size="small"
+              danger
+              aria-label={`删除 ${r.foodName}`}
+              title="删除"
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(r)}
+            />
           </Space>
         </div>
       ))}
@@ -122,9 +135,19 @@ export default function HomePage() {
     <div style={{ padding: 24, maxWidth: 820, margin: '0 auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <Space>
-          <Button icon={<LeftOutlined />} onClick={() => setDate(date.subtract(1, 'day'))} />
+          <Button
+            aria-label="前一天"
+            title="前一天"
+            icon={<LeftOutlined />}
+            onClick={() => setDate(date.subtract(1, 'day'))}
+          />
           <DatePicker value={date} onChange={(d) => d && setDate(d)} />
-          <Button icon={<RightOutlined />} onClick={() => setDate(date.add(1, 'day'))} />
+          <Button
+            aria-label="后一天"
+            title="后一天"
+            icon={<RightOutlined />}
+            onClick={() => setDate(date.add(1, 'day'))}
+          />
         </Space>
         <Button
           type="primary"

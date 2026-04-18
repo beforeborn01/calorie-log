@@ -46,8 +46,15 @@ public class StrengthRecordService {
 
     public List<StrengthRecordResponse> listByDate(Long userId, LocalDate date) {
         List<StrengthRecord> records = strengthRecordMapper.findByDate(userId, date);
+        if (records.isEmpty()) return List.of();
+        List<Long> exIds = records.stream().map(StrengthRecord::getExerciseId).distinct().toList();
+        java.util.Map<Long, Exercise> byId = exerciseService.batchVisibleByIds(exIds, userId);
         return records.stream()
-                .map(r -> toResponse(r, exerciseService.requireById(r.getExerciseId(), userId)))
+                .map(r -> {
+                    Exercise e = byId.get(r.getExerciseId());
+                    if (e == null) throw new BizException(ErrorCode.EXERCISE_NOT_FOUND);
+                    return toResponse(r, e);
+                })
                 .collect(Collectors.toList());
     }
 

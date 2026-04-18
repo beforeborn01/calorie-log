@@ -173,17 +173,21 @@ public class RankingService {
                 to = today;
             }
         }
+        if (userIds.isEmpty()) return;
+        // 一次 IN 查询替代循环 per-user findInRange
+        List<DailySummary> all = dailySummaryMapper.findInRangeForUsers(userIds, from, to);
+        Map<Long, BigDecimal> sumMap = new HashMap<>();
+        Map<Long, Integer> countMap = new HashMap<>();
+        for (DailySummary s : all) {
+            if (s.getDietScore() == null || s.getDietScore().signum() <= 0) continue;
+            sumMap.merge(s.getUserId(), s.getDietScore(), BigDecimal::add);
+            countMap.merge(s.getUserId(), 1, Integer::sum);
+        }
         for (Long uid : userIds) {
-            List<DailySummary> list = dailySummaryMapper.findInRange(uid, from, to);
-            BigDecimal sum = BigDecimal.ZERO;
-            int count = 0;
-            for (DailySummary s : list) {
-                if (s.getDietScore() != null && s.getDietScore().signum() > 0) {
-                    sum = sum.add(s.getDietScore());
-                    count++;
-                }
-            }
-            long avg = count == 0 ? 0 : sum.divide(BigDecimal.valueOf(count), 0, RoundingMode.HALF_UP).longValueExact();
+            int count = countMap.getOrDefault(uid, 0);
+            BigDecimal sum = sumMap.getOrDefault(uid, BigDecimal.ZERO);
+            long avg = count == 0 ? 0 :
+                    sum.divide(BigDecimal.valueOf(count), 0, RoundingMode.HALF_UP).longValueExact();
             out.put(uid, avg);
         }
     }

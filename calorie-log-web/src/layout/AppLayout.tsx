@@ -128,12 +128,15 @@ export default function AppLayout() {
             borderBottom: '1px solid #f0f0f0',
           }}
         >
-          <div
-            style={{ cursor: 'pointer', fontSize: 18 }}
+          <button
+            type="button"
+            aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
+            title={collapsed ? '展开侧边栏' : '收起侧边栏'}
+            style={{ cursor: 'pointer', fontSize: 18, background: 'none', border: 'none', padding: 0 }}
             onClick={() => setCollapsed(!collapsed)}
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          </div>
+          </button>
           <div style={{ color: '#888', fontSize: 12 }}>
             ⌨︎ 快捷键 <kbd>Ctrl/⌘ + K</kbd> 快速添加食物
           </div>

@@ -7,6 +7,7 @@ import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import ErrorBoundary from './components/ErrorBoundary';
+import ScrollToTop from './components/ScrollToTop';
 import { useAuthStore } from './store/auth';
 import { tokenStore } from './api/client';
 
@@ -55,6 +56,7 @@ function App() {
     <ConfigProvider locale={zhCN}>
       <ErrorBoundary>
         <BrowserRouter>
+          <ScrollToTop />
           <Suspense fallback={<PageFallback />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />

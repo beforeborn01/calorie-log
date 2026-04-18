@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +46,22 @@ public class ExerciseService {
             throw new BizException(ErrorCode.EXERCISE_NOT_FOUND);
         }
         return e;
+    }
+
+    /**
+     * 批量按 id 拉 Exercise 并按 user 维度过滤可见性。
+     * 看不见的动作（他人自建）直接从返回 Map 省略，由调用方决定报错策略。
+     */
+    public Map<Long, Exercise> batchVisibleByIds(List<Long> ids, Long userId) {
+        Map<Long, Exercise> out = new HashMap<>();
+        if (ids == null || ids.isEmpty()) return out;
+        for (Exercise e : exerciseMapper.selectBatchIds(ids)) {
+            boolean ownedByOther = Boolean.FALSE.equals(e.getIsPreset())
+                    && e.getCreatedBy() != null
+                    && !e.getCreatedBy().equals(userId);
+            if (!ownedByOther) out.put(e.getId(), e);
+        }
+        return out;
     }
 
     private ExerciseResponse toResponse(Exercise e) {

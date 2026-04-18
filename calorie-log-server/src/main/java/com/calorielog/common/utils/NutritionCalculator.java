@@ -45,15 +45,16 @@ public final class NutritionCalculator {
 
     /**
      * Mifflin-St Jeor BMR
-     * 男: 10×体重 + 6.25×身高 - 5×年龄 - 161
-     * 女: 10×体重 + 6.25×身高 - 5×年龄 + 5
+     * 男: 10×体重 + 6.25×身高 - 5×年龄 + 5
+     * 女: 10×体重 + 6.25×身高 - 5×年龄 - 161
      * @param gender 1男 2女
      */
     public static double bmrMifflin(int gender, BigDecimal weightKg, BigDecimal heightCm, int age) {
         double w = weightKg.doubleValue();
         double h = heightCm.doubleValue();
         double base = 10 * w + 6.25 * h - 5 * age;
-        if (gender == 2) return base + 5;
+        // 1=男 → +5；其他（2=女 或 0=未知）→ -161
+        if (gender == 1) return base + 5;
         return base - 161;
     }
 

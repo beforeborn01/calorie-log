@@ -38,7 +38,7 @@ export default function ReportsPage() {
 
   return (
     <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Link to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
@@ -51,7 +51,7 @@ export default function ReportsPage() {
           { key: 'monthly', label: '月报' },
         ]}
       />
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         {tab === 'weekly' ? (
           <DatePicker
             value={weekStart}

@@ -133,7 +133,7 @@ export default function HomePage() {
 
   return (
     <div className="page-container" style={{ maxWidth: 820 }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div className="page-toolbar">
         <Space>
           <Button
             aria-label="前一天"
@@ -154,7 +154,7 @@ export default function HomePage() {
           icon={<PlusOutlined />}
           onClick={() => navigate(`/food/add?date=${dateStr}&meal=1`)}
         >
-          添加食物（Ctrl/⌘ + K）
+          添加食物<span className="hide-on-mobile">（Ctrl/⌘ + K）</span>
         </Button>
       </div>
 

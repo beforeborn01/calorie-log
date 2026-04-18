@@ -121,7 +121,7 @@ export default function StrengthPage() {
 
   return (
     <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Link to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>

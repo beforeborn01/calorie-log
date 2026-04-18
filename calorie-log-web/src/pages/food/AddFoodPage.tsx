@@ -90,7 +90,7 @@ export default function AddFoodPage() {
 
   return (
     <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }}>
+      <Space style={{ marginBottom: 16 }} wrap>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
           返回
         </Button>

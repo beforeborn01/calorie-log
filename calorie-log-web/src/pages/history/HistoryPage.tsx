@@ -83,7 +83,7 @@ export default function HistoryPage() {
       <Card
         title="历史饮食记录"
         extra={
-          <Space>
+          <Space wrap>
             <DatePicker.RangePicker
               value={range}
               onChange={(r) => r && r[0] && r[1] && setRange([r[0], r[1]])}
@@ -100,10 +100,11 @@ export default function HistoryPage() {
                 navigate(`/food/add?date=${dayjs().format('YYYY-MM-DD')}&meal=1`)
               }
             >
-              添加（Ctrl/⌘ + K）
+              添加<span className="hide-on-mobile">（Ctrl/⌘ + K）</span>
             </Button>
           </Space>
         }
+        styles={{ body: { paddingLeft: 12, paddingRight: 12 } }}
       >
         <Space size="large" style={{ marginBottom: 16 }} wrap>
           <Statistic title="记录条数" value={stats.total} />
@@ -115,6 +116,7 @@ export default function HistoryPage() {
           loading={loading}
           dataSource={rows}
           pagination={{ pageSize: 20, showSizeChanger: true }}
+          scroll={{ x: 680 }}
           columns={[
             { title: '日期', dataIndex: 'recordDate', key: 'recordDate', width: 110, sorter: (a, b) => a.recordDate.localeCompare(b.recordDate) },
             {

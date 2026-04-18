@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, View } from 'react-native';
+import { Alert, FlatList, Share, View } from 'react-native';
 import {
   ActivityIndicator,
   Appbar,
@@ -13,6 +13,7 @@ import dayjs from 'dayjs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/RootNavigator';
 import { getDailyRecords } from '../../api/record';
+import apiClient from '../../api/client';
 import type { DailyRecords, DietRecord, MealType } from '../../types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'History'>;
@@ -79,6 +80,35 @@ export default function HistoryScreen({ navigation }: Props) {
     };
   }, [range]);
 
+  const onExport = async () => {
+    const days = rangeToDays(range);
+    const start = dayjs().subtract(days - 1, 'day').format('YYYY-MM-DD');
+    const end = dayjs().format('YYYY-MM-DD');
+    try {
+      // 拉纯文本 CSV，绕过 axios JSON 解析
+      const resp = await apiClient.get<string>('/export/records', {
+        params: { startDate: start, endDate: end },
+        responseType: 'text',
+        transformResponse: [(d) => d],
+      });
+      const text = resp.data ?? '';
+      if (!text.trim()) {
+        Alert.alert('导出失败', '服务端未返回内容');
+        return;
+      }
+      // RN 无文件系统依赖，这里用内置 Share 以"纯文本"方式分享
+      // 超长截断到 ~20KB 防止 iOS 剪贴板/邮件正文限制
+      const MAX = 20 * 1024;
+      const body = text.length > MAX ? text.slice(0, MAX) + '\n...（已截断，完整导出请在网页端）' : text;
+      await Share.share({
+        title: `饮食记录 ${start} ~ ${end}`,
+        message: body,
+      });
+    } catch (e: any) {
+      Alert.alert('导出失败', e.message);
+    }
+  };
+
   const filtered = useMemo(
     () => (mealFilter === 0 ? rows : rows.filter((r) => r.mealType === mealFilter)),
     [rows, mealFilter]
@@ -96,6 +126,7 @@ export default function HistoryScreen({ navigation }: Props) {
       <Appbar.Header>
         <Appbar.BackAction onPress={() => navigation.goBack()} />
         <Appbar.Content title="历史记录" />
+        <Appbar.Action icon="export" onPress={onExport} />
       </Appbar.Header>
 
       <View style={{ padding: 16, paddingBottom: 0 }}>

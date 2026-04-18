@@ -19,6 +19,7 @@ import RankingScreen from '../screens/social/RankingScreen';
 import RecognizeScreen from '../screens/ai/RecognizeScreen';
 import CookingScreen from '../screens/ai/CookingScreen';
 import CookingFavoritesScreen from '../screens/ai/FavoritesScreen';
+import HistoryScreen from '../screens/history/HistoryScreen';
 import { useAuthStore } from '../store/auth';
 import { setUnauthorizedHandler } from '../api/client';
 import { ActivityIndicator, View } from 'react-native';
@@ -42,6 +43,7 @@ export type RootStackParamList = {
   Recognize: undefined;
   Cooking: undefined;
   CookingFavorites: undefined;
+  History: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -100,6 +102,7 @@ export default function RootNavigator() {
               component={CookingFavoritesScreen}
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="History" component={HistoryScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>

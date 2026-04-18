@@ -122,6 +122,7 @@ export default function HomeScreen({ navigation }: Props) {
         <Appbar.Action icon="chevron-left" onPress={() => setDate(date.subtract(1, 'day'))} />
         <Appbar.Content title={dateStr} />
         <Appbar.Action icon="chevron-right" onPress={() => setDate(date.add(1, 'day'))} />
+        <Appbar.Action icon="history" onPress={() => navigation.navigate('History')} />
         <Appbar.Action icon="target" onPress={() => navigation.navigate('GoalSetup')} />
         <Appbar.Action icon="chart-bar" onPress={() => navigation.navigate('Statistics')} />
         <Appbar.Action icon="heart-pulse" onPress={() => navigation.navigate('Body')} />

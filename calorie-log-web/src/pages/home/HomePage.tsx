@@ -132,7 +132,7 @@ export default function HomePage() {
   );
 
   return (
-    <div style={{ padding: 24, maxWidth: 820, margin: '0 auto' }}>
+    <div className="page-container" style={{ maxWidth: 820 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <Space>
           <Button

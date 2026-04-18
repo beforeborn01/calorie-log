@@ -54,7 +54,7 @@ export default function GoalSetupPage() {
   if (loading) return <Spin style={{ display: 'block', margin: '80px auto' }} />;
 
   return (
-    <div style={{ padding: 24, maxWidth: 720, margin: '0 auto' }}>
+    <div className="page-container" style={{ maxWidth: 720 }}>
       <Card title="设置健身目标">
         <div style={{ marginBottom: 16 }}>
           <Segmented

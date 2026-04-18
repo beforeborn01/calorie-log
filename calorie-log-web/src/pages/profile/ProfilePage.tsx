@@ -40,7 +40,7 @@ export default function ProfilePage() {
 
   if (!profile) return null;
   return (
-    <div style={{ padding: 24, maxWidth: 640, margin: '0 auto' }}>
+    <div className="page-container" style={{ maxWidth: 640 }}>
       <Card
         title="个人中心"
         extra={

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Avatar, Dropdown, Layout, Menu, Typography, message } from 'antd';
+import { Avatar, Drawer, Dropdown, Layout, Menu, Typography, message } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   BarChartOutlined,
@@ -12,6 +12,7 @@ import {
   HomeOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
+  MenuOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
   TeamOutlined,
@@ -44,10 +45,28 @@ const NAV: { key: string; path: string; label: string; icon: React.ReactNode }[]
   { key: 'settings', path: '/settings', label: '设置', icon: <SettingOutlined /> },
 ];
 
+const MOBILE_BREAKPOINT = 768;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < MOBILE_BREAKPOINT : false,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const on = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
+    on(mq);
+    mq.addEventListener('change', on as (e: MediaQueryListEvent) => void);
+    return () => mq.removeEventListener('change', on as (e: MediaQueryListEvent) => void);
+  }, []);
+  return isMobile;
+}
+
 export default function AppLayout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const profile = useAuthStore((s) => s.profile);
   const setProfile = useAuthStore((s) => s.setProfile);
   const doLogout = useAuthStore((s) => s.logout);
@@ -92,53 +111,79 @@ export default function AppLayout() {
     { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', onClick: onLogout },
   ];
 
+  const menuEl = (
+    <Menu
+      mode="inline"
+      selectedKeys={[selectedKey]}
+      onClick={({ key }) => {
+        const item = NAV.find((n) => n.key === key);
+        if (item) {
+          navigate(item.path);
+          setDrawerOpen(false);
+        }
+      }}
+      items={NAV.map(({ key, label, icon }) => ({ key, icon, label }))}
+      style={{ border: 'none', padding: '8px 0' }}
+    />
+  );
+
+  const brand = (compact: boolean) => (
+    <div
+      style={{
+        height: 64,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: compact ? 'center' : 'flex-start',
+        padding: compact ? 0 : '0 20px',
+        fontWeight: 600,
+        fontSize: 17,
+        letterSpacing: '-0.01em',
+        color: '#1d1d1f',
+      }}
+    >
+      {compact ? '🥗' : '🥗 食养记'}
+    </div>
+  );
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={setCollapsed}
-        theme="light"
-        width={228}
-        trigger={null}
-        breakpoint="lg"
-        collapsedWidth={72}
-        style={{
-          borderRight: '1px solid rgba(0,0,0,0.06)',
-          background: '#ffffff',
-        }}
-      >
-        <div
+      {!isMobile && (
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          theme="light"
+          width={228}
+          trigger={null}
+          breakpoint="lg"
+          collapsedWidth={72}
           style={{
-            height: 64,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? 0 : '0 20px',
-            fontWeight: 600,
-            fontSize: 17,
-            letterSpacing: '-0.01em',
-            color: '#1d1d1f',
+            borderRight: '1px solid rgba(0,0,0,0.06)',
+            background: '#ffffff',
           }}
         >
-          {collapsed ? '🥗' : '🥗 食养记'}
-        </div>
-        <Menu
-          mode="inline"
-          selectedKeys={[selectedKey]}
-          onClick={({ key }) => {
-            const item = NAV.find((n) => n.key === key);
-            if (item) navigate(item.path);
-          }}
-          items={NAV.map(({ key, label, icon }) => ({ key, icon, label }))}
-          style={{ border: 'none', padding: '8px 0' }}
-        />
-      </Sider>
+          {brand(collapsed)}
+          {menuEl}
+        </Sider>
+      )}
+      {isMobile && (
+        <Drawer
+          placement="left"
+          width={260}
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          closable={false}
+          styles={{ body: { padding: 0 }, header: { display: 'none' } }}
+        >
+          {brand(false)}
+          {menuEl}
+        </Drawer>
+      )}
       <Layout>
         <Header
           style={{
             height: 56,
-            padding: '0 20px',
+            padding: isMobile ? '0 12px' : '0 20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -153,8 +198,8 @@ export default function AppLayout() {
         >
           <button
             type="button"
-            aria-label={collapsed ? '展开侧边栏' : '收起侧边栏'}
-            title={collapsed ? '展开侧边栏' : '收起侧边栏'}
+            aria-label="菜单"
+            title="菜单"
             style={{
               cursor: 'pointer',
               fontSize: 18,
@@ -164,32 +209,36 @@ export default function AppLayout() {
               borderRadius: 8,
               color: 'rgba(0,0,0,0.72)',
             }}
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={() => (isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed))}
           >
-            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            {isMobile ? <MenuOutlined /> : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </button>
-          <div style={{ color: 'rgba(0,0,0,0.48)', fontSize: 12, letterSpacing: '-0.01em' }}>
-            <kbd
-              style={{
-                background: 'rgba(0,0,0,0.06)',
-                borderRadius: 6,
-                padding: '2px 6px',
-                fontSize: 11,
-                fontFamily: 'inherit',
-              }}
-            >
-              ⌘ K
-            </kbd>{' '}
-            快速添加食物
-          </div>
+          {!isMobile && (
+            <div style={{ color: 'rgba(0,0,0,0.48)', fontSize: 12, letterSpacing: '-0.01em' }}>
+              <kbd
+                style={{
+                  background: 'rgba(0,0,0,0.06)',
+                  borderRadius: 6,
+                  padding: '2px 6px',
+                  fontSize: 11,
+                  fontFamily: 'inherit',
+                }}
+              >
+                ⌘ K
+              </kbd>{' '}
+              快速添加食物
+            </div>
+          )}
           <Dropdown menu={{ items: userMenu }} placement="bottomRight">
             <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Avatar size="small" style={{ background: '#0071e3' }}>
                 {profile?.nickname?.[0] ?? 'U'}
               </Avatar>
-              <Typography.Text style={{ color: '#1d1d1f' }}>
-                {profile?.nickname ?? '未登录'}
-              </Typography.Text>
+              {!isMobile && (
+                <Typography.Text style={{ color: '#1d1d1f' }}>
+                  {profile?.nickname ?? '未登录'}
+                </Typography.Text>
+              )}
             </div>
           </Dropdown>
         </Header>

@@ -75,7 +75,7 @@ export default function BodyPage() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 820, margin: '0 auto' }}>
+    <div className="page-container" style={{ maxWidth: 820 }}>
       <Space style={{ marginBottom: 16 }}>
         <Link to="/">
           <ArrowLeftOutlined /> 返回首页

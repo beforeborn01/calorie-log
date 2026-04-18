@@ -79,7 +79,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 1100, margin: '0 auto' }}>
+    <div className="page-container" style={{ maxWidth: 1100 }}>
       <Card
         title="历史饮食记录"
         extra={

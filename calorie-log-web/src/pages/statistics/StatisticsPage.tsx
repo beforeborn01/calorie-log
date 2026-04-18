@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Card, DatePicker, List, Progress, Space, Spin, Statistic, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { Link } from 'react-router-dom';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import {
   getDailyStatistics,
   getDietScore,
@@ -11,6 +12,7 @@ import {
   type DietScore,
   type DietSuggestions,
 } from '../../api/statistics';
+import { chartTheme, tooltipStyle } from '../../components/ChartTheme';
 
 // 遵循 DESIGN.md 单一强调色：蓝 = 中性信息，default = 弱中性；严重度用粗细/标题表达，不用色板
 const STATUS_COLOR: Record<string, string> = {
@@ -34,6 +36,25 @@ export default function StatisticsPage() {
   const [loading, setLoading] = useState(false);
 
   const dateStr = date.format('YYYY-MM-DD');
+
+  const macroPie = useMemo(() => {
+    if (!daily) return [];
+    const p = Number(daily.totalProtein) || 0;
+    const c = Number(daily.totalCarb) || 0;
+    const f = Number(daily.totalFat) || 0;
+    const sum = p + c + f;
+    if (sum <= 0) return [];
+    // 热量占比：蛋白 4 kcal/g，碳水 4 kcal/g，脂肪 9 kcal/g
+    const pk = p * 4;
+    const ck = c * 4;
+    const fk = f * 9;
+    const total = pk + ck + fk || 1;
+    return [
+      { name: '蛋白质', grams: p, kcal: pk, pct: Math.round((pk / total) * 100), fill: chartTheme.primary },
+      { name: '碳水', grams: c, kcal: ck, pct: Math.round((ck / total) * 100), fill: chartTheme.primaryFaded },
+      { name: '脂肪', grams: f, kcal: fk, pct: Math.round((fk / total) * 100), fill: chartTheme.primaryMuted },
+    ];
+  }, [daily]);
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +118,57 @@ export default function StatisticsPage() {
               />
             </Space>
           </Space>
+
+          {macroPie.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginTop: 20 }}>
+              <div style={{ width: 160, height: 160 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={macroPie}
+                      dataKey="kcal"
+                      innerRadius={46}
+                      outerRadius={72}
+                      paddingAngle={2}
+                      stroke="none"
+                    >
+                      {macroPie.map((m) => (
+                        <Cell key={m.name} fill={m.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      formatter={(_v, _n, item: any) =>
+                        [`${item.payload.grams.toFixed(1)} g · ${item.payload.kcal.toFixed(0)} kcal`, item.payload.name]
+                      }
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr', gap: 6 }}>
+                {macroPie.map((m) => (
+                  <div key={m.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span
+                      style={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: 2,
+                        background: m.fill,
+                        display: 'inline-block',
+                      }}
+                    />
+                    <Typography.Text style={{ minWidth: 56 }}>{m.name}</Typography.Text>
+                    <Typography.Text strong style={{ minWidth: 48, textAlign: 'right' }}>
+                      {m.pct}%
+                    </Typography.Text>
+                    <Typography.Text type="secondary">
+                      {m.grams.toFixed(1)} g · {m.kcal.toFixed(0)} kcal
+                    </Typography.Text>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

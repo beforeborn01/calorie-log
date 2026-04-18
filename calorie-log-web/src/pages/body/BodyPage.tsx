@@ -16,7 +16,17 @@ import {
 import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { Link } from 'react-router-dom';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { deleteBodyRecord, getBodyTrend, saveBodyRecord, type BodyTrend } from '../../api/body';
+import { chartTheme, tooltipStyle, axisStyle } from '../../components/ChartTheme';
 
 export default function BodyPage() {
   const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(30, 'day'), dayjs()]);
@@ -85,20 +95,76 @@ export default function BodyPage() {
             title="体重变化"
             value={trend?.weightChange ?? '-'}
             suffix="kg"
-            valueStyle={{
-              color: trend?.weightChange == null ? undefined : trend.weightChange < 0 ? '#3f8600' : '#cf1322',
-            }}
+            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
           />
           <Statistic
             title="体脂率变化"
             value={trend?.bodyFatChange ?? '-'}
             suffix="%"
-            valueStyle={{
-              color: trend?.bodyFatChange == null ? undefined : trend.bodyFatChange < 0 ? '#3f8600' : '#cf1322',
-            }}
+            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
           />
           <Statistic title="记录条数" value={trend?.records.length ?? 0} />
         </Space>
+
+        {trend && trend.records.length > 1 && (
+          <div style={{ height: 240, marginTop: 20 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={trend.records.map((r) => ({
+                  date: r.recordDate.slice(5), // MM-DD
+                  weight: r.weight ?? null,
+                  bodyFat: r.bodyFat ?? null,
+                }))}
+                margin={{ top: 8, right: 16, left: -8, bottom: 0 }}
+              >
+                <CartesianGrid stroke={chartTheme.grid} vertical={false} />
+                <XAxis dataKey="date" tick={axisStyle} tickLine={false} axisLine={false} />
+                <YAxis
+                  yAxisId="w"
+                  tick={axisStyle}
+                  tickLine={false}
+                  axisLine={false}
+                  width={44}
+                  domain={['dataMin - 1', 'dataMax + 1']}
+                  tickFormatter={(v) => `${Number(v).toFixed(1)}`}
+                />
+                <YAxis
+                  yAxisId="bf"
+                  orientation="right"
+                  tick={axisStyle}
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                  domain={['dataMin - 1', 'dataMax + 1']}
+                  tickFormatter={(v) => `${Number(v).toFixed(1)}`}
+                />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: chartTheme.grid }} />
+                <Line
+                  yAxisId="w"
+                  type="monotone"
+                  dataKey="weight"
+                  name="体重 kg"
+                  stroke={chartTheme.primary}
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: chartTheme.primary, strokeWidth: 0 }}
+                  activeDot={{ r: 5 }}
+                  connectNulls
+                />
+                <Line
+                  yAxisId="bf"
+                  type="monotone"
+                  dataKey="bodyFat"
+                  name="体脂 %"
+                  stroke={chartTheme.secondary}
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                  dot={{ r: 2, fill: chartTheme.secondary, strokeWidth: 0 }}
+                  connectNulls
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </Card>
 
       <Card title="历史记录">

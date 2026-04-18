@@ -3,7 +3,17 @@ import { Alert, Card, DatePicker, Space, Statistic, Tabs, Typography } from 'ant
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 import { Link } from 'react-router-dom';
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { getMonthly, getWeekly, type PeriodReport } from '../../api/reports';
+import { chartTheme, tooltipStyle, axisStyle } from '../../components/ChartTheme';
 
 export default function ReportsPage() {
   const [tab, setTab] = useState<'weekly' | 'monthly'>('weekly');
@@ -89,6 +99,62 @@ export default function ReportsPage() {
             )}
           </Typography.Paragraph>
         )}
+
+        {report && report.dailyPoints && report.dailyPoints.length > 1 && (
+          <div style={{ height: 260, marginTop: 16 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={report.dailyPoints.map((p) => ({
+                  date: p.date.slice(5),
+                  calories: p.calories,
+                  dietScore: p.dietScore,
+                }))}
+                margin={{ top: 8, right: 16, left: -8, bottom: 0 }}
+              >
+                <CartesianGrid stroke={chartTheme.grid} vertical={false} />
+                <XAxis dataKey="date" tick={axisStyle} tickLine={false} axisLine={false} />
+                <YAxis
+                  yAxisId="cal"
+                  tick={axisStyle}
+                  tickLine={false}
+                  axisLine={false}
+                  width={46}
+                />
+                <YAxis
+                  yAxisId="score"
+                  orientation="right"
+                  domain={[0, 100]}
+                  tick={axisStyle}
+                  tickLine={false}
+                  axisLine={false}
+                  width={30}
+                />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: chartTheme.grid }} />
+                <Line
+                  yAxisId="cal"
+                  type="monotone"
+                  dataKey="calories"
+                  name="热量 kcal"
+                  stroke={chartTheme.primary}
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: chartTheme.primary, strokeWidth: 0 }}
+                  connectNulls
+                />
+                <Line
+                  yAxisId="score"
+                  type="monotone"
+                  dataKey="dietScore"
+                  name="评分"
+                  stroke={chartTheme.secondary}
+                  strokeWidth={1.5}
+                  strokeDasharray="4 3"
+                  dot={{ r: 2, fill: chartTheme.secondary, strokeWidth: 0 }}
+                  connectNulls
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </Card>
 
       <Card title="体重体脂" style={{ marginBottom: 16 }}>
@@ -97,27 +163,13 @@ export default function ReportsPage() {
             title="体重变化"
             value={report?.weightChange ?? '-'}
             suffix="kg"
-            valueStyle={{
-              color:
-                report?.weightChange == null
-                  ? undefined
-                  : report.weightChange < 0
-                  ? '#3f8600'
-                  : '#cf1322',
-            }}
+            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
           />
           <Statistic
             title="体脂变化"
             value={report?.bodyFatChange ?? '-'}
             suffix="%"
-            valueStyle={{
-              color:
-                report?.bodyFatChange == null
-                  ? undefined
-                  : report.bodyFatChange < 0
-                  ? '#3f8600'
-                  : '#cf1322',
-            }}
+            valueStyle={{ color: '#1d1d1f', fontWeight: 600 }}
           />
           <Statistic title="起始" value={`${report?.weightStart ?? '-'} kg`} />
           <Statistic title="终值" value={`${report?.weightEnd ?? '-'} kg`} />

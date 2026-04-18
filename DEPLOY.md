@@ -5,9 +5,9 @@
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  ECS 公网 IP :80                                      │
+│  ECS 公网 IP :8088                                    │
 │      │                                                │
-│      ▼                                                │
+│      ▼ 宿主 8088 → 容器 80                             │
 │  ┌─────────┐     http://app:8080     ┌─────────────┐  │
 │  │  nginx  │ ──────────────────────► │  spring app │  │
 │  │  (80)   │                         │   (8080)    │  │
@@ -31,7 +31,7 @@
 - **规格**：2 vCPU / 8GB RAM（JVM 默认给 60% 堆 ≈ 4.8GB，够 Spring Boot + postgres + redis + nginx）
 - **磁盘**：40GB 起步（Docker 镜像 ~2GB + postgres 数据）
 - **安全组入方向**：
-  - 80/TCP 开放（给浏览器）
+  - 8088/TCP 开放（给浏览器；默认端口，改端口见 `.env` 的 `WEB_PORT`）
   - 22/TCP 开放（给你 SSH）
   - 其他一律拒绝（postgres 5432 / redis 6379 **不要**开公网）
 
@@ -100,17 +100,13 @@ docker compose -f docker-compose.prod.yml logs -f app
 
 ### 4.1 验证
 ```bash
-# 内部健康检查
-curl -s http://localhost/api/v1/actuator/health
-# 期望：403（从公网访问 /actuator 走 deny 规则）或 200（curl 的是 127.0.0.1）
-
 # 业务接口：发验证码（mock 模式会把 code 写进返回 data）
-curl -s -X POST http://localhost/api/v1/auth/send-code \
+curl -s -X POST http://localhost:8088/api/v1/auth/send-code \
   -H 'Content-Type: application/json' \
   -d '{"identifier":"13900000001","scene":"register"}'
 
 # 浏览器访问：
-# http://<ECS_PUBLIC_IP>
+# http://<ECS_PUBLIC_IP>:8088
 ```
 
 ### 4.2 首次登录
@@ -169,7 +165,7 @@ cat backup-YYYYMMDD.sql | \
 | 浏览器 502 | `docker compose ... logs app`，通常是 app 还没起好 |
 | 登录 401 / JWT 相关错误 | `.env` 的 `JWT_SECRET` 是否 ≥64 字符 |
 | 数据库连接失败 | `POSTGRES_PASSWORD` 是否改了但 postgres 数据卷还是旧密码 → `down -v` 重来（会丢数据） |
-| 公网访问不了 | 安全组 80 端口是否开；`curl http://localhost` 本机能否通 |
+| 公网访问不了 | 安全组 8088 端口是否开；`curl http://localhost:8088` 本机能否通 |
 | 前端空白 | nginx 镜像是否成功构建（首次 `--build`）；`docker compose ... logs nginx` |
 | 文件上传 413 | `client_max_body_size` 已设 10M；若还要大，改 `calorie-log-web/nginx.conf` |
 

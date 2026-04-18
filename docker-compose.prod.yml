@@ -105,7 +105,8 @@ services:
     image: calorie-log-web:latest
     restart: unless-stopped
     ports:
-      - "80:80"
+      # 宿主 8088 → 容器 80（nginx 内部监听仍是 80）
+      - "${WEB_PORT:-8088}:80"
     depends_on:
       - app
     healthcheck:

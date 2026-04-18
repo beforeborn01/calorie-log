@@ -1,0 +1,119 @@
+# 食养记 - 生产部署 docker-compose
+#
+# 与 docker-compose.yml 的差异：
+#   - postgres / redis 不暴露主机端口（仅 docker 内网互访）
+#   - app 不暴露 8080（只有 nginx 能访问）
+#   - 新增 nginx 服务（托管前端 + /api 反代）暴露 80
+#   - SPRING_PROFILES_ACTIVE=prod（关 Swagger、WARN 日志）
+#   - 必填密钥用 ${VAR:?required} 强校验，缺省启动即失败
+#
+# 使用：
+#   cp .env.prod.example .env
+#   # 修改 .env 里的 POSTGRES_PASSWORD / REDIS_PASSWORD / JWT_SECRET
+#   docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+#   docker compose -f docker-compose.prod.yml logs -f app nginx
+#
+#   浏览器访问：http://<ECS 公网 IP>
+
+services:
+  # ------- PostgreSQL 16 -------
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-calorie_log_db}
+      POSTGRES_USER: ${POSTGRES_USER:-calorie_log}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD required}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-calorie_log} -d ${POSTGRES_DB:-calorie_log_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # 不映射端口到宿主：仅 docker 内网访问
+
+  # ------- Redis 7 -------
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # REDIS_PASSWORD 非空则启用 requirepass
+    command: >
+      sh -c 'if [ -n "$$REDIS_PASSWORD" ]; then
+               exec redis-server --requirepass "$$REDIS_PASSWORD";
+             else
+               exec redis-server;
+             fi'
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ------- 后端 Spring Boot -------
+  app:
+    build:
+      context: ./calorie-log-server
+      dockerfile: Dockerfile
+    image: calorie-log-server:latest
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: >-
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=60.0
+        -XX:InitialRAMPercentage=30.0
+        -XX:+UseG1GC
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-calorie_log_db}
+      DB_USER: ${POSTGRES_USER:-calorie_log}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET required (>= 64 chars, use `openssl rand -base64 64`)}
+      # 可选集成（未配则走 Mock）
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+      VOLC_ACCESS_KEY_ID: ${VOLC_ACCESS_KEY_ID:-}
+      VOLC_ACCESS_KEY_SECRET: ${VOLC_ACCESS_KEY_SECRET:-}
+      VOLC_SMS_SIGN_NAME: ${VOLC_SMS_SIGN_NAME:-}
+      VOLC_SMS_TEMPLATE_ID: ${VOLC_SMS_TEMPLATE_ID:-}
+      BAIDU_AI_API_KEY: ${BAIDU_AI_API_KEY:-}
+      BAIDU_AI_SECRET_KEY: ${BAIDU_AI_SECRET_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    # 不映射端口：只允许 nginx 访问
+
+  # ------- Nginx（静态站 + /api 反代） -------
+  nginx:
+    build:
+      context: ./calorie-log-web
+      dockerfile: Dockerfile
+    image: calorie-log-web:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
+  redis-data:

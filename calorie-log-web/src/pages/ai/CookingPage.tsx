@@ -1,15 +1,8 @@
 import { useState } from 'react';
 import {
   Alert,
-  Button,
-  Card,
   Checkbox,
-  Empty,
   Input,
-  List,
-  Space,
-  Tag,
-  Typography,
   message,
 } from 'antd';
 import { ArrowLeftOutlined, HeartFilled, HeartOutlined, SearchOutlined } from '@ant-design/icons';
@@ -20,6 +13,7 @@ import {
   type CookingMethod,
   type CookingSuggestionResponse,
 } from '../../api/ai';
+import { Chip, PaperCard, SketchButton } from '../../components/sketch';
 
 const GOAL_LABEL: Record<string, string> = { bulk: '增肌', cut: '减脂', general: '均衡' };
 const TAG_LABEL: Record<string, string> = { quick: '快手', low_oil: '低油', no_smoke: '无油烟' };
@@ -57,29 +51,50 @@ export default function CookingPage() {
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Link to="/">
+    <div style={{ maxWidth: 820, margin: '0 auto', padding: 24 }}>
+      <div style={{ marginBottom: 8 }}>
+        <Link className="hand accent" to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          marginBottom: 16,
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <div>
+          <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>COOKING · 烹饪</div>
+          <h1 className="display" style={{ fontSize: 36, margin: '4px 0 0' }}>
+            <span className="scribble-u">烹饪推荐</span>
+          </h1>
+        </div>
         <Link to="/favorites">
-          <Button icon={<HeartOutlined />}>我的收藏</Button>
+          <SketchButton>
+            <HeartOutlined style={{ marginRight: 4 }} />我的收藏
+          </SketchButton>
         </Link>
-      </Space>
+      </div>
 
-      <Card title="烹饪方法推荐">
-        <Space.Compact style={{ width: '100%' }}>
+      <PaperCard style={{ marginBottom: 16 }}>
+        <h3 className="display" style={{ fontSize: 22, margin: '0 0 12px' }}>输入食材</h3>
+        <div style={{ display: 'flex', gap: 8 }}>
           <Input
             placeholder="食材名称，如 鸡胸肉 / 三文鱼 / 西兰花"
             value={foodName}
             onChange={(e) => setFoodName(e.target.value)}
             onPressEnter={onSubmit}
             maxLength={50}
+            style={{ flex: 1 }}
           />
-          <Button type="primary" icon={<SearchOutlined />} loading={loading} onClick={onSubmit}>
-            生成推荐
-          </Button>
-        </Space.Compact>
+          <SketchButton primary onClick={onSubmit} disabled={loading} style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>
+            <SearchOutlined style={{ marginRight: 4 }} />{loading ? '生成中…' : '生成推荐'}
+          </SketchButton>
+        </div>
         <Checkbox.Group
           options={[
             { label: '快手', value: 'quick' },
@@ -90,75 +105,78 @@ export default function CookingPage() {
           onChange={(v) => setPrefs(v as string[])}
           style={{ marginTop: 12 }}
         />
-      </Card>
+      </PaperCard>
 
       {data && (
-        <Card
-          title={
-            <Space>
-              <span>推荐结果</span>
-              <Tag color="blue">适配目标：{GOAL_LABEL[data.goalType] ?? data.goalType}</Tag>
-              {data.fromCache && <Tag>缓存</Tag>}
-              {!data.llmGenerated && <Tag>静态兜底</Tag>}
-            </Space>
-          }
-          style={{ marginTop: 16 }}
-        >
+        <PaperCard>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 16 }}>
+            <h3 className="display" style={{ fontSize: 22, margin: 0 }}>推荐结果</h3>
+            <Chip color="var(--accent-soft)">适配目标：{GOAL_LABEL[data.goalType] ?? data.goalType}</Chip>
+            {data.fromCache && <Chip color="var(--paper-2)">缓存</Chip>}
+            {!data.llmGenerated && <Chip color="var(--paper-2)">静态兜底</Chip>}
+          </div>
+
           {data.methods.length === 0 ? (
-            <Empty description="暂无建议，换个食材或调整偏好" />
+            <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <div className="display" style={{ fontSize: 36, color: 'var(--ink-faint)' }}>暂无</div>
+              <div className="hand ink-soft" style={{ marginTop: 6 }}>换个食材或调整偏好试试</div>
+            </div>
           ) : (
-            <List
-              dataSource={data.methods}
-              renderItem={(m) => (
-                <List.Item
+            <div>
+              {data.methods.map((m) => (
+                <div
                   key={m.name}
-                  actions={[
-                    savedNames.has(m.name) ? (
-                      <Button key="saved" icon={<HeartFilled />} disabled>
-                        已收藏
-                      </Button>
-                    ) : (
-                      <Button key="save" icon={<HeartOutlined />} onClick={() => onSave(m)}>
-                        收藏
-                      </Button>
-                    ),
-                  ]}
+                  style={{
+                    padding: '14px 0',
+                    borderTop: '1px dashed rgba(0,0,0,0.1)',
+                  }}
                 >
-                  <List.Item.Meta
-                    title={
-                      <Space wrap>
-                        <Typography.Text strong>{m.name}</Typography.Text>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 6 }}>
+                        <span className="hand" style={{ fontWeight: 700, fontSize: 16 }}>{m.name}</span>
                         {m.fitGoals.map((g) => (
-                          <Tag key={g} color="blue">
-                            {GOAL_LABEL[g] ?? g}
-                          </Tag>
+                          <Chip key={g} color="var(--accent-soft)">{GOAL_LABEL[g] ?? g}</Chip>
                         ))}
                         {m.tags.map((t) => (
-                          <Tag key={t}>{TAG_LABEL[t] ?? t}</Tag>
+                          <Chip key={t} color="var(--paper-2)">{TAG_LABEL[t] ?? t}</Chip>
                         ))}
-                      </Space>
-                    }
-                    description={
-                      <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-                        <Typography.Text type="secondary">{m.advantages}</Typography.Text>
-                        <Space size="small" wrap>
-                          <Tag>约 {Number(m.caloriesPer100g).toFixed(0)} kcal/100g</Tag>
-                          <Tag>用油 {Number(m.oilPerServingG).toFixed(1)} g</Tag>
-                          <Tag>{m.durationMinutes} 分钟</Tag>
-                        </Space>
-                        <ol style={{ paddingLeft: 20, marginBottom: 0 }}>
-                          {m.steps.map((s, i) => (
-                            <li key={i}>{s}</li>
-                          ))}
-                        </ol>
-                      </Space>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
+                      </div>
+                      <div className="hand ink-soft" style={{ fontSize: 14 }}>{m.advantages}</div>
+                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+                        <span className="mono ink-soft" style={{ fontSize: 12 }}>
+                          约 {Number(m.caloriesPer100g).toFixed(0)} kcal/100g
+                        </span>
+                        <span className="mono ink-soft" style={{ fontSize: 12 }}>
+                          用油 {Number(m.oilPerServingG).toFixed(1)} g
+                        </span>
+                        <span className="mono ink-soft" style={{ fontSize: 12 }}>
+                          {m.durationMinutes} 分钟
+                        </span>
+                      </div>
+                      <ol className="hand" style={{ paddingLeft: 20, marginTop: 10, marginBottom: 0, fontSize: 14 }}>
+                        {m.steps.map((s, i) => (
+                          <li key={i} style={{ marginBottom: 4 }}>{s}</li>
+                        ))}
+                      </ol>
+                    </div>
+                    <div>
+                      {savedNames.has(m.name) ? (
+                        <SketchButton size="sm" disabled>
+                          <HeartFilled style={{ marginRight: 4, color: 'var(--accent)' }} />已收藏
+                        </SketchButton>
+                      ) : (
+                        <SketchButton size="sm" onClick={() => onSave(m)}>
+                          <HeartOutlined style={{ marginRight: 4 }} />收藏
+                        </SketchButton>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </Card>
+        </PaperCard>
       )}
 
       {!data && (
@@ -166,7 +184,7 @@ export default function CookingPage() {
           style={{ marginTop: 16 }}
           type="info"
           showIcon
-          title="说明"
+          message="说明"
           description="推荐会结合你当前的健身目标（增肌/减脂/均衡）给出差异化建议。开发环境使用静态兜底数据；生产环境会走 LLM (豆包) 生成。"
         />
       )}

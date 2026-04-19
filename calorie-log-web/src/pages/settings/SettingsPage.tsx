@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Card, Form, Input, Select, Space, Switch, TimePicker, Typography, message } from 'antd';
+import { Form, Input, Select, Switch, TimePicker, message } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
@@ -9,6 +9,7 @@ import {
   saveNotificationSetting,
   type NotificationSetting,
 } from '../../api/settings';
+import { PaperCard, SketchButton } from '../../components/sketch';
 
 export default function SettingsPage() {
   const [setting, setSetting] = useState<NotificationSetting | null>(null);
@@ -53,60 +54,78 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Link to="/">
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: 24 }}>
+      <div style={{ marginBottom: 8 }}>
+        <Link className="hand accent" to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
-      </Space>
+      </div>
+      <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>SETTINGS · 设置</div>
+      <h1 className="display" style={{ fontSize: 40, margin: '4px 0 24px' }}>
+        <span className="scribble-u">偏好设置</span>
+      </h1>
 
-      <Card title="三餐提醒" style={{ marginBottom: 16 }} loading={!setting}>
-        <Form form={form} layout="vertical">
-          {(['breakfast', 'lunch', 'dinner'] as const).map((meal) => {
-            const label = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐' }[meal];
-            return (
-              <Space key={meal} style={{ display: 'flex', marginBottom: 8 }}>
-                <Form.Item name={`${meal}Enabled`} valuePropName="checked" style={{ margin: 0 }}>
-                  <Switch />
-                </Form.Item>
-                <Typography.Text style={{ minWidth: 40 }}>{label}</Typography.Text>
-                <Form.Item name={`${meal}Time`} style={{ margin: 0 }}>
-                  <TimePicker format="HH:mm" />
-                </Form.Item>
-              </Space>
-            );
-          })}
-          <Form.Item name="frequency" label="频率">
-            <Select
-              options={[
-                { value: 'daily', label: '每天' },
-                { value: 'weekday', label: '仅工作日' },
-                { value: 'weekend', label: '仅周末' },
-              ]}
-              style={{ width: 160 }}
-            />
-          </Form.Item>
-          <Button type="primary" onClick={onSaveNotification}>
-            保存通知设置
-          </Button>
-        </Form>
-      </Card>
+      <PaperCard style={{ marginBottom: 16 }}>
+        <h3 className="display" style={{ fontSize: 22, margin: '0 0 16px' }}>三餐提醒</h3>
+        {!setting ? (
+          <div className="hand ink-faint" style={{ padding: '12px 0' }}>加载中…</div>
+        ) : (
+          <Form form={form} layout="vertical">
+            {(['breakfast', 'lunch', 'dinner'] as const).map((meal) => {
+              const label = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐' }[meal];
+              return (
+                <div
+                  key={meal}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    padding: '8px 0',
+                  }}
+                >
+                  <Form.Item name={`${meal}Enabled`} valuePropName="checked" style={{ margin: 0 }}>
+                    <Switch />
+                  </Form.Item>
+                  <span className="hand" style={{ minWidth: 48, fontWeight: 700 }}>{label}</span>
+                  <Form.Item name={`${meal}Time`} style={{ margin: 0 }}>
+                    <TimePicker format="HH:mm" />
+                  </Form.Item>
+                </div>
+              );
+            })}
+            <Form.Item name="frequency" label={<span className="hand">频率</span>} style={{ marginTop: 16 }}>
+              <Select
+                options={[
+                  { value: 'daily', label: '每天' },
+                  { value: 'weekday', label: '仅工作日' },
+                  { value: 'weekend', label: '仅周末' },
+                ]}
+                style={{ width: 200 }}
+              />
+            </Form.Item>
+            <SketchButton primary onClick={onSaveNotification}>
+              保存通知设置
+            </SketchButton>
+          </Form>
+        )}
+      </PaperCard>
 
-      <Card title="修改密码">
+      <PaperCard>
+        <h3 className="display" style={{ fontSize: 22, margin: '0 0 16px' }}>修改密码</h3>
         <Form form={pwdForm} layout="vertical" style={{ maxWidth: 400 }}>
-          <Form.Item name="oldPassword" label="原密码" rules={[{ required: true }]}>
+          <Form.Item name="oldPassword" label={<span className="hand">原密码</span>} rules={[{ required: true }]}>
             <Input.Password />
           </Form.Item>
           <Form.Item
             name="newPassword"
-            label="新密码"
+            label={<span className="hand">新密码</span>}
             rules={[{ required: true, min: 8, max: 32, message: '密码长度 8~32 位' }]}
           >
             <Input.Password />
           </Form.Item>
           <Form.Item
             name="confirmPassword"
-            label="确认新密码"
+            label={<span className="hand">确认新密码</span>}
             dependencies={['newPassword']}
             rules={[
               { required: true },
@@ -120,14 +139,14 @@ export default function SettingsPage() {
           >
             <Input.Password />
           </Form.Item>
-          <Button type="primary" onClick={onChangePwd}>
+          <SketchButton primary onClick={onChangePwd}>
             修改密码
-          </Button>
-          <Typography.Paragraph type="secondary" style={{ marginTop: 8 }}>
+          </SketchButton>
+          <p className="hand ink-soft" style={{ marginTop: 12, fontSize: 13 }}>
             修改成功后所有登录态失效，需要用新密码重新登录。
-          </Typography.Paragraph>
+          </p>
         </Form>
-      </Card>
+      </PaperCard>
     </div>
   );
 }

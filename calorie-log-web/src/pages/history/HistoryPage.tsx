@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, DatePicker, Space, Statistic, Table, Tag, Typography, message } from 'antd';
 import { DownloadOutlined, PlusOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
-import { useNavigate } from 'react-router-dom';
 import { getDailyRecords } from '../../api/record';
 import apiClient from '../../api/client';
+import { FOOD_ADDED_EVENT, useAddFoodStore } from '../../store/addFood';
 import type { DietRecord } from '../../types';
 
 const MEAL_LABEL: Record<number, string> = { 1: '早餐', 2: '午餐', 3: '晚餐', 4: '加餐' };
@@ -14,7 +14,7 @@ interface Row extends DietRecord {
 }
 
 export default function HistoryPage() {
-  const navigate = useNavigate();
+  const openAddFood = useAddFoodStore((s) => s.openModal);
   const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(6, 'day'), dayjs()]);
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -49,6 +49,19 @@ export default function HistoryPage() {
 
   // 手动刷新按钮沿用同一 effect：改 range 引用触发
   const reload = () => setRange([range[0], range[1]]);
+
+  useEffect(() => {
+    const onAdded = (e: Event) => {
+      const detail = (e as CustomEvent<{ date: string }>).detail;
+      if (!detail?.date) return;
+      const d = dayjs(detail.date);
+      if (d.isBefore(range[0], 'day') || d.isAfter(range[1], 'day')) return;
+      reload();
+    };
+    window.addEventListener(FOOD_ADDED_EVENT, onAdded);
+    return () => window.removeEventListener(FOOD_ADDED_EVENT, onAdded);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range]);
 
   const stats = useMemo(() => {
     const total = rows.length;
@@ -96,9 +109,7 @@ export default function HistoryPage() {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() =>
-                navigate(`/food/add?date=${dayjs().format('YYYY-MM-DD')}&meal=1`)
-              }
+              onClick={() => openAddFood(dayjs().format('YYYY-MM-DD'), 1)}
             >
               添加<span className="hide-on-mobile">（Ctrl/⌘ + K）</span>
             </Button>

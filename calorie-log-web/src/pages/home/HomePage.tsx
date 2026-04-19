@@ -2,15 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, DatePicker, Modal, Progress, Space, Tag, Typography, message } from 'antd';
 import { CrownOutlined, DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
-import { Link, useNavigate } from 'react-router-dom';
 import { deleteRecord, getDailyRecords, updateRecord } from '../../api/record';
 import { getExperience, type Experience } from '../../api/social';
+import { FOOD_ADDED_EVENT, useAddFoodStore } from '../../store/addFood';
 import type { DailyRecords, DietRecord } from '../../types';
 
 const MEAL_LABELS: Record<number, string> = { 1: '早餐', 2: '午餐', 3: '晚餐', 4: '加餐' };
 
 export default function HomePage() {
-  const navigate = useNavigate();
+  const openAddFood = useAddFoodStore((s) => s.openModal);
   const [date, setDate] = useState<Dayjs>(dayjs());
   const [daily, setDaily] = useState<DailyRecords | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,6 +33,17 @@ export default function HomePage() {
     return () => {
       cancelled = true;
     };
+  }, [dateStr]);
+
+  useEffect(() => {
+    const onAdded = (e: Event) => {
+      const detail = (e as CustomEvent<{ date: string }>).detail;
+      if (detail?.date !== dateStr) return;
+      getDailyRecords(dateStr).then(setDaily).catch(() => undefined);
+      getExperience().then(setExperience).catch(() => undefined);
+    };
+    window.addEventListener(FOOD_ADDED_EVENT, onAdded);
+    return () => window.removeEventListener(FOOD_ADDED_EVENT, onAdded);
   }, [dateStr]);
 
   const caloriesPct = useMemo(() => {
@@ -89,11 +100,9 @@ export default function HomePage() {
       size="small"
       title={MEAL_LABELS[type]}
       extra={
-        <Link to={`/food/add?date=${dateStr}&meal=${type}`}>
-          <Button type="link" icon={<PlusOutlined />}>
-            添加
-          </Button>
-        </Link>
+        <Button type="link" icon={<PlusOutlined />} onClick={() => openAddFood(dateStr, type)}>
+          添加
+        </Button>
       }
       style={{ marginBottom: 12 }}
     >
@@ -152,7 +161,7 @@ export default function HomePage() {
         <Button
           type="primary"
           icon={<PlusOutlined />}
-          onClick={() => navigate(`/food/add?date=${dateStr}&meal=1`)}
+          onClick={() => openAddFood(dateStr, 1)}
         >
           添加食物<span className="hide-on-mobile">（Ctrl/⌘ + K）</span>
         </Button>

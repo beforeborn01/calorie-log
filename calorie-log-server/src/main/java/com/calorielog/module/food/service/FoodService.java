@@ -93,6 +93,18 @@ public class FoodService {
         f.setDataSource("user");
         f.setCreatedBy(userId);
         foodMapper.insert(f);
+        invalidateSearchCache(userId);
         return FoodResponse.of(f);
+    }
+
+    private void invalidateSearchCache(Long userId) {
+        try {
+            var keys = redis.keys(FOOD_SEARCH_CACHE + userId + ":*");
+            if (keys != null && !keys.isEmpty()) {
+                redis.delete(keys);
+            }
+        } catch (Exception ex) {
+            log.warn("food search cache invalidate failed for user {}: {}", userId, ex.getMessage());
+        }
     }
 }

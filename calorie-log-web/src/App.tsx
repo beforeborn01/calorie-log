@@ -100,11 +100,10 @@ import ScrollToTop from './components/ScrollToTop';
 import { useAuthStore } from './store/auth';
 import { tokenStore } from './api/client';
 
-// 热页面保留同步：首页、个人中心、Profile Setup、AddFood
+// 热页面保留同步：首页、个人中心、Profile Setup（添加食物改为弹窗，挂在 AppLayout）
 import HomePage from './pages/home/HomePage';
 import ProfilePage from './pages/profile/ProfilePage';
 import ProfileSetupPage from './pages/profile/ProfileSetupPage';
-import AddFoodPage from './pages/food/AddFoodPage';
 
 // 重页面按需懒加载
 const HistoryPage = lazy(() => import('./pages/history/HistoryPage'));
@@ -168,7 +167,6 @@ function App() {
               >
                 <Route path="/" element={<HomePage />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/food/add" element={<AddFoodPage />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/goal" element={<GoalSetupPage />} />
                 <Route path="/statistics" element={<StatisticsPage />} />

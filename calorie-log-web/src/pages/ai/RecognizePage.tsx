@@ -14,9 +14,10 @@ import {
 } from 'antd';
 import { ArrowLeftOutlined, CameraOutlined, UploadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { recognizeFood, type RecognizeResponse } from '../../api/ai';
 import { createRecord } from '../../api/record';
+import { useAddFoodStore } from '../../store/addFood';
 
 const MEAL_OPTIONS = [
   { label: '早餐', value: 1 },
@@ -28,7 +29,7 @@ const MEAL_OPTIONS = [
 const MAX_BYTES = 2 * 1024 * 1024;
 
 export default function RecognizePage() {
-  const navigate = useNavigate();
+  const openAddFood = useAddFoodStore((s) => s.openModal);
   const [params] = useSearchParams();
   const initialDate = params.get('date') || dayjs().format('YYYY-MM-DD');
   const initialMeal = Number(params.get('meal') ?? 1) as 1 | 2 | 3 | 4;
@@ -104,7 +105,7 @@ export default function RecognizePage() {
         <Link to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
-        <Button icon={<CameraOutlined />} onClick={() => navigate(`/food/add?date=${initialDate}&meal=${mealType}`)}>
+        <Button icon={<CameraOutlined />} onClick={() => openAddFood(initialDate, mealType)}>
           改用搜索录入
         </Button>
       </Space>

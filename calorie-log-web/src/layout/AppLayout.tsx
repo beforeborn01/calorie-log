@@ -25,6 +25,8 @@ import dayjs from 'dayjs';
 import { logout } from '../api/auth';
 import { apiGet } from '../api/client';
 import { useAuthStore } from '../store/auth';
+import { useAddFoodStore } from '../store/addFood';
+import AddFoodModal from '../components/AddFoodModal';
 import type { UserProfile } from '../types';
 
 const { Sider, Header, Content } = Layout;
@@ -77,17 +79,17 @@ export default function AppLayout() {
     }
   }, [profile, setProfile]);
 
-  // Ctrl/Cmd + K 快捷键：跳到添加食物
+  // Ctrl/Cmd + K 快捷键：打开添加食物弹窗（默认今天 · 早餐）
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        navigate(`/food/add?date=${dayjs().format('YYYY-MM-DD')}&meal=1`);
+        useAddFoodStore.getState().openModal(dayjs().format('YYYY-MM-DD'), 1);
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [navigate]);
+  }, []);
 
   const selectedKey = useMemo(() => {
     const hit = NAV.find((n) => (n.path === '/' ? location.pathname === '/' : location.pathname.startsWith(n.path)));
@@ -245,6 +247,7 @@ export default function AppLayout() {
           <Outlet />
         </Content>
       </Layout>
+      <AddFoodModal />
     </Layout>
   );
 }

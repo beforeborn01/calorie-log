@@ -1,96 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { ConfigProvider, Spin, theme } from 'antd';
+import { ConfigProvider, Spin } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
-
-// 遵循 calorie-log-web/DESIGN.md
-const designTheme = {
-  token: {
-    colorPrimary: '#0071e3',
-    colorInfo: '#0071e3',
-    colorLink: '#0066cc',
-    colorLinkHover: '#0066cc',
-    colorLinkActive: '#0066cc',
-    colorText: '#1d1d1f',
-    colorTextSecondary: 'rgba(0, 0, 0, 0.56)',
-    colorTextTertiary: 'rgba(0, 0, 0, 0.4)',
-    colorBgLayout: '#f5f5f7',
-    colorBgContainer: '#ffffff',
-    colorBorder: 'rgba(0, 0, 0, 0.08)',
-    colorBorderSecondary: 'rgba(0, 0, 0, 0.06)',
-    borderRadius: 12,
-    borderRadiusLG: 14,
-    borderRadiusSM: 8,
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Helvetica Neue", Helvetica, Arial, "Microsoft YaHei", sans-serif',
-    fontSize: 15,
-    fontSizeHeading1: 34,
-    fontSizeHeading2: 24,
-    fontSizeHeading3: 20,
-    lineHeight: 1.47,
-    boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 2px 14px rgba(0,0,0,0.04)',
-    boxShadowSecondary: '0 1px 2px rgba(0,0,0,0.04), 0 2px 10px rgba(0,0,0,0.03)',
-    controlHeight: 36,
-    controlHeightLG: 42,
-  },
-  algorithm: theme.defaultAlgorithm,
-  components: {
-    Button: {
-      borderRadius: 8,
-      borderRadiusLG: 10,
-      controlHeight: 36,
-      fontWeight: 500,
-    },
-    Layout: {
-      headerBg: 'rgba(255, 255, 255, 0.8)',
-      bodyBg: '#f5f5f7',
-      siderBg: '#ffffff',
-    },
-    Menu: {
-      itemBg: 'transparent',
-      itemSelectedBg: 'rgba(0, 113, 227, 0.08)',
-      itemSelectedColor: '#0071e3',
-      itemHoverBg: 'rgba(0, 0, 0, 0.04)',
-      itemBorderRadius: 8,
-      itemMarginInline: 8,
-    },
-    Card: {
-      borderRadiusLG: 14,
-      boxShadowTertiary: '0 1px 2px rgba(0,0,0,0.04), 0 2px 14px rgba(0,0,0,0.04)',
-    },
-    Table: {
-      headerBg: '#f7f7f9',
-      headerColor: 'rgba(0,0,0,0.56)',
-      borderColor: 'rgba(0, 0, 0, 0.06)',
-    },
-    Tag: {
-      defaultBg: 'rgba(0, 0, 0, 0.04)',
-      defaultColor: 'rgba(0, 0, 0, 0.72)',
-    },
-    Progress: {
-      defaultColor: '#0071e3',
-    },
-    Statistic: {
-      titleFontSize: 13,
-    },
-    Input: {
-      borderRadius: 10,
-      controlHeight: 38,
-    },
-    InputNumber: {
-      borderRadius: 10,
-      controlHeight: 38,
-    },
-    Select: {
-      borderRadius: 10,
-      controlHeight: 38,
-    },
-    DatePicker: {
-      borderRadius: 10,
-      controlHeight: 38,
-    },
-  },
-};
+import { antdTheme } from './theme/antd-theme';
+import { SketchFilters } from './components/sketch/SketchBox';
 import AppLayout from './layout/AppLayout';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -141,7 +54,8 @@ function PageFallback() {
 
 function App() {
   return (
-    <ConfigProvider locale={zhCN} theme={designTheme}>
+    <ConfigProvider locale={zhCN} theme={antdTheme}>
+      <SketchFilters />
       <ErrorBoundary>
         <BrowserRouter>
           <ScrollToTop />

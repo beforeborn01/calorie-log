@@ -131,16 +131,15 @@ export default function AppLayout() {
 
   const brand = (compact: boolean) => (
     <div
+      className="display"
       style={{
         height: 64,
         display: 'flex',
         alignItems: 'center',
         justifyContent: compact ? 'center' : 'flex-start',
         padding: compact ? 0 : '0 20px',
-        fontWeight: 600,
-        fontSize: 17,
-        letterSpacing: '-0.01em',
-        color: '#1d1d1f',
+        fontSize: compact ? 22 : 22,
+        color: 'var(--ink)',
       }}
     >
       {compact ? '🥗' : '🥗 食养记'}
@@ -160,8 +159,8 @@ export default function AppLayout() {
           breakpoint="lg"
           collapsedWidth={72}
           style={{
-            borderRight: '1px solid rgba(0,0,0,0.06)',
-            background: '#ffffff',
+            borderRight: '1.5px dashed rgba(0,0,0,0.12)',
+            background: 'var(--paper)',
           }}
         >
           {brand(collapsed)}
@@ -174,7 +173,7 @@ export default function AppLayout() {
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           closable={false}
-          styles={{ wrapper: { width: 260 }, body: { padding: 0 }, header: { display: 'none' } }}
+          styles={{ wrapper: { width: 260 }, body: { padding: 0, background: 'var(--paper)' }, header: { display: 'none' } }}
         >
           {brand(false)}
           {menuEl}
@@ -188,10 +187,8 @@ export default function AppLayout() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: 'rgba(255,255,255,0.8)',
-            backdropFilter: 'saturate(180%) blur(20px)',
-            WebkitBackdropFilter: 'saturate(180%) blur(20px)',
-            borderBottom: '1px solid rgba(0,0,0,0.06)',
+            background: 'rgba(250,247,241,0.9)',
+            borderBottom: '1.5px dashed rgba(0,0,0,0.12)',
             position: 'sticky',
             top: 0,
             zIndex: 10,
@@ -208,21 +205,21 @@ export default function AppLayout() {
               border: 'none',
               padding: 6,
               borderRadius: 8,
-              color: 'rgba(0,0,0,0.72)',
+              color: 'var(--ink-soft)',
             }}
             onClick={() => (isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed))}
           >
             {isMobile ? <MenuOutlined /> : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </button>
           {!isMobile && (
-            <div style={{ color: 'rgba(0,0,0,0.48)', fontSize: 12, letterSpacing: '-0.01em' }}>
+            <div className="hand ink-soft" style={{ fontSize: 13 }}>
               <kbd
+                className="mono"
                 style={{
-                  background: 'rgba(0,0,0,0.06)',
+                  background: 'var(--paper-2)',
                   borderRadius: 6,
                   padding: '2px 6px',
                   fontSize: 11,
-                  fontFamily: 'inherit',
                 }}
               >
                 ⌘ K
@@ -232,18 +229,18 @@ export default function AppLayout() {
           )}
           <Dropdown menu={{ items: userMenu }} placement="bottomRight">
             <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Avatar size="small" style={{ background: '#0071e3' }}>
+              <Avatar size="small" style={{ background: 'var(--accent)' }}>
                 {profile?.nickname?.[0] ?? 'U'}
               </Avatar>
               {!isMobile && (
-                <Typography.Text style={{ color: '#1d1d1f' }}>
+                <Typography.Text className="hand" style={{ color: 'var(--ink)' }}>
                   {profile?.nickname ?? '未登录'}
                 </Typography.Text>
               )}
             </div>
           </Dropdown>
         </Header>
-        <Content style={{ background: '#f5f5f7' }}>
+        <Content style={{ background: 'var(--paper)' }}>
           <Outlet />
         </Content>
       </Layout>

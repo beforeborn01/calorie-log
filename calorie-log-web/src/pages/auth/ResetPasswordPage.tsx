@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Button, Card, Form, Input, Space, message } from 'antd';
+import { Form, Input, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiPost } from '../../api/client';
 import { resetPassword } from '../../api/settings';
+import { PaperCard, SketchButton } from '../../components/sketch';
 
 export default function ResetPasswordPage() {
   const nav = useNavigate();
@@ -32,35 +33,54 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '80px auto', padding: 16 }}>
-      <Card title="忘记密码 · 重置">
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--paper)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <PaperCard style={{ width: 420, padding: 32 }}>
+        <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2, marginBottom: 8 }}>
+          RECOVER · 找回
+        </div>
+        <h1 className="display" style={{ fontSize: 40, lineHeight: 1.05, margin: '0 0 8px' }}>
+          <span className="scribble-u">重置密码</span>
+        </h1>
+        <p className="hand ink-soft" style={{ marginBottom: 20 }}>用验证码替换旧密码</p>
+
         <Form form={form} layout="vertical">
-          <Form.Item name="identifier" label="手机号/邮箱" rules={[{ required: true }]}>
+          <Form.Item name="identifier" label={<span className="hand">手机号/邮箱</span>} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="verifyCode" label="验证码" rules={[{ required: true }]}>
-            <Space.Compact style={{ width: '100%' }}>
-              <Input />
-              <Button onClick={sendCode} loading={sending}>
-                发送
-              </Button>
-            </Space.Compact>
+          <Form.Item label={<span className="hand">验证码</span>} required>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Form.Item name="verifyCode" noStyle rules={[{ required: true }]}>
+                <Input placeholder="6 位验证码" style={{ flex: 1 }} />
+              </Form.Item>
+              <SketchButton onClick={sendCode} disabled={sending} style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>
+                {sending ? '发送中…' : '发送验证码'}
+              </SketchButton>
+            </div>
           </Form.Item>
           <Form.Item
             name="newPassword"
-            label="新密码"
-            rules={[{ required: true, min: 8, max: 32 }]}
+            label={<span className="hand">新密码</span>}
+            rules={[{ required: true, min: 8, max: 32, message: '密码长度 8~32 位' }]}
           >
             <Input.Password />
           </Form.Item>
-          <Button type="primary" block onClick={onSubmit}>
+          <SketchButton primary size="lg" onClick={onSubmit} style={{ width: '100%', marginTop: 4 }}>
             重置密码
-          </Button>
-          <div style={{ marginTop: 12, textAlign: 'center' }}>
-            <Link to="/login">返回登录</Link>
+          </SketchButton>
+          <div style={{ marginTop: 20, textAlign: 'center' }}>
+            <Link className="hand accent" to="/login">返回登录</Link>
           </div>
         </Form>
-      </Card>
+      </PaperCard>
     </div>
   );
 }

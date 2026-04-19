@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react';
 import {
-  Button,
-  Card,
   DatePicker,
-  Empty,
   Form,
   InputNumber,
-  List,
   Modal,
-  Space,
-  Statistic,
-  Typography,
   message,
 } from 'antd';
 import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -27,6 +20,19 @@ import {
 } from 'recharts';
 import { deleteBodyRecord, getBodyTrend, saveBodyRecord, type BodyTrend } from '../../api/body';
 import { chartTheme, tooltipStyle, axisStyle } from '../../components/ChartTheme';
+import { PaperCard, SketchButton } from '../../components/sketch';
+
+function Stat({ label, value, suffix }: { label: string; value: React.ReactNode; suffix?: string }) {
+  return (
+    <div>
+      <div className="hand ink-soft" style={{ fontSize: 12 }}>{label}</div>
+      <div style={{ marginTop: 2 }}>
+        <span className="mono" style={{ fontSize: 26, fontWeight: 500 }}>{value}</span>
+        {suffix && <span className="hand ink-soft" style={{ fontSize: 13, marginLeft: 4 }}>{suffix}</span>}
+      </div>
+    </div>
+  );
+}
 
 export default function BodyPage() {
   const [range, setRange] = useState<[Dayjs, Dayjs]>([dayjs().subtract(30, 'day'), dayjs()]);
@@ -75,141 +81,168 @@ export default function BodyPage() {
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Link to="/">
+    <div style={{ maxWidth: 820, margin: '0 auto', padding: 24 }}>
+      <div style={{ marginBottom: 8 }}>
+        <Link className="hand accent" to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
-        <DatePicker.RangePicker
-          value={range}
-          onChange={(r) => r && r[0] && r[1] && setRange([r[0], r[1]])}
-        />
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
-          记录
-        </Button>
-      </Space>
-
-      <Card loading={loading} style={{ marginBottom: 16 }}>
-        <Space size="large" wrap>
-          <Statistic
-            title="体重变化"
-            value={trend?.weightChange ?? '-'}
-            suffix="kg"
-            styles={{ content: { color: '#1d1d1f', fontWeight: 600 } }}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          marginBottom: 16,
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <div>
+          <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>BODY · 体征</div>
+          <h1 className="display" style={{ fontSize: 36, margin: '4px 0 0' }}>
+            <span className="scribble-u">体重体脂</span>
+          </h1>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <DatePicker.RangePicker
+            value={range}
+            onChange={(r) => r && r[0] && r[1] && setRange([r[0], r[1]])}
           />
-          <Statistic
-            title="体脂率变化"
-            value={trend?.bodyFatChange ?? '-'}
-            suffix="%"
-            styles={{ content: { color: '#1d1d1f', fontWeight: 600 } }}
-          />
-          <Statistic title="记录条数" value={trend?.records.length ?? 0} />
-        </Space>
+          <SketchButton primary onClick={() => setModalOpen(true)}>
+            <PlusOutlined style={{ marginRight: 4 }} />记录
+          </SketchButton>
+        </div>
+      </div>
 
-        {trend && trend.records.length > 1 && (
-          <div style={{ height: 240, marginTop: 20 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={trend.records.map((r) => ({
-                  date: r.recordDate.slice(5), // MM-DD
-                  weight: r.weight ?? null,
-                  bodyFat: r.bodyFat ?? null,
-                }))}
-                margin={{ top: 8, right: 16, left: -8, bottom: 0 }}
-              >
-                <CartesianGrid stroke={chartTheme.grid} vertical={false} />
-                <XAxis dataKey="date" tick={axisStyle} tickLine={false} axisLine={false} />
-                <YAxis
-                  yAxisId="w"
-                  tick={axisStyle}
-                  tickLine={false}
-                  axisLine={false}
-                  width={44}
-                  domain={['dataMin - 1', 'dataMax + 1']}
-                  tickFormatter={(v) => `${Number(v).toFixed(1)}`}
-                />
-                <YAxis
-                  yAxisId="bf"
-                  orientation="right"
-                  tick={axisStyle}
-                  tickLine={false}
-                  axisLine={false}
-                  width={36}
-                  domain={['dataMin - 1', 'dataMax + 1']}
-                  tickFormatter={(v) => `${Number(v).toFixed(1)}`}
-                />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: chartTheme.grid }} />
-                <Line
-                  yAxisId="w"
-                  type="monotone"
-                  dataKey="weight"
-                  name="体重 kg"
-                  stroke={chartTheme.primary}
-                  strokeWidth={2}
-                  dot={{ r: 3, fill: chartTheme.primary, strokeWidth: 0 }}
-                  activeDot={{ r: 5 }}
-                  connectNulls
-                />
-                <Line
-                  yAxisId="bf"
-                  type="monotone"
-                  dataKey="bodyFat"
-                  name="体脂 %"
-                  stroke={chartTheme.secondary}
-                  strokeWidth={1.5}
-                  strokeDasharray="4 3"
-                  dot={{ r: 2, fill: chartTheme.secondary, strokeWidth: 0 }}
-                  connectNulls
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-      </Card>
-
-      <Card title="历史记录">
-        {(!trend || trend.records.length === 0) ? (
-          <Empty description="暂无数据" />
+      <PaperCard style={{ marginBottom: 16 }}>
+        {loading && !trend ? (
+          <div className="hand ink-faint" style={{ padding: '12px 0' }}>加载中…</div>
         ) : (
-          <List
-            dataSource={[...trend.records].reverse()}
-            renderItem={(r) => (
-              <List.Item
-                actions={[<Button key="del" danger icon={<DeleteOutlined />} size="small" onClick={() => onDelete(r.id)} />]}
-              >
-                <List.Item.Meta
-                  title={r.recordDate}
-                  description={
-                    <Space>
-                      {r.weight != null && <Typography.Text>体重 {r.weight} kg</Typography.Text>}
-                      {r.bodyFat != null && <Typography.Text>体脂 {r.bodyFat}%</Typography.Text>}
-                    </Space>
-                  }
-                />
-              </List.Item>
+          <>
+            <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap' }}>
+              <Stat label="体重变化" value={trend?.weightChange ?? '-'} suffix="kg" />
+              <Stat label="体脂率变化" value={trend?.bodyFatChange ?? '-'} suffix="%" />
+              <Stat label="记录条数" value={trend?.records.length ?? 0} />
+            </div>
+
+            {trend && trend.records.length > 1 && (
+              <div style={{ height: 240, marginTop: 20 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart
+                    data={trend.records.map((r) => ({
+                      date: r.recordDate.slice(5),
+                      weight: r.weight ?? null,
+                      bodyFat: r.bodyFat ?? null,
+                    }))}
+                    margin={{ top: 8, right: 16, left: -8, bottom: 0 }}
+                  >
+                    <CartesianGrid stroke={chartTheme.grid} strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="date" tick={axisStyle} tickLine={false} axisLine={false} />
+                    <YAxis
+                      yAxisId="w"
+                      tick={axisStyle}
+                      tickLine={false}
+                      axisLine={false}
+                      width={44}
+                      domain={['dataMin - 1', 'dataMax + 1']}
+                      tickFormatter={(v) => `${Number(v).toFixed(1)}`}
+                    />
+                    <YAxis
+                      yAxisId="bf"
+                      orientation="right"
+                      tick={axisStyle}
+                      tickLine={false}
+                      axisLine={false}
+                      width={36}
+                      domain={['dataMin - 1', 'dataMax + 1']}
+                      tickFormatter={(v) => `${Number(v).toFixed(1)}`}
+                    />
+                    <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: chartTheme.grid }} />
+                    <Line
+                      yAxisId="w"
+                      type="monotone"
+                      dataKey="weight"
+                      name="体重 kg"
+                      stroke={chartTheme.primary}
+                      strokeWidth={2.2}
+                      dot={{ r: 3, fill: chartTheme.primary, strokeWidth: 0 }}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                    <Line
+                      yAxisId="bf"
+                      type="monotone"
+                      dataKey="bodyFat"
+                      name="体脂 %"
+                      stroke={chartTheme.secondary}
+                      strokeWidth={1.5}
+                      strokeDasharray="4 3"
+                      dot={{ r: 2, fill: chartTheme.secondary, strokeWidth: 0 }}
+                      connectNulls
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             )}
-          />
+          </>
         )}
-      </Card>
+      </PaperCard>
+
+      <h3 className="display" style={{ fontSize: 22, margin: '24px 0 12px' }}>历史记录</h3>
+      {(!trend || trend.records.length === 0) ? (
+        <PaperCard>
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div className="display" style={{ fontSize: 36, color: 'var(--ink-faint)' }}>暂无</div>
+            <div className="hand ink-soft" style={{ marginTop: 6 }}>还没有体重记录</div>
+            <SketchButton primary style={{ marginTop: 16 }} onClick={() => setModalOpen(true)}>
+              + 添加第一条
+            </SketchButton>
+          </div>
+        </PaperCard>
+      ) : (
+        [...trend.records].reverse().map((r) => (
+          <PaperCard key={r.id} style={{ marginBottom: 10, padding: '14px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <span className="mono" style={{ fontSize: 15, fontWeight: 500 }}>{r.recordDate}</span>
+              <div style={{ flex: 1, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                {r.weight != null && (
+                  <span className="hand">体重 <span className="mono" style={{ fontWeight: 700 }}>{r.weight}</span> kg</span>
+                )}
+                {r.bodyFat != null && (
+                  <span className="hand">体脂 <span className="mono" style={{ fontWeight: 700 }}>{r.bodyFat}</span>%</span>
+                )}
+              </div>
+              <SketchButton size="sm" aria-label="删除" onClick={() => onDelete(r.id)}>
+                <DeleteOutlined />
+              </SketchButton>
+            </div>
+          </PaperCard>
+        ))
+      )}
 
       <Modal
-        title="记录体重体脂"
+        title={<span className="display" style={{ fontSize: 22 }}>记录体重体脂</span>}
         open={modalOpen}
-        onOk={onAdd}
         onCancel={() => setModalOpen(false)}
+        footer={
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <SketchButton onClick={() => setModalOpen(false)}>取消</SketchButton>
+            <SketchButton primary onClick={onAdd}>保存</SketchButton>
+          </div>
+        }
         destroyOnHidden
       >
         <Form form={form} layout="vertical" initialValues={{ recordDate: dayjs() }}>
-          <Form.Item name="recordDate" label="日期" rules={[{ required: true }]}>
+          <Form.Item name="recordDate" label={<span className="hand">日期</span>} rules={[{ required: true }]}>
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="weight" label="体重 (kg)">
+          <Form.Item name="weight" label={<span className="hand">体重 (kg)</span>}>
             <InputNumber min={20} max={300} step={0.1} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="bodyFat" label="体脂率 (%)">
+          <Form.Item name="bodyFat" label={<span className="hand">体脂率 (%)</span>}>
             <InputNumber min={1} max={80} step={0.1} style={{ width: '100%' }} />
           </Form.Item>
-          <Typography.Text type="secondary">体重与体脂至少填写一项</Typography.Text>
+          <p className="hand ink-soft" style={{ fontSize: 13 }}>体重与体脂至少填写一项</p>
         </Form>
       </Modal>
     </div>

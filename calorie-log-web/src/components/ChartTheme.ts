@@ -1,27 +1,28 @@
-// recharts 主题色，遵循 calorie-log-web/DESIGN.md 单一强调色规则：
-// 主线使用 Apple Blue；次要数据使用灰阶；多系列饼图用主蓝单色的 3 级明度。
+// recharts 主题色，对齐 Paper & Ink token：
+// 主线 var(--accent) 暖橙（hex #cf6b2c）；次要灰阶；网格虚线。
 export const chartTheme = {
-  primary: '#0071e3',
-  primaryFaded: '#4fa0ef',
-  primaryMuted: '#9ac4f4',
-  secondary: 'rgba(0, 0, 0, 0.32)',
-  grid: 'rgba(0, 0, 0, 0.06)',
-  axis: 'rgba(0, 0, 0, 0.48)',
-  tooltipBg: 'rgba(255, 255, 255, 0.96)',
-  tooltipBorder: 'rgba(0, 0, 0, 0.08)',
+  primary: '#cf6b2c',
+  primaryFaded: '#d88d72',
+  primaryMuted: '#f6e6d6',
+  secondary: 'rgba(31, 29, 26, 0.45)',
+  grid: 'rgba(31, 29, 26, 0.1)',
+  axis: 'rgba(31, 29, 26, 0.55)',
+  tooltipBg: '#faf7f1',
+  tooltipBorder: 'rgba(31, 29, 26, 0.2)',
 };
 
 export const tooltipStyle = {
   background: chartTheme.tooltipBg,
-  border: `1px solid ${chartTheme.tooltipBorder}`,
+  border: `1.5px dashed ${chartTheme.tooltipBorder}`,
   borderRadius: 10,
-  boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 2px 14px rgba(0,0,0,0.06)',
+  boxShadow: '3px 4px 0 rgba(0,0,0,0.08)',
   fontSize: 12,
-  color: '#1d1d1f',
+  color: '#1f1d1a',
+  fontFamily: 'Kalam, sans-serif',
 };
 
 export const axisStyle = {
   fontSize: 11,
   fill: chartTheme.axis,
-  letterSpacing: -0.01,
+  fontFamily: 'JetBrains Mono, monospace',
 };

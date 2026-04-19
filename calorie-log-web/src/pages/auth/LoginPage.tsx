@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Button, Card, Form, Input, Modal, Space, Tabs, Tag, Typography, message } from 'antd';
+import { Alert, Form, Input, Modal, Space, message } from 'antd';
 import { WechatOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { login, sendCode } from '../../api/auth';
@@ -7,6 +7,7 @@ import { apiGet } from '../../api/client';
 import { getWechatQrCode, mockConfirmWechat, pollWechat, type WechatQrCode } from '../../api/wechat';
 import { useAuthStore } from '../../store/auth';
 import type { UserProfile } from '../../types';
+import { Chip, PaperCard, Pill, SketchButton } from '../../components/sketch';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -112,62 +113,88 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-      <Card title="登录 食养记" style={{ width: 420 }}>
-        <Tabs
-          activeKey={loginType}
-          onChange={(k) => setLoginType(k as 'password' | 'code')}
-          items={[
-            { key: 'password', label: '密码登录' },
-            { key: 'code', label: '验证码登录' },
-          ]}
-        />
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--paper)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <PaperCard style={{ width: 420, padding: 32 }}>
+        <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2, marginBottom: 8 }}>
+          WELCOME · 欢迎
+        </div>
+        <h1 className="display" style={{ fontSize: 40, lineHeight: 1.05, margin: '0 0 8px' }}>
+          <span className="scribble-u">登录</span>
+        </h1>
+        <p className="hand ink-soft" style={{ marginBottom: 20 }}>继续记录你的饮食与训练</p>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+          <Pill active={loginType === 'password'} onClick={() => setLoginType('password')}>
+            密码登录
+          </Pill>
+          <Pill active={loginType === 'code'} onClick={() => setLoginType('code')}>
+            验证码登录
+          </Pill>
+        </div>
+
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item
-            label={loginType === 'code' ? '手机号' : '手机号或邮箱'}
+            label={<span className="hand">{loginType === 'code' ? '手机号' : '手机号或邮箱'}</span>}
             name="identifier"
             rules={[{ required: true, message: '请输入手机号或邮箱' }]}
           >
             <Input placeholder={loginType === 'code' ? '手机号' : '手机号或邮箱'} />
           </Form.Item>
           {loginType === 'password' ? (
-            <Form.Item label="密码" name="password" rules={[{ required: true, message: '请输入密码' }]}>
+            <Form.Item
+              label={<span className="hand">密码</span>}
+              name="password"
+              rules={[{ required: true, message: '请输入密码' }]}
+            >
               <Input.Password />
             </Form.Item>
           ) : (
-            <Form.Item label="验证码" required>
+            <Form.Item label={<span className="hand">验证码</span>} required>
               <div style={{ display: 'flex', gap: 8 }}>
                 <Form.Item name="verifyCode" noStyle rules={[{ required: true, message: '请输入验证码' }]}>
                   <Input placeholder="6 位验证码" />
                 </Form.Item>
-                <Button onClick={handleSendCode} loading={sending}>
-                  获取验证码
-                </Button>
+                <SketchButton onClick={handleSendCode} disabled={sending}>
+                  {sending ? '发送中…' : '获取验证码'}
+                </SketchButton>
               </div>
             </Form.Item>
           )}
-          <Button type="primary" htmlType="submit" loading={loading} block>
-            登录
-          </Button>
+          <SketchButton
+            primary
+            size="lg"
+            onClick={() => form.submit()}
+            disabled={loading}
+            style={{ width: '100%', marginTop: 4 }}
+          >
+            {loading ? '登录中…' : '登录'}
+          </SketchButton>
         </Form>
-        <Button
-          icon={<WechatOutlined />}
-          block
-          style={{ marginTop: 12 }}
-          onClick={openWechatQr}
-        >
+
+        <SketchButton onClick={openWechatQr} style={{ width: '100%', marginTop: 12 }}>
+          <WechatOutlined style={{ marginRight: 6 }} />
           微信扫码登录
-        </Button>
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <Link to="/register">还没有账号？立即注册</Link>
-          <span style={{ margin: '0 8px', color: '#d9d9d9' }}>|</span>
-          <Link to="/reset-password">忘记密码</Link>
+        </SketchButton>
+
+        <div style={{ marginTop: 20, textAlign: 'center' }}>
+          <Link className="hand accent" to="/register">还没有账号？立即注册</Link>
+          <span className="ink-faint" style={{ margin: '0 8px' }}>·</span>
+          <Link className="hand accent" to="/reset-password">忘记密码</Link>
         </div>
-      </Card>
+      </PaperCard>
 
       <Modal
         open={qrOpen}
-        title="微信扫码登录"
+        title={<span className="display" style={{ fontSize: 22 }}>微信扫码登录</span>}
         onCancel={() => {
           stopPoll();
           setQrOpen(false);
@@ -175,12 +202,12 @@ export default function LoginPage() {
         footer={null}
         width={360}
       >
-        <Space orientation="vertical" size="middle" style={{ width: '100%', alignItems: 'center' }}>
+        <Space direction="vertical" size="middle" style={{ width: '100%', alignItems: 'center' }}>
           {qr?.mocked && (
             <Alert
               type="info"
               showIcon
-              title="Dev 模式"
+              message="Dev 模式"
               description="未配置微信开放平台，点击下方按钮模拟扫码确认"
               style={{ width: '100%' }}
             />
@@ -189,39 +216,40 @@ export default function LoginPage() {
             style={{
               width: 240,
               minHeight: 220,
-              border: '1px solid #eee',
+              border: '1.5px dashed rgba(0,0,0,0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              borderRadius: 8,
-              background: '#fafafa',
+              borderRadius: 12,
+              background: 'var(--paper-2)',
               fontSize: 13,
-              color: '#999',
+              color: 'var(--ink-soft)',
               padding: 12,
               textAlign: 'center',
               wordBreak: 'break-all',
             }}
+            className="hand"
           >
-            {qr?.qrCodeUrl ?? '加载中...'}
+            {qr?.qrCodeUrl ?? '加载中…'}
           </div>
           <div>
-            {qrStatus === 'PENDING' && <Tag color="default">等待扫码</Tag>}
-            {qrStatus === 'SCANNED' && <Tag color="blue">已扫码，等待确认</Tag>}
-            {qrStatus === 'CONFIRMED' && <Tag color="blue">确认成功</Tag>}
-            {qrStatus === 'EXPIRED' && <Tag>二维码已失效</Tag>}
+            {qrStatus === 'PENDING' && <Chip>等待扫码</Chip>}
+            {qrStatus === 'SCANNED' && <Chip color="var(--accent-soft)">已扫码，等待确认</Chip>}
+            {qrStatus === 'CONFIRMED' && <Chip color="var(--accent-soft)">确认成功</Chip>}
+            {qrStatus === 'EXPIRED' && <Chip color="var(--paper-3)">二维码已失效</Chip>}
             {qrNickname && (
-              <Typography.Text type="secondary" style={{ marginLeft: 8 }}>
+              <span className="hand ink-soft" style={{ marginLeft: 8 }}>
                 {qrNickname}
-              </Typography.Text>
+              </span>
             )}
           </div>
           {qr?.mocked && qrStatus !== 'CONFIRMED' && (
-            <Button type="primary" onClick={onMockScan}>
+            <SketchButton primary onClick={onMockScan}>
               模拟扫码确认（dev）
-            </Button>
+            </SketchButton>
           )}
           {qrStatus === 'EXPIRED' && (
-            <Button onClick={openWechatQr}>刷新二维码</Button>
+            <SketchButton onClick={openWechatQr}>刷新二维码</SketchButton>
           )}
         </Space>
       </Modal>

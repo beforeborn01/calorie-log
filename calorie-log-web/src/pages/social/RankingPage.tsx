@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Alert, Card, Empty, List, Segmented, Space, Tag, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { getRanking, type RankingResponse } from '../../api/social';
+import { Chip, PaperCard, Pill } from '../../components/sketch';
 
 type RankType = 'exp' | 'score' | 'streak';
 type PeriodType = 'all' | 'week' | 'month';
@@ -33,112 +33,105 @@ export default function RankingPage() {
   }, [type, period]);
 
   const effectivePeriod: PeriodType = type === 'score' ? period : 'all';
+  const entries = data?.entries ?? [];
 
   return (
-    <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Link to="/">
+    <div style={{ maxWidth: 820, margin: '0 auto', padding: 24 }}>
+      <div style={{ marginBottom: 8 }}>
+        <Link className="hand accent" to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
-      </Space>
+      </div>
+      <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>RANKING · 排行</div>
+      <h1 className="display" style={{ fontSize: 36, margin: '4px 0 20px' }}>
+        <span className="scribble-u">排行榜</span>
+      </h1>
 
-      <Card>
-        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
-          <Segmented
-            value={type}
-            onChange={(v) => setType(v as RankType)}
-            options={[
-              { label: TYPE_LABEL.exp, value: 'exp' },
-              { label: TYPE_LABEL.score, value: 'score' },
-              { label: TYPE_LABEL.streak, value: 'streak' },
-            ]}
-            block
-          />
-          {type === 'score' && (
-            <Segmented
-              value={period}
-              onChange={(v) => setPeriod(v as PeriodType)}
-              options={[
-                { label: '近 30 天', value: 'all' },
-                { label: '本周', value: 'week' },
-                { label: '本月', value: 'month' },
-              ]}
-              block
-            />
-          )}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        <Pill active={type === 'exp'} onClick={() => setType('exp')}>{TYPE_LABEL.exp}</Pill>
+        <Pill active={type === 'score'} onClick={() => setType('score')}>{TYPE_LABEL.score}</Pill>
+        <Pill active={type === 'streak'} onClick={() => setType('streak')}>{TYPE_LABEL.streak}</Pill>
+      </div>
 
-          {data?.self && (
-            <Alert
-              type="info"
-              title={
-                <Space size="small" wrap>
-                  <Typography.Text strong>当前排名：第 {data.self.rank} 位</Typography.Text>
-                  <Typography.Text type="secondary">
-                    {TYPE_LABEL[type]} {data.self.score}
-                    {SCORE_SUFFIX[type]}
-                  </Typography.Text>
-                  {data.gapToPrevious > 0 && (
-                    <Typography.Text type="secondary">
-                      距上一名差 {data.gapToPrevious}
-                      {SCORE_SUFFIX[type]}
-                    </Typography.Text>
-                  )}
-                </Space>
-              }
-            />
-          )}
+      {type === 'score' && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <Pill active={period === 'all'} onClick={() => setPeriod('all')}>近 30 天</Pill>
+          <Pill active={period === 'week'} onClick={() => setPeriod('week')}>本周</Pill>
+          <Pill active={period === 'month'} onClick={() => setPeriod('month')}>本月</Pill>
+        </div>
+      )}
 
-          <List
-            loading={loading}
-            locale={{ emptyText: <Empty description="还没有好友，加几个一起比" /> }}
-            dataSource={data?.entries ?? []}
-            renderItem={(e) => (
-              <List.Item
-                style={{
-                  background: e.isSelf ? 'rgba(0, 113, 227, 0.06)' : undefined,
-                  padding: 12,
-                  borderRadius: 10,
-                }}
-              >
-                <List.Item.Meta
-                  avatar={
-                    <div
-                      style={{
-                        width: 40,
-                        textAlign: 'center',
-                        fontSize: e.rank <= 3 ? 22 : 16,
-                        fontWeight: 600,
-                        letterSpacing: '-0.02em',
-                        color: e.rank <= 3 ? '#1d1d1f' : 'rgba(0,0,0,0.48)',
-                      }}
-                    >
-                      {e.rank}
-                    </div>
-                  }
-                  title={
-                    <Space>
-                      <Typography.Text strong>{e.nickname}</Typography.Text>
-                      <Tag>Lv{e.level}</Tag>
-                      {e.isSelf && <Tag color="blue">你</Tag>}
-                    </Space>
-                  }
-                />
-                <Typography.Text strong>
-                  {e.score}
-                  {SCORE_SUFFIX[type]}
-                </Typography.Text>
-              </List.Item>
+      {data?.self && (
+        <PaperCard style={{ marginBottom: 16, background: 'var(--accent-soft)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'baseline' }}>
+            <span className="hand" style={{ fontWeight: 700, fontSize: 16 }}>
+              当前排名：第 <span className="mono" style={{ fontSize: 22 }}>{data.self.rank}</span> 位
+            </span>
+            <span className="hand ink-soft">
+              {TYPE_LABEL[type]} <span className="mono">{data.self.score}</span>{SCORE_SUFFIX[type]}
+            </span>
+            {data.gapToPrevious > 0 && (
+              <span className="hand ink-soft">
+                距上一名差 <span className="mono">{data.gapToPrevious}</span>{SCORE_SUFFIX[type]}
+              </span>
             )}
-          />
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-            {type === 'score'
-              ? `周期：${effectivePeriod === 'all' ? '近 30 天' : effectivePeriod === 'week' ? '本周' : '本月'}平均饮食评分`
-              : type === 'exp'
-              ? '经验值榜按累计总经验排名'
-              : '连续记录天数榜，包括你和好友'}
-          </Typography.Text>
-        </Space>
-      </Card>
+          </div>
+        </PaperCard>
+      )}
+
+      {loading && entries.length === 0 ? (
+        <PaperCard><div className="hand ink-faint" style={{ padding: '12px 0' }}>加载中…</div></PaperCard>
+      ) : entries.length === 0 ? (
+        <PaperCard>
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div className="display" style={{ fontSize: 36, color: 'var(--ink-faint)' }}>暂无</div>
+            <div className="hand ink-soft" style={{ marginTop: 6 }}>还没有好友，加几个一起比</div>
+          </div>
+        </PaperCard>
+      ) : (
+        <div>
+          {entries.map((e) => (
+            <PaperCard
+              key={`${e.rank}-${e.nickname}`}
+              style={{
+                marginBottom: 10,
+                padding: '14px 18px',
+                background: e.isSelf ? 'var(--accent-soft)' : undefined,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div
+                  className={e.rank <= 3 ? 'display' : 'mono'}
+                  style={{
+                    width: 44,
+                    textAlign: 'center',
+                    fontSize: e.rank <= 3 ? 28 : 18,
+                    color: e.rank <= 3 ? 'var(--ink)' : 'var(--ink-soft)',
+                  }}
+                >
+                  {e.rank}
+                </div>
+                <div style={{ flex: 1, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span className="hand" style={{ fontWeight: 700, fontSize: 15 }}>{e.nickname}</span>
+                  <Chip color="var(--paper-2)">Lv {e.level}</Chip>
+                  {e.isSelf && <Chip color="var(--accent-soft)">你</Chip>}
+                </div>
+                <span className="mono" style={{ fontSize: 18, fontWeight: 500 }}>
+                  {e.score}{SCORE_SUFFIX[type]}
+                </span>
+              </div>
+            </PaperCard>
+          ))}
+        </div>
+      )}
+
+      <p className="hand ink-soft" style={{ fontSize: 12, marginTop: 16 }}>
+        {type === 'score'
+          ? `周期：${effectivePeriod === 'all' ? '近 30 天' : effectivePeriod === 'week' ? '本周' : '本月'}平均饮食评分`
+          : type === 'exp'
+          ? '经验值榜按累计总经验排名'
+          : '连续记录天数榜，包括你和好友'}
+      </p>
     </div>
   );
 }

@@ -1,19 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Button,
-  Card,
   DatePicker,
-  Empty,
   Form,
   Input,
   InputNumber,
-  List,
   Modal,
   Select,
-  Space,
-  Tabs,
-  Tag,
-  Typography,
   message,
 } from 'antd';
 import { ArrowLeftOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -28,6 +20,7 @@ import {
   type Exercise,
   type StrengthRecord,
 } from '../../api/strength';
+import { Chip, PaperCard, Pill, SketchButton } from '../../components/sketch';
 
 const BODY_PARTS = ['腿部', '胸部', '背部', '手臂', '肩部', '核心'];
 
@@ -120,126 +113,181 @@ export default function StrengthPage() {
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Link to="/">
+    <div style={{ maxWidth: 820, margin: '0 auto', padding: 24 }}>
+      <div style={{ marginBottom: 8 }}>
+        <Link className="hand accent" to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
-        <DatePicker value={date} onChange={(d) => d && setDate(d)} />
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => setAddOpen(true)}>
-          添加训练
-        </Button>
-      </Space>
-
-      <Card loading={loading} style={{ marginBottom: 16 }}>
-        <Space size="large" wrap>
-          <Typography.Text>当日记录 {records.length} 条</Typography.Text>
-          <Typography.Text>累计容量 {totalVolume.toFixed(0)} kg</Typography.Text>
-        </Space>
-      </Card>
-
-      <Card title="训练记录" style={{ marginBottom: 16 }}>
-        {records.length === 0 ? (
-          <Empty description="暂无训练记录" />
-        ) : (
-          <List
-            dataSource={records}
-            renderItem={(r) => (
-              <List.Item
-                actions={[<Button key="del" size="small" danger icon={<DeleteOutlined />} onClick={() => onDelete(r.id)} />]}
-              >
-                <List.Item.Meta
-                  title={
-                    <Space>
-                      <Typography.Text strong>{r.exerciseName}</Typography.Text>
-                      <Tag color="blue">{r.bodyPart}</Tag>
-                    </Space>
-                  }
-                  description={`${r.sets} 组 × ${r.repsPerSet} 次 @ ${r.weight ?? 0} kg${r.note ? ` · ${r.note}` : ''}`}
-                />
-              </List.Item>
-            )}
-          />
-        )}
-      </Card>
-
-      <Card
-        title="动作库"
-        extra={
-          <Button size="small" onClick={() => setCustomOpen(true)}>
-            + 自定义动作
-          </Button>
-        }
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          marginBottom: 16,
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
       >
-        <Tabs
-          activeKey={bodyPartTab}
-          onChange={setBodyPartTab}
-          items={BODY_PARTS.map((p) => ({
-            key: p,
-            label: p,
-            children: (
-              <Space wrap>
-                {exercises.map((e) => (
-                  <Tag key={e.id} color={e.isPreset ? 'default' : 'green'}>
-                    {e.name}
-                  </Tag>
-                ))}
-              </Space>
-            ),
-          }))}
-        />
-      </Card>
+        <div>
+          <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>STRENGTH · 力量</div>
+          <h1 className="display" style={{ fontSize: 36, margin: '4px 0 0' }}>
+            <span className="scribble-u">力量训练</span>
+          </h1>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <DatePicker value={date} onChange={(d) => d && setDate(d)} />
+          <SketchButton primary onClick={() => setAddOpen(true)}>
+            <PlusOutlined style={{ marginRight: 4 }} />添加训练
+          </SketchButton>
+        </div>
+      </div>
+
+      <PaperCard style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap' }}>
+          <div>
+            <div className="hand ink-soft" style={{ fontSize: 12 }}>当日记录</div>
+            <div className="mono" style={{ fontSize: 26, fontWeight: 500 }}>{records.length} <span className="hand ink-soft" style={{ fontSize: 13 }}>条</span></div>
+          </div>
+          <div>
+            <div className="hand ink-soft" style={{ fontSize: 12 }}>累计容量</div>
+            <div className="mono" style={{ fontSize: 26, fontWeight: 500 }}>{totalVolume.toFixed(0)} <span className="hand ink-soft" style={{ fontSize: 13 }}>kg</span></div>
+          </div>
+        </div>
+      </PaperCard>
+
+      <h3 className="display" style={{ fontSize: 22, margin: '24px 0 12px' }}>训练记录</h3>
+      {loading && records.length === 0 ? (
+        <PaperCard><div className="hand ink-faint" style={{ padding: '12px 0' }}>加载中…</div></PaperCard>
+      ) : records.length === 0 ? (
+        <PaperCard>
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div className="display" style={{ fontSize: 36, color: 'var(--ink-faint)' }}>暂无</div>
+            <div className="hand ink-soft" style={{ marginTop: 6 }}>今天还没有训练记录</div>
+            <SketchButton primary style={{ marginTop: 16 }} onClick={() => setAddOpen(true)}>
+              + 添加第一条
+            </SketchButton>
+          </div>
+        </PaperCard>
+      ) : (
+        records.map((r) => (
+          <PaperCard key={r.id} style={{ marginBottom: 10, padding: '14px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span className="hand" style={{ fontWeight: 700, fontSize: 15 }}>{r.exerciseName}</span>
+                  <Chip color="var(--accent-soft)">{r.bodyPart}</Chip>
+                </div>
+                <div className="hand ink-soft" style={{ fontSize: 13, marginTop: 4 }}>
+                  <span className="mono">{r.sets}</span> 组 ×{' '}
+                  <span className="mono">{r.repsPerSet}</span> 次 @{' '}
+                  <span className="mono">{r.weight ?? 0}</span> kg
+                  {r.note && ` · ${r.note}`}
+                </div>
+              </div>
+              <SketchButton size="sm" aria-label="删除" onClick={() => onDelete(r.id)}>
+                <DeleteOutlined />
+              </SketchButton>
+            </div>
+          </PaperCard>
+        ))
+      )}
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          margin: '24px 0 12px',
+          flexWrap: 'wrap',
+          gap: 8,
+        }}
+      >
+        <h3 className="display" style={{ fontSize: 22, margin: 0 }}>动作库</h3>
+        <SketchButton size="sm" onClick={() => setCustomOpen(true)}>+ 自定义动作</SketchButton>
+      </div>
+
+      <PaperCard>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          {BODY_PARTS.map((p) => (
+            <Pill key={p} active={bodyPartTab === p} onClick={() => setBodyPartTab(p)}>{p}</Pill>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {exercises.length === 0 ? (
+            <span className="hand ink-faint">暂无动作</span>
+          ) : (
+            exercises.map((e) => (
+              <Chip key={e.id} color={e.isPreset ? 'var(--paper-2)' : 'oklch(0.94 0.06 145)'}>
+                {e.name}
+              </Chip>
+            ))
+          )}
+        </div>
+      </PaperCard>
 
       <Modal
-        title={`添加训练（${dateStr}）`}
+        title={<span className="display" style={{ fontSize: 22 }}>添加训练（{dateStr}）</span>}
         open={addOpen}
-        onOk={onAdd}
         onCancel={() => {
           setAddOpen(false);
           setNotTraining(false);
         }}
+        footer={
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <SketchButton onClick={() => { setAddOpen(false); setNotTraining(false); }}>取消</SketchButton>
+            <SketchButton primary onClick={onAdd}>保存</SketchButton>
+          </div>
+        }
         destroyOnHidden
       >
         {notTraining && (
-          <Typography.Paragraph type="danger">当前为休息日，无法记录力量训练</Typography.Paragraph>
+          <p className="hand" style={{ color: 'var(--accent-deep)', marginBottom: 12 }}>
+            当前为休息日，无法记录力量训练
+          </p>
         )}
         <Form form={form} layout="vertical">
-          <Form.Item name="exerciseId" label="动作" rules={[{ required: true }]}>
+          <Form.Item name="exerciseId" label={<span className="hand">动作</span>} rules={[{ required: true }]}>
             <Select
               showSearch
               optionFilterProp="label"
               options={exercises.map((e) => ({ value: e.id, label: `${e.name} (${e.bodyPart})` }))}
             />
           </Form.Item>
-          <Space>
-            <Form.Item name="sets" label="组数" rules={[{ required: true }]}>
-              <InputNumber min={1} max={20} />
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <Form.Item name="sets" label={<span className="hand">组数</span>} rules={[{ required: true }]} style={{ flex: 1, minWidth: 100 }}>
+              <InputNumber min={1} max={20} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item name="repsPerSet" label="每组次数" rules={[{ required: true }]}>
-              <InputNumber min={1} max={100} />
+            <Form.Item name="repsPerSet" label={<span className="hand">每组次数</span>} rules={[{ required: true }]} style={{ flex: 1, minWidth: 120 }}>
+              <InputNumber min={1} max={100} style={{ width: '100%' }} />
             </Form.Item>
-            <Form.Item name="weight" label="重量 (kg)">
-              <InputNumber min={0} max={500} step={0.5} />
+            <Form.Item name="weight" label={<span className="hand">重量 (kg)</span>} style={{ flex: 1, minWidth: 120 }}>
+              <InputNumber min={0} max={500} step={0.5} style={{ width: '100%' }} />
             </Form.Item>
-          </Space>
-          <Form.Item name="note" label="备注">
+          </div>
+          <Form.Item name="note" label={<span className="hand">备注</span>}>
             <Input.TextArea rows={2} maxLength={200} />
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title="添加自定义动作"
+        title={<span className="display" style={{ fontSize: 22 }}>添加自定义动作</span>}
         open={customOpen}
-        onOk={onCreateCustom}
         onCancel={() => setCustomOpen(false)}
+        footer={
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <SketchButton onClick={() => setCustomOpen(false)}>取消</SketchButton>
+            <SketchButton primary onClick={onCreateCustom}>保存</SketchButton>
+          </div>
+        }
         destroyOnHidden
       >
         <Form form={customForm} layout="vertical" initialValues={{ bodyPart: bodyPartTab }}>
-          <Form.Item name="name" label="动作名" rules={[{ required: true }]}>
+          <Form.Item name="name" label={<span className="hand">动作名</span>} rules={[{ required: true }]}>
             <Input maxLength={100} />
           </Form.Item>
-          <Form.Item name="bodyPart" label="部位" rules={[{ required: true }]}>
+          <Form.Item name="bodyPart" label={<span className="hand">部位</span>} rules={[{ required: true }]}>
             <Select options={BODY_PARTS.map((p) => ({ value: p, label: p }))} />
           </Form.Item>
         </Form>

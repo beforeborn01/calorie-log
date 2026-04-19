@@ -161,9 +161,9 @@ export default function LoginPage() {
             <Form.Item label={<span className="hand">验证码</span>} required>
               <div style={{ display: 'flex', gap: 8 }}>
                 <Form.Item name="verifyCode" noStyle rules={[{ required: true, message: '请输入验证码' }]}>
-                  <Input placeholder="6 位验证码" />
+                  <Input placeholder="6 位验证码" style={{ flex: 1 }} />
                 </Form.Item>
-                <SketchButton onClick={handleSendCode} disabled={sending}>
+                <SketchButton onClick={handleSendCode} disabled={sending} style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>
                   {sending ? '发送中…' : '获取验证码'}
                 </SketchButton>
               </div>

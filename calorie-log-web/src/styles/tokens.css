@@ -1,0 +1,86 @@
+/* ============================================================
+ * 卡路里 App · Design Tokens
+ * Paper & Ink — hand-drawn, warm, disciplined
+ * Import once at app entry: import './styles/tokens.css'
+ * ============================================================ */
+
+:root {
+  /* ─── Paper & Ink ─── */
+  --paper:       #faf7f1;
+  --paper-2:     #f2ede1;
+  --paper-3:     #e9e3d2;
+  --ink:         #1f1d1a;
+  --ink-soft:    #544f46;
+  --ink-faint:   #9a9285;
+  --line:        #2a2520;
+
+  /* ─── Accent ─── */
+  --accent:      oklch(0.68 0.16 45);    /* warm orange */
+  --accent-deep: oklch(0.55 0.18 40);
+  --accent-soft: oklch(0.94 0.05 45);
+
+  /* ─── Macros ─── */
+  --protein:     oklch(0.65 0.13 195);   /* teal */
+  --carb:        oklch(0.78 0.11 85);    /* ochre */
+  --fat:         oklch(0.72 0.12 25);    /* peach */
+
+  /* ─── Radii ─── */
+  --r-sm:   6px;
+  --r-md:   10px;
+  --r-lg:   18px;
+  --r-pill: 999px;
+
+  /* ─── Shadows (hard-offset, no blur) ─── */
+  --shadow-paper:  3px 4px 0 rgba(0,0,0,0.08);
+  --shadow-raised: 5px 6px 0 rgba(0,0,0,0.12);
+
+  /* ─── Spacing scale (use sparingly) ─── */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  24px;
+  --sp-6:  32px;
+  --sp-7:  48px;
+}
+
+/* ─── Base ─── */
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Noto Sans SC', 'PingFang SC', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(circle at 18% 25%, rgba(0,0,0,0.02) 0, transparent 40%),
+    radial-gradient(circle at 82% 70%, rgba(0,0,0,0.02) 0, transparent 40%),
+    repeating-linear-gradient(0deg, transparent 0 31px, rgba(100,90,70,0.035) 31px 32px);
+}
+
+* { box-sizing: border-box; }
+
+/* ─── Type utilities ─── */
+.display { font-family: 'Caveat', cursive;              font-weight: 700; letter-spacing: 0.01em; }
+.hand    { font-family: 'Kalam', 'Noto Sans SC', sans-serif; }
+.mono    { font-family: 'JetBrains Mono', monospace;    letter-spacing: 0.02em; }
+.sans    { font-family: 'Noto Sans SC', system-ui, sans-serif; }
+
+.ink-soft  { color: var(--ink-soft); }
+.ink-faint { color: var(--ink-faint); }
+.accent    { color: var(--accent); }
+
+/* ─── Scribble underline ─── */
+.scribble-u {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='10' viewBox='0 0 200 10'><path d='M2,6 Q 25 2, 50 5 T 100 5 T 150 5 T 198 5' fill='none' stroke='%23cf6b2c' stroke-width='2.8' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 9px;
+  padding-bottom: 6px;
+}
+
+/* ─── Scrollbar ─── */
+*::-webkit-scrollbar        { width: 8px; height: 8px; }
+*::-webkit-scrollbar-thumb  { background: rgba(0,0,0,0.18); border-radius: 10px; }

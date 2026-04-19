@@ -2,17 +2,9 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   Avatar,
-  Button,
-  Card,
-  Empty,
   Input,
-  List,
   Modal,
   Popconfirm,
-  Space,
-  Tabs,
-  Tag,
-  Typography,
   message,
 } from 'antd';
 import { ArrowLeftOutlined, CheckOutlined, CloseOutlined, CopyOutlined, DeleteOutlined, EditOutlined, SearchOutlined, UserAddOutlined } from '@ant-design/icons';
@@ -31,8 +23,21 @@ import {
   type FriendRequestItem,
   type FriendSearch,
 } from '../../api/social';
+import { Chip, PaperCard, Pill, SketchButton } from '../../components/sketch';
+
+type Tab = 'friends' | 'add' | 'requests' | 'outgoing';
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+      <div className="display" style={{ fontSize: 36, color: 'var(--ink-faint)' }}>暂无</div>
+      <div className="hand ink-soft" style={{ marginTop: 6 }}>{text}</div>
+    </div>
+  );
+}
 
 export default function FriendsPage() {
+  const [tab, setTab] = useState<Tab>('friends');
   const [friends, setFriends] = useState<Friend[]>([]);
   const [incoming, setIncoming] = useState<FriendRequestItem[]>([]);
   const [outgoing, setOutgoing] = useState<FriendRequestItem[]>([]);
@@ -124,246 +129,251 @@ export default function FriendsPage() {
     }
   };
 
+  const pendingCount = incoming.filter((r) => r.status === 0).length;
+
   return (
-    <div className="page-container" style={{ maxWidth: 820 }}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        <Link to="/">
+    <div style={{ maxWidth: 820, margin: '0 auto', padding: 24 }}>
+      <div style={{ marginBottom: 8 }}>
+        <Link className="hand accent" to="/">
           <ArrowLeftOutlined /> 返回首页
         </Link>
-        <Button icon={<UserAddOutlined />} onClick={onGenerateInvite}>
-          生成邀请链接
-        </Button>
-      </Space>
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          justifyContent: 'space-between',
+          marginBottom: 16,
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <div>
+          <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>FRIENDS · 好友</div>
+          <h1 className="display" style={{ fontSize: 36, margin: '4px 0 0' }}>
+            <span className="scribble-u">好友</span>
+          </h1>
+        </div>
+        <SketchButton primary onClick={onGenerateInvite}>
+          <UserAddOutlined style={{ marginRight: 4 }} />生成邀请链接
+        </SketchButton>
+      </div>
 
-      <Tabs
-        defaultActiveKey="friends"
-        items={[
-          {
-            key: 'friends',
-            label: `好友 (${friends.length})`,
-            children: (
-              <Card>
-                {friends.length === 0 ? (
-                  <Empty description="还没有好友" />
-                ) : (
-                  <List
-                    dataSource={friends}
-                    renderItem={(f) => (
-                      <List.Item
-                        actions={[
-                          <Button
-                            key="remark"
-                            size="small"
-                            icon={<EditOutlined />}
-                            onClick={() => {
-                              setRemarkTarget(f);
-                              setRemarkVal(f.remark ?? '');
-                            }}
-                          />,
-                          <Popconfirm
-                            key="del"
-                            title="删除该好友？"
-                            onConfirm={() => onDelete(f.friendUserId)}
-                          >
-                            <Button danger size="small" icon={<DeleteOutlined />} />
-                          </Popconfirm>,
-                        ]}
-                      >
-                        <List.Item.Meta
-                          avatar={<Avatar>{(f.remark ?? f.nickname).slice(0, 1)}</Avatar>}
-                          title={
-                            <Space>
-                              <Typography.Text strong>{f.remark ?? f.nickname}</Typography.Text>
-                              <Tag color="blue">Lv{f.level}</Tag>
-                              {f.recordedToday ? <Tag color="blue">今日已记录</Tag> : <Tag>未记录</Tag>}
-                            </Space>
-                          }
-                          description={
-                            <Space size="small" wrap>
-                              <Typography.Text type="secondary">
-                                总经验 {f.totalExp}
-                              </Typography.Text>
-                              <Typography.Text type="secondary">
-                                连续 {f.continuousDays} 天
-                              </Typography.Text>
-                              {f.remark && (
-                                <Typography.Text type="secondary">
-                                  （原名 {f.nickname}）
-                                </Typography.Text>
-                              )}
-                            </Space>
-                          }
-                        />
-                      </List.Item>
-                    )}
-                  />
-                )}
-              </Card>
-            ),
-          },
-          {
-            key: 'add',
-            label: '添加好友',
-            children: (
-              <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
-                <Card title="手机号搜索">
-                  <Space.Compact style={{ width: '100%' }}>
-                    <Input
-                      placeholder="输入对方手机号"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      onPressEnter={onSearch}
-                    />
-                    <Button type="primary" icon={<SearchOutlined />} loading={searchLoading} onClick={onSearch}>
-                      搜索
-                    </Button>
-                  </Space.Compact>
-                  {found && (
-                    <Card.Grid hoverable={false} style={{ width: '100%', marginTop: 16 }}>
-                      <Space>
-                        <Avatar>{found.nickname.slice(0, 1)}</Avatar>
-                        <div>
-                          <div>
-                            <Typography.Text strong>{found.nickname}</Typography.Text>
-                            <Tag color="blue" style={{ marginLeft: 8 }}>
-                              Lv{found.level}
-                            </Tag>
-                          </div>
-                          <Typography.Text type="secondary">{found.maskedPhone}</Typography.Text>
-                        </div>
-                        <div style={{ marginLeft: 'auto' }}>
-                          {found.relation === 'self' && <Tag>这就是你</Tag>}
-                          {found.relation === 'already_friend' && <Tag>已是好友</Tag>}
-                          {found.relation === 'request_pending' && <Tag color="blue">请求待确认</Tag>}
-                          {found.relation === 'not_friend' && (
-                            <Button type="primary" onClick={onSendRequest}>
-                              发送请求
-                            </Button>
-                          )}
-                        </div>
-                      </Space>
-                    </Card.Grid>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+        <Pill active={tab === 'friends'} onClick={() => setTab('friends')}>
+          好友 ({friends.length})
+        </Pill>
+        <Pill active={tab === 'add'} onClick={() => setTab('add')}>
+          添加
+        </Pill>
+        <Pill active={tab === 'requests'} onClick={() => setTab('requests')}>
+          待处理 ({pendingCount})
+        </Pill>
+        <Pill active={tab === 'outgoing'} onClick={() => setTab('outgoing')}>
+          已发送 ({outgoing.length})
+        </Pill>
+      </div>
+
+      {tab === 'friends' && (
+        <div>
+          {friends.length === 0 ? (
+            <PaperCard><EmptyState text="还没有好友，去添加一个吧" /></PaperCard>
+          ) : (
+            friends.map((f) => (
+              <PaperCard key={f.friendUserId} style={{ marginBottom: 10, padding: '14px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <Avatar style={{ background: 'var(--accent)' }}>
+                    {(f.remark ?? f.nickname).slice(0, 1)}
+                  </Avatar>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span className="hand" style={{ fontWeight: 700, fontSize: 15 }}>{f.remark ?? f.nickname}</span>
+                      <Chip color="var(--accent-soft)">Lv {f.level}</Chip>
+                      {f.recordedToday
+                        ? <Chip color="var(--accent-soft)">今日已记录</Chip>
+                        : <Chip color="var(--paper-3)">未记录</Chip>}
+                    </div>
+                    <div className="hand ink-soft" style={{ fontSize: 13, marginTop: 4 }}>
+                      总经验 <span className="mono">{f.totalExp}</span> · 连续 <span className="mono">{f.continuousDays}</span> 天
+                      {f.remark && <span style={{ marginLeft: 8 }}>（原名 {f.nickname}）</span>}
+                    </div>
+                  </div>
+                  <SketchButton
+                    size="sm"
+                    aria-label="设置备注"
+                    onClick={() => {
+                      setRemarkTarget(f);
+                      setRemarkVal(f.remark ?? '');
+                    }}
+                  >
+                    <EditOutlined />
+                  </SketchButton>
+                  <Popconfirm title="删除该好友？" onConfirm={() => onDelete(f.friendUserId)}>
+                    <SketchButton size="sm" aria-label="删除">
+                      <DeleteOutlined />
+                    </SketchButton>
+                  </Popconfirm>
+                </div>
+              </PaperCard>
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === 'add' && (
+        <div>
+          <PaperCard style={{ marginBottom: 12 }}>
+            <h3 className="display" style={{ fontSize: 22, margin: '0 0 12px' }}>手机号搜索</h3>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Input
+                placeholder="输入对方手机号"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                onPressEnter={onSearch}
+                style={{ flex: 1 }}
+              />
+              <SketchButton primary onClick={onSearch} disabled={searchLoading} style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>
+                <SearchOutlined style={{ marginRight: 4 }} />{searchLoading ? '搜索中…' : '搜索'}
+              </SketchButton>
+            </div>
+            {found && (
+              <div
+                style={{
+                  marginTop: 16,
+                  padding: 14,
+                  border: '1px dashed rgba(0,0,0,0.15)',
+                  borderRadius: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Avatar style={{ background: 'var(--accent)' }}>{found.nickname.slice(0, 1)}</Avatar>
+                <div style={{ flex: 1, minWidth: 160 }}>
+                  <div>
+                    <span className="hand" style={{ fontWeight: 700 }}>{found.nickname}</span>
+                    <Chip color="var(--accent-soft)" style={{ marginLeft: 8 }}>Lv {found.level}</Chip>
+                  </div>
+                  <div className="hand ink-soft" style={{ fontSize: 13 }}>{found.maskedPhone}</div>
+                </div>
+                <div>
+                  {found.relation === 'self' && <Chip color="var(--paper-3)">这就是你</Chip>}
+                  {found.relation === 'already_friend' && <Chip color="var(--accent-soft)">已是好友</Chip>}
+                  {found.relation === 'request_pending' && <Chip color="var(--accent-soft)">请求待确认</Chip>}
+                  {found.relation === 'not_friend' && (
+                    <SketchButton primary size="sm" onClick={onSendRequest}>发送请求</SketchButton>
                   )}
-                </Card>
+                </div>
+              </div>
+            )}
+          </PaperCard>
 
-                <Card title="通过邀请链接接受好友">
-                  <Space.Compact style={{ width: '100%' }}>
-                    <Input
-                      placeholder="粘贴邀请 token"
-                      value={acceptToken}
-                      onChange={(e) => setAcceptToken(e.target.value)}
-                    />
-                    <Button type="primary" onClick={onAcceptInvite}>
-                      接受
-                    </Button>
-                  </Space.Compact>
-                  <Typography.Paragraph type="secondary" style={{ marginTop: 8, marginBottom: 0 }}>
-                    从邀请链接复制 <code>?token=</code> 后面的部分
-                  </Typography.Paragraph>
-                </Card>
-              </Space>
-            ),
-          },
-          {
-            key: 'requests',
-            label: `待处理 (${incoming.filter((r) => r.status === 0).length})`,
-            children: (
-              <Card>
-                {incoming.length === 0 ? (
-                  <Empty description="暂无请求" />
-                ) : (
-                  <List
-                    dataSource={incoming}
-                    renderItem={(r) => (
-                      <List.Item
-                        actions={
-                          r.status === 0
-                            ? [
-                                <Button key="ok" type="primary" size="small" icon={<CheckOutlined />} onClick={() => onHandle(r.id, 'accept')}>
-                                  接受
-                                </Button>,
-                                <Button key="no" danger size="small" icon={<CloseOutlined />} onClick={() => onHandle(r.id, 'reject')}>
-                                  拒绝
-                                </Button>,
-                              ]
-                            : undefined
-                        }
-                      >
-                        <List.Item.Meta
-                          title={
-                            <Space>
-                              <Typography.Text>{r.fromNickname}</Typography.Text>
-                              {r.status === 0 && <Tag color="blue">待处理</Tag>}
-                              {r.status === 1 && <Tag color="blue">已接受</Tag>}
-                              {r.status === 2 && <Tag>已拒绝</Tag>}
-                              {r.status === 3 && <Tag>已过期</Tag>}
-                            </Space>
-                          }
-                          description={r.message || '（无留言）'}
-                        />
-                      </List.Item>
-                    )}
-                  />
-                )}
-              </Card>
-            ),
-          },
-          {
-            key: 'outgoing',
-            label: `已发送 (${outgoing.length})`,
-            children: (
-              <Card>
-                {outgoing.length === 0 ? (
-                  <Empty description="暂无发送中的请求" />
-                ) : (
-                  <List
-                    dataSource={outgoing}
-                    renderItem={(r) => (
-                      <List.Item>
-                        <List.Item.Meta
-                          title={r.toNickname}
-                          description={
-                            <Space>
-                              <Typography.Text type="secondary">{r.message || '（无留言）'}</Typography.Text>
-                              {r.status === 0 && <Tag color="blue">等待对方确认</Tag>}
-                              {r.status === 1 && <Tag color="blue">已通过</Tag>}
-                              {r.status === 2 && <Tag>已拒绝</Tag>}
-                              {r.status === 3 && <Tag>已过期</Tag>}
-                            </Space>
-                          }
-                        />
-                      </List.Item>
-                    )}
-                  />
-                )}
-              </Card>
-            ),
-          },
-        ]}
-      />
+          <PaperCard>
+            <h3 className="display" style={{ fontSize: 22, margin: '0 0 12px' }}>通过邀请链接接受好友</h3>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Input
+                placeholder="粘贴邀请 token"
+                value={acceptToken}
+                onChange={(e) => setAcceptToken(e.target.value)}
+                style={{ flex: 1 }}
+              />
+              <SketchButton primary onClick={onAcceptInvite} style={{ whiteSpace: 'nowrap', flex: '0 0 auto' }}>接受</SketchButton>
+            </div>
+            <p className="hand ink-soft" style={{ marginTop: 10, marginBottom: 0, fontSize: 13 }}>
+              从邀请链接复制 <code className="mono">?token=</code> 后面的部分
+            </p>
+          </PaperCard>
+        </div>
+      )}
+
+      {tab === 'requests' && (
+        <div>
+          {incoming.length === 0 ? (
+            <PaperCard><EmptyState text="暂无好友请求" /></PaperCard>
+          ) : (
+            incoming.map((r) => (
+              <PaperCard key={r.id} style={{ marginBottom: 10, padding: '14px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <span className="hand" style={{ fontWeight: 700 }}>{r.fromNickname}</span>
+                      {r.status === 0 && <Chip color="var(--accent-soft)">待处理</Chip>}
+                      {r.status === 1 && <Chip color="var(--accent-soft)">已接受</Chip>}
+                      {r.status === 2 && <Chip color="var(--paper-3)">已拒绝</Chip>}
+                      {r.status === 3 && <Chip color="var(--paper-3)">已过期</Chip>}
+                    </div>
+                    <div className="hand ink-soft" style={{ fontSize: 13, marginTop: 4 }}>
+                      {r.message || '（无留言）'}
+                    </div>
+                  </div>
+                  {r.status === 0 && (
+                    <>
+                      <SketchButton primary size="sm" onClick={() => onHandle(r.id, 'accept')}>
+                        <CheckOutlined style={{ marginRight: 4 }} />接受
+                      </SketchButton>
+                      <SketchButton size="sm" onClick={() => onHandle(r.id, 'reject')}>
+                        <CloseOutlined style={{ marginRight: 4 }} />拒绝
+                      </SketchButton>
+                    </>
+                  )}
+                </div>
+              </PaperCard>
+            ))
+          )}
+        </div>
+      )}
+
+      {tab === 'outgoing' && (
+        <div>
+          {outgoing.length === 0 ? (
+            <PaperCard><EmptyState text="暂无发送中的请求" /></PaperCard>
+          ) : (
+            outgoing.map((r) => (
+              <PaperCard key={r.id} style={{ marginBottom: 10, padding: '14px 18px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                  <span className="hand" style={{ fontWeight: 700 }}>{r.toNickname}</span>
+                  <span className="hand ink-soft" style={{ flex: 1, fontSize: 13 }}>
+                    {r.message || '（无留言）'}
+                  </span>
+                  {r.status === 0 && <Chip color="var(--accent-soft)">等待对方确认</Chip>}
+                  {r.status === 1 && <Chip color="var(--accent-soft)">已通过</Chip>}
+                  {r.status === 2 && <Chip color="var(--paper-3)">已拒绝</Chip>}
+                  {r.status === 3 && <Chip color="var(--paper-3)">已过期</Chip>}
+                </div>
+              </PaperCard>
+            ))
+          )}
+        </div>
+      )}
 
       <Modal
-        title="邀请链接"
+        title={<span className="display" style={{ fontSize: 22 }}>邀请链接</span>}
         open={inviteOpen}
         onCancel={() => setInviteOpen(false)}
-        footer={[
-          <Button key="close" onClick={() => setInviteOpen(false)}>
-            关闭
-          </Button>,
-          <Button key="copy" type="primary" icon={<CopyOutlined />} onClick={copyInvite}>
-            复制链接
-          </Button>,
-        ]}
+        footer={
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <SketchButton onClick={() => setInviteOpen(false)}>关闭</SketchButton>
+            <SketchButton primary onClick={copyInvite}>
+              <CopyOutlined style={{ marginRight: 4 }} />复制链接
+            </SketchButton>
+          </div>
+        }
       >
-        <Alert title="链接 7 天内有效，被接受后即失效" type="info" style={{ marginBottom: 12 }} />
+        <Alert message="链接 7 天内有效，被接受后即失效" type="info" style={{ marginBottom: 12 }} />
         <Input.TextArea value={inviteUrl ?? ''} autoSize rows={2} readOnly />
       </Modal>
 
       <Modal
-        title={`设置备注 - ${remarkTarget?.nickname ?? ''}`}
+        title={<span className="display" style={{ fontSize: 22 }}>设置备注 - {remarkTarget?.nickname ?? ''}</span>}
         open={!!remarkTarget}
-        onOk={onRemarkSave}
         onCancel={() => setRemarkTarget(null)}
+        footer={
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <SketchButton onClick={() => setRemarkTarget(null)}>取消</SketchButton>
+            <SketchButton primary onClick={onRemarkSave}>保存</SketchButton>
+          </div>
+        }
       >
         <Input
           value={remarkVal}

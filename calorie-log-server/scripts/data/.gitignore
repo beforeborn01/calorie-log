@@ -1,0 +1,8 @@
+# 抓取脚本的中间缓存：可重新生成，体量大，不入仓
+# - caloriedata raw/ 是 529 个详情页 HTML 解析后的 JSON
+# - sanotsu raw/ 是 GitHub 上 74 个 merged-*.json 的镜像
+# 重新抓取：python scripts/scrape_sanotsu.py 或 scripts/scrape_caloriedata.py
+*/raw/
+
+# macOS
+.DS_Store

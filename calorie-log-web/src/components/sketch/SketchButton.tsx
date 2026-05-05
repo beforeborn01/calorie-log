@@ -29,6 +29,11 @@ export const SketchButton: React.FC<SketchButtonProps> = ({
   ...rest
 }) => (
   <button
+    // 默认 type="button"，避免内嵌在 antd <Form> 里时同时触发 native submit
+    // 与 onClick={() => form.submit()}，导致 onFinish 被调两次（曾让 PUT
+    // /users/profile 在 ProfileSetupPage 双发，第二次撞乐观锁报"操作冲突"）。
+    // 调用方需要 submit 行为可显式传 type="submit" 覆盖。
+    type="button"
     {...rest}
     style={{
       position: 'relative',

@@ -22,6 +22,8 @@ export const Pill: React.FC<PillProps> = ({ active, children, style, ...rest }) 
       padding: '0 16px',
       background: active ? 'var(--accent-soft)' : 'transparent',
       border: 'none',
+      // clip 方形背景到 pill，跟 SketchBox r=17 描边对齐
+      borderRadius: 17,
       cursor: 'pointer',
       fontFamily: 'Kalam, sans-serif',
       fontSize: 14,

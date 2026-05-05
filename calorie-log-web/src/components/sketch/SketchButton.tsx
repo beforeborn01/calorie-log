@@ -41,6 +41,9 @@ export const SketchButton: React.FC<SketchButtonProps> = ({
       padding: `0 ${PX[size]}px`,
       background: primary ? 'var(--accent-soft)' : 'transparent',
       border: 'none',
+      // 把方形背景 clip 成 pill，跟 SketchBox 的 r={H/2} 一致；
+      // 否则 primary 模式下 var(--accent-soft) 会从描边外的方形角溢出
+      borderRadius: H[size] / 2,
       cursor: 'pointer',
       fontFamily: 'Kalam, sans-serif',
       fontSize: FS[size],

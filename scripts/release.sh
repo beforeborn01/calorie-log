@@ -45,44 +45,44 @@ while [[ $# -gt 0 ]]; do
     *) echo "未知参数: $1" >&2; exit 2 ;;
   esac
 done
-[[ -z "$BRANCH" ]] && BRANCH=$(git branch --show-current)
+[[ -z "${BRANCH}" ]] && BRANCH=$(git branch --show-current)
 
 log()  { printf '\033[36m[release]\033[0m %s\n' "$*"; }
 warn() { printf '\033[33m[release][WARN]\033[0m %s\n' "$*"; }
 err()  { printf '\033[31m[release][ERROR]\033[0m %s\n' "$*" >&2; exit 1; }
 ok()   { printf '\033[32m[release][✓]\033[0m %s\n' "$*"; }
 
-ssh_ecs() { ssh -i "$ECS_KEY" -o ConnectTimeout=15 -o BatchMode=yes "$ECS_HOST" "$@"; }
+ssh_ecs() { ssh -i "${ECS_KEY}" -o ConnectTimeout=15 -o BatchMode=yes "${ECS_HOST}" "$@"; }
 
 # ---------- 1. 本地预检 ----------
 local_checks() {
-  log "本地预检：分支=$BRANCH"
+  log "本地预检：分支=${BRANCH}"
 
   [[ -z "$(git status --porcelain)" ]] || err "工作树有未提交改动。先 git commit + git push。"
 
   local local_sha remote_sha
   local_sha=$(git rev-parse HEAD)
-  remote_sha=$(git rev-parse "origin/$BRANCH" 2>/dev/null) || \
-    err "远端没有 origin/$BRANCH。先 git push -u origin $BRANCH。"
+  remote_sha=$(git rev-parse "origin/${BRANCH}" 2>/dev/null) || \
+    err "远端没有 origin/${BRANCH}。先 git push -u origin ${BRANCH}。"
   [[ "$local_sha" == "$remote_sha" ]] || \
-    err "本地 HEAD 与 origin/$BRANCH 不一致：本地=${local_sha:0:7} 远端=${remote_sha:0:7}；先 git push。"
-  ok "本地干净，HEAD ${local_sha:0:7} 与 origin/$BRANCH 一致"
+    err "本地 HEAD 与 origin/${BRANCH} 不一致：本地=${local_sha:0:7} 远端=${remote_sha:0:7}；先 git push。"
+  ok "本地干净，HEAD ${local_sha:0:7} 与 origin/${BRANCH} 一致"
 
   ssh_ecs 'echo ok' >/dev/null 2>&1 || \
-    err "无法 SSH 到 $ECS_HOST。检查 sshmeet 是否通；或 $ECS_KEY 权限是否 600。"
-  ok "ECS 可达：$ECS_HOST"
+    err "无法 SSH 到 ${ECS_HOST}。检查 sshmeet 是否通；或 ${ECS_KEY} 权限是否 600。"
+  ok "ECS 可达：${ECS_HOST}"
 }
 
 # ---------- 2. 调用 ECS 上的 deploy.sh update ----------
 deploy() {
-  log "ECS 端：cd $ECS_PROJECT_DIR && ./scripts/deploy.sh update（分支：$BRANCH）"
+  log "ECS 端：cd ${ECS_PROJECT_DIR} && ./scripts/deploy.sh update（分支：${BRANCH}）"
 
-  # 用未引号的 here-doc：本地变量 $BRANCH/$ECS_PROJECT_DIR 在本地展开后嵌入；
+  # 用未引号的 here-doc：本地变量 ${BRANCH}/${ECS_PROJECT_DIR} 在本地展开后嵌入；
   # ECS 端 shell 变量统一 \$ 转义保护
   ssh_ecs bash -s <<EOF
 set -euo pipefail
 
-cd "$ECS_PROJECT_DIR"
+cd "${ECS_PROJECT_DIR}"
 
 # 显式拒绝 ECS 端的脏工作树（git pull 会无声失败）
 if [ -n "\$(git status --porcelain)" ]; then
@@ -93,10 +93,10 @@ fi
 
 # 切到目标分支（若已在则空跑）
 current=\$(git branch --show-current)
-if [ "\$current" != "$BRANCH" ]; then
-  echo "[ecs] 切分支：\$current -> $BRANCH"
+if [ "\$current" != "${BRANCH}" ]; then
+  echo "[ecs] 切分支：\$current -> ${BRANCH}"
   git fetch --prune origin
-  git checkout "$BRANCH"
+  git checkout "${BRANCH}"
 fi
 
 # 委托给现有 deploy.sh：拉代码 + 重建全部 service + image prune
@@ -109,7 +109,7 @@ wait_healthy() {
   log "等 app 健康（最多 ${HEALTH_TIMEOUT}s）"
   ssh_ecs bash -s <<EOF
 set -e
-cd "$ECS_PROJECT_DIR"
+cd "${ECS_PROJECT_DIR}"
 deadline=\$(( \$(date +%s) + ${HEALTH_TIMEOUT} ))
 while [ \$(date +%s) -lt \$deadline ]; do
   cid=\$(docker compose -f docker-compose.prod.yml ps -q app 2>/dev/null)
@@ -130,9 +130,9 @@ EOF
 
 # ---------- 4. 冒烟测试 ----------
 smoke_test() {
-  log "冒烟：$PUBLIC_BASE_URL/api/v1/auth/send-code 应返回 code=\"123456\""
+  log "冒烟：${PUBLIC_BASE_URL}/api/v1/auth/send-code 应返回 code=\"123456\""
   local resp
-  resp=$(curl -sS --max-time 15 -X POST "$PUBLIC_BASE_URL/api/v1/auth/send-code" \
+  resp=$(curl -sS --max-time 15 -X POST "${PUBLIC_BASE_URL}/api/v1/auth/send-code" \
     -H 'Content-Type: application/json' \
     -d '{"identifier":"13900000099","scene":"register"}' 2>&1) || {
       warn "请求失败：$resp"; return 1
@@ -150,9 +150,9 @@ smoke_test() {
 }
 
 # ---------- main ----------
-log "目标：$ECS_HOST:$ECS_PROJECT_DIR · 分支 $BRANCH"
+log "目标：${ECS_HOST}:${ECS_PROJECT_DIR} · 分支 ${BRANCH}"
 [[ $SKIP_CHECKS -eq 1 ]] || local_checks
 deploy
-wait_healthy || warn "健康检查未过，但已部署；人工核查 \`sshmeet 'cd $ECS_PROJECT_DIR && ./scripts/deploy.sh logs app'\`"
+wait_healthy || warn "健康检查未过，但已部署；人工核查 \`sshmeet 'cd ${ECS_PROJECT_DIR} && ./scripts/deploy.sh logs app'\`"
 [[ $SKIP_SMOKE -eq 1 ]] || smoke_test || warn "冒烟未过，但容器已起，请人工再查"
-ok "完成。访问 $PUBLIC_BASE_URL/"
+ok "完成。访问 ${PUBLIC_BASE_URL}/"

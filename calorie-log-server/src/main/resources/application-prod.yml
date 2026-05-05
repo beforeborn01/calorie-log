@@ -20,8 +20,10 @@ spring:
 
 app:
   auth:
-    mock-verify-code: ""
-    mock-verify-code-enabled: false
+    # ⚠️ 临时方案：真实 SMS/Mail 通道接入前，prod 也走固定码 123456
+    # 整个发码 / 校验链路保持不变，只是不发短信、固定值。接入 SmsService 后请改回 false。
+    mock-verify-code: "123456"
+    mock-verify-code-enabled: true
 
 springdoc:
   api-docs:

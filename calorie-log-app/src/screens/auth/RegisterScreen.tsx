@@ -23,7 +23,7 @@ export default function RegisterScreen({ navigation }: Props) {
     setSending(true);
     try {
       const resp = await sendCode(identifier, 'register');
-      Alert.alert('验证码已发送', resp.code ? `dev: ${resp.code}` : '请查看手机/邮箱');
+      Alert.alert('验证码已发送', resp.code ? `测试码: ${resp.code}` : '请查看手机/邮箱');
     } catch (e: any) {
       Alert.alert('发送失败', e.message);
     } finally {

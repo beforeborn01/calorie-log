@@ -18,8 +18,12 @@ export default function ResetPasswordPage() {
     }
     setSending(true);
     try {
-      await apiPost('/auth/send-code', { identifier, scene: 'reset_password' });
-      message.success('验证码已发送（dev 模式用 123456）');
+      const resp = await apiPost<{ sent: boolean; code?: string }>('/auth/send-code', {
+        identifier,
+        scene: 'reset_password',
+      });
+      if (resp.code) message.success(`验证码已发送（测试码: ${resp.code}）`);
+      else message.success('验证码已发送');
     } finally {
       setSending(false);
     }

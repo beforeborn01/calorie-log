@@ -25,16 +25,18 @@ public class VerifyCodeService {
     @Value("${app.auth.mock-verify-code:123456}")
     private String mockCode;
 
-    @Value("${spring.profiles.active:prod}")
-    private String activeProfile;
-
     private static final String CODE_PREFIX = "auth:verify_code:";
     private static final String LOCK_PREFIX = "auth:verify_code_lock:";
     private static final Duration CODE_TTL = Duration.ofMinutes(5);
     private static final Duration LOCK_TTL = Duration.ofMinutes(1);
 
     /**
-     * Send a verification code. Returns the code when mock mode is enabled; returns null in prod (real SMS/email).
+     * Send a verification code.
+     * <p>
+     * 当 {@code app.auth.mock-verify-code-enabled=true} 时（不再受 profile 限制），
+     * 将固定码 {@code app.auth.mock-verify-code} 写入 Redis 并在响应中返回明码——
+     * 用于 prod 在真实 SMS / Mail 接入前提供「假注册」通道。
+     * 真实通道（SmsService / MailService）接入后请关闭此开关。
      */
     public String sendCode(String identifier, String scene) {
         IdentifierUtils.IdentifierType type = IdentifierUtils.detect(identifier);
@@ -49,7 +51,7 @@ public class VerifyCodeService {
         }
 
         String code;
-        if (mockEnabled && "dev".equals(activeProfile)) {
+        if (mockEnabled) {
             code = mockCode;
             log.info("[MOCK] send verify code: identifier={} scene={} code={}", identifier, scene, code);
         } else {
@@ -60,7 +62,7 @@ public class VerifyCodeService {
 
         redis.opsForValue().set(CODE_PREFIX + scene + ":" + identifier, code, CODE_TTL);
 
-        return (mockEnabled && "dev".equals(activeProfile)) ? code : null;
+        return mockEnabled ? code : null;
     }
 
     public void verify(String identifier, String scene, String code) {

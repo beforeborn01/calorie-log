@@ -25,7 +25,7 @@ export default function ResetPasswordScreen({ navigation }: Props) {
         identifier,
         scene: 'reset_password',
       });
-      Alert.alert('已发送', resp.code ? `dev mock: ${resp.code}` : '');
+      Alert.alert('已发送', resp.code ? `测试码: ${resp.code}` : '请查看手机/邮箱');
     } catch (e: any) {
       Alert.alert('发送失败', e.message);
     } finally {

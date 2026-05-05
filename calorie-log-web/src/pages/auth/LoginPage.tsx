@@ -44,7 +44,7 @@ export default function LoginPage() {
     setSending(true);
     try {
       const resp = await sendCode(identifier, 'login');
-      if (resp.code) message.success(`验证码已发送（dev: ${resp.code}）`);
+      if (resp.code) message.success(`验证码已发送（测试码: ${resp.code}）`);
       else message.success('验证码已发送');
     } finally {
       setSending(false);

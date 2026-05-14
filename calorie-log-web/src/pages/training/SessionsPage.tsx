@@ -1,8 +1,10 @@
 // 训练历史
 import { useEffect, useState } from 'react';
 import { App, Button, Card, Empty, Space, Statistic, Tag } from 'antd';
+import { EditOutlined } from '@ant-design/icons';
 import { listSessions, type WorkoutSession } from '../../api/training';
 import { useNavigate } from 'react-router-dom';
+import QuickLogModal from './QuickLogModal';
 
 function statusColor(s: WorkoutSession['status']) {
   if (s === 'completed') return 'success';
@@ -19,13 +21,18 @@ export default function SessionsPage() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [loading, setLoading] = useState(false);
+  const [quickOpen, setQuickOpen] = useState(false);
 
-  useEffect(() => {
+  function reload() {
     setLoading(true);
     listSessions(1, 50)
       .then(setSessions)
       .catch((e) => message.error((e as Error).message || '加载失败'))
       .finally(() => setLoading(false));
+  }
+
+  useEffect(() => {
+    reload();
   }, []);
 
   const totalVolume = sessions
@@ -45,6 +52,9 @@ export default function SessionsPage() {
       >
         <h2 style={{ margin: 0 }}>训练历史</h2>
         <Space>
+          <Button icon={<EditOutlined />} onClick={() => setQuickOpen(true)}>
+            补录
+          </Button>
           <Button onClick={() => navigate('/training/plans')}>训练计划</Button>
           <Button onClick={() => navigate('/training/stats')}>统计 / PR</Button>
         </Space>
@@ -89,6 +99,12 @@ export default function SessionsPage() {
           ))}
         </Space>
       )}
+
+      <QuickLogModal
+        open={quickOpen}
+        onClose={() => setQuickOpen(false)}
+        onSuccess={() => reload()}
+      />
     </div>
   );
 }

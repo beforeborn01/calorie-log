@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@MapperScan("com.calorielog.module.*.mapper")
+@MapperScan({"com.calorielog.module.*.mapper", "com.calorielog.module.training.*.mapper"})
 @EnableAsync
 @EnableScheduling
 public class CalorieLogApplication {

@@ -38,6 +38,7 @@ const NAV: { key: string; path: string; label: string; icon: React.ReactNode }[]
   { key: 'statistics', path: '/statistics', label: '每日统计', icon: <BarChartOutlined /> },
   { key: 'body', path: '/body', label: '体重体脂', icon: <HeartOutlined /> },
   { key: 'strength', path: '/strength', label: '力量训练', icon: <ThunderboltOutlined /> },
+  { key: 'training', path: '/training/plans', label: '训练计划', icon: <ThunderboltOutlined /> },
   { key: 'reports', path: '/reports', label: '周月报告', icon: <DashboardOutlined /> },
   { key: 'friends', path: '/friends', label: '好友', icon: <TeamOutlined /> },
   { key: 'ranking', path: '/ranking', label: '排行榜', icon: <CrownOutlined /> },

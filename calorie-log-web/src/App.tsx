@@ -31,6 +31,10 @@ const RankingPage = lazy(() => import('./pages/social/RankingPage'));
 const RecognizePage = lazy(() => import('./pages/ai/RecognizePage'));
 const CookingPage = lazy(() => import('./pages/ai/CookingPage'));
 const FavoritesPage = lazy(() => import('./pages/ai/FavoritesPage'));
+const PlansPage = lazy(() => import('./pages/training/PlansPage'));
+const ActiveWorkoutPage = lazy(() => import('./pages/training/ActiveWorkoutPage'));
+const TrainingSessionsPage = lazy(() => import('./pages/training/SessionsPage'));
+const TrainingStatsPage = lazy(() => import('./pages/training/TrainingStatsPage'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = tokenStore.get();
@@ -93,6 +97,10 @@ function App() {
                 <Route path="/recognize" element={<RecognizePage />} />
                 <Route path="/cooking" element={<CookingPage />} />
                 <Route path="/favorites" element={<FavoritesPage />} />
+                <Route path="/training/plans" element={<PlansPage />} />
+                <Route path="/training/active/:sessionId" element={<ActiveWorkoutPage />} />
+                <Route path="/training/history" element={<TrainingSessionsPage />} />
+                <Route path="/training/stats" element={<TrainingStatsPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

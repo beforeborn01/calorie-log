@@ -34,6 +34,8 @@ public enum ErrorCode {
     WECHAT_AUTH_FAILED(42001, "微信授权失败"),
     WECHAT_TEMP_TOKEN_INVALID(42002, "微信临时 Token 无效"),
     WECHAT_BIND_REQUIRED(42003, "请绑定手机号"),
+    WECHAT_CODE_INVALID(42004, "微信登录码无效或已使用"),
+    WECHAT_NOT_CONFIGURED(42005, "微信登录未启用"),
 
     // 食物 403xx
     FOOD_NOT_FOUND(43001, "食物不存在"),
@@ -50,6 +52,12 @@ public enum ErrorCode {
     // 训练 406xx
     NOT_TRAINING_DAY(46001, "当前为休息日，无法记录力量训练"),
     EXERCISE_NOT_FOUND(46002, "训练动作不存在"),
+    EXERCISE_NO_PERMISSION(46003, "无权操作该动作"),
+    PLAN_NOT_FOUND(46004, "训练计划不存在"),
+    PLAN_NO_PERMISSION(46005, "无权操作该计划"),
+    SESSION_NOT_FOUND(46006, "训练记录不存在"),
+    SESSION_NO_PERMISSION(46007, "无权操作该记录"),
+    SESSION_ALREADY_FINISHED(46008, "训练已结束，无法修改"),
 
     // 社交 407xx
     FRIEND_REQUEST_EXISTS(47001, "已存在待处理的好友请求"),

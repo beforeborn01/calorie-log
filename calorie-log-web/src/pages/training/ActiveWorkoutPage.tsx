@@ -8,12 +8,20 @@ import {
   Card,
   Checkbox,
   InputNumber,
+  Modal,
   Progress,
   Space,
   Statistic,
   Tag,
+  Typography,
 } from 'antd';
-import { CheckOutlined, PauseOutlined, PlayCircleOutlined, StopOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  PauseOutlined,
+  PlayCircleOutlined,
+  StopOutlined,
+  TrophyOutlined,
+} from '@ant-design/icons';
 import {
   abortSession,
   finishSession,
@@ -21,6 +29,7 @@ import {
   updateSession,
   type CompletedSet,
   type ExerciseSession,
+  type FinishSessionResponse,
   type WorkoutSession,
 } from '../../api/training';
 
@@ -35,11 +44,23 @@ export default function ActiveWorkoutPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // 休息计时器
-  const [restRemaining, setRestRemaining] = useState(0);
+  // 休息计时器：endAt 是绝对时间戳，存到 localStorage 让切应用回来不丢
+  const restKey = sessionId ? `clog_rest_${sessionId}` : null;
+  const [restEndAt, setRestEndAt] = useState<number | null>(null);
   const [restTotal, setRestTotal] = useState(0);
   const [restPaused, setRestPaused] = useState(false);
+  const [restPauseLeft, setRestPauseLeft] = useState(0); // 暂停时剩余秒数
+  const [now, setNow] = useState(() => Date.now());
   const restTimer = useRef<number | null>(null);
+
+  const restRemaining = restPaused
+    ? restPauseLeft
+    : restEndAt
+    ? Math.max(0, Math.ceil((restEndAt - now) / 1000))
+    : 0;
+
+  // 完成总结 modal
+  const [finishResult, setFinishResult] = useState<FinishSessionResponse | null>(null);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -50,42 +71,95 @@ export default function ActiveWorkoutPage() {
       .finally(() => setLoading(false));
   }, [sessionId]);
 
-  // rest tick
+  // 从 localStorage 还原计时器（切应用回来时）
+  useEffect(() => {
+    if (!restKey) return;
+    const raw = localStorage.getItem(restKey);
+    if (!raw) return;
+    try {
+      const p = JSON.parse(raw) as { endAt?: number; total?: number; pauseLeft?: number; paused?: boolean };
+      if (p.paused && p.pauseLeft) {
+        setRestPauseLeft(p.pauseLeft);
+        setRestPaused(true);
+        setRestTotal(p.total || 0);
+      } else if (p.endAt && p.endAt > Date.now()) {
+        setRestEndAt(p.endAt);
+        setRestTotal(p.total || 0);
+      } else {
+        localStorage.removeItem(restKey);
+      }
+    } catch {
+      /* noop */
+    }
+  }, [restKey]);
+
+  // 持久化计时器状态
+  useEffect(() => {
+    if (!restKey) return;
+    if (!restEndAt && !restPaused) {
+      localStorage.removeItem(restKey);
+      return;
+    }
+    localStorage.setItem(
+      restKey,
+      JSON.stringify({ endAt: restEndAt, total: restTotal, paused: restPaused, pauseLeft: restPauseLeft })
+    );
+  }, [restEndAt, restTotal, restPaused, restPauseLeft, restKey]);
+
+  // 每秒 tick 一次（基于真实时间戳，回到前台立刻校准）
   useEffect(() => {
     if (restTimer.current) window.clearInterval(restTimer.current);
-    if (restRemaining <= 0 || restPaused) return;
+    if (!restEndAt || restPaused) return;
     restTimer.current = window.setInterval(() => {
-      setRestRemaining((r) => {
-        if (r <= 1) {
-          if (restTimer.current) window.clearInterval(restTimer.current);
-          // 简单蜂鸣
-          try {
-            const ctx = new AudioContext();
-            const osc = ctx.createOscillator();
-            osc.frequency.value = 880;
-            osc.connect(ctx.destination);
-            osc.start();
-            setTimeout(() => {
-              osc.stop();
-              ctx.close();
-            }, 200);
-          } catch {
-            /* noop */
-          }
-          return 0;
+      const t = Date.now();
+      setNow(t);
+      if (t >= restEndAt) {
+        if (restTimer.current) window.clearInterval(restTimer.current);
+        try {
+          const ctx = new AudioContext();
+          const osc = ctx.createOscillator();
+          osc.frequency.value = 880;
+          osc.connect(ctx.destination);
+          osc.start();
+          setTimeout(() => {
+            osc.stop();
+            ctx.close();
+          }, 200);
+        } catch {
+          /* noop */
         }
-        return r - 1;
-      });
+        setRestEndAt(null);
+      }
     }, 1000) as unknown as number;
     return () => {
       if (restTimer.current) window.clearInterval(restTimer.current);
     };
-  }, [restRemaining, restPaused]);
+  }, [restEndAt, restPaused]);
 
   function startRest(seconds: number) {
     setRestTotal(seconds);
-    setRestRemaining(seconds);
+    setRestEndAt(Date.now() + seconds * 1000);
     setRestPaused(false);
+    setRestPauseLeft(0);
+  }
+
+  function pauseRest() {
+    if (!restEndAt) return;
+    setRestPauseLeft(Math.max(0, Math.ceil((restEndAt - Date.now()) / 1000)));
+    setRestEndAt(null);
+    setRestPaused(true);
+  }
+
+  function resumeRest() {
+    if (restPauseLeft <= 0) return;
+    setRestEndAt(Date.now() + restPauseLeft * 1000);
+    setRestPaused(false);
+  }
+
+  function skipRest() {
+    setRestEndAt(null);
+    setRestPaused(false);
+    setRestPauseLeft(0);
   }
 
   function toggleSet(exIdx: number, setIdx: number) {
@@ -108,6 +182,8 @@ export default function ActiveWorkoutPage() {
     const set = session.exercises[exIdx].completedSets[setIdx];
     if (!set.isCompleted) {
       startRest(60);
+    } else {
+      skipRest(); // 取消勾选 → 终止休息
     }
   }
 
@@ -148,9 +224,8 @@ export default function ActiveWorkoutPage() {
               ? Math.floor((Date.now() - new Date(session.startTime).getTime()) / 1000)
               : undefined,
           });
-          const prCount = Object.keys(res.newPersonalRecords || {}).length;
-          message.success(`训练已完成${prCount > 0 ? ` · ${prCount} 个新 PR` : ''}`);
-          navigate('/training/history');
+          if (restKey) localStorage.removeItem(restKey);
+          setFinishResult(res);
         } catch (e) {
           message.error((e as Error).message || '结束失败');
         }
@@ -213,26 +288,28 @@ export default function ActiveWorkoutPage() {
         </Space>
       </div>
 
-      {restRemaining > 0 && (
+      {(restRemaining > 0 || restPaused) && (
         <Card style={{ marginBottom: 16, background: '#fffbe6', borderColor: '#ffe58f' }}>
           <Space size="large" align="center">
             <Statistic title="组间休息" value={restRemaining} suffix="秒" />
             <Progress
               type="circle"
-              percent={Math.round(((restTotal - restRemaining) / restTotal) * 100)}
+              percent={
+                restTotal > 0 ? Math.round(((restTotal - restRemaining) / restTotal) * 100) : 0
+              }
               size={64}
             />
             <Space>
               {!restPaused ? (
-                <Button icon={<PauseOutlined />} onClick={() => setRestPaused(true)}>
+                <Button icon={<PauseOutlined />} onClick={pauseRest}>
                   暂停
                 </Button>
               ) : (
-                <Button icon={<PlayCircleOutlined />} onClick={() => setRestPaused(false)}>
+                <Button icon={<PlayCircleOutlined />} onClick={resumeRest}>
                   继续
                 </Button>
               )}
-              <Button onClick={() => setRestRemaining(0)}>跳过</Button>
+              <Button onClick={skipRest}>跳过</Button>
             </Space>
           </Space>
         </Card>
@@ -258,7 +335,67 @@ export default function ActiveWorkoutPage() {
           />
         ))}
       </Space>
+
+      <FinishSummaryModal
+        result={finishResult}
+        onClose={() => {
+          setFinishResult(null);
+          navigate('/training/history');
+        }}
+      />
     </div>
+  );
+}
+
+function FinishSummaryModal({
+  result,
+  onClose,
+}: {
+  result: FinishSessionResponse | null;
+  onClose: () => void;
+}) {
+  if (!result) return null;
+  const { session, newPersonalRecords } = result;
+  const prCount = Object.keys(newPersonalRecords || {}).length;
+  const duration = session.duration ? Math.round(session.duration / 60) : 0;
+  const volume = session.totalVolume ? Math.round(session.totalVolume) : 0;
+  return (
+    <Modal
+      open={!!result}
+      onCancel={onClose}
+      onOk={onClose}
+      okText="完成"
+      cancelButtonProps={{ style: { display: 'none' } }}
+      width={520}
+      centered
+      title={
+        <Space>
+          <TrophyOutlined style={{ color: '#fadb14' }} />
+          训练完成
+        </Space>
+      }
+    >
+      <Typography.Paragraph type="secondary" style={{ marginTop: 0 }}>
+        {session.name}
+      </Typography.Paragraph>
+      <Space size="large" wrap style={{ marginBottom: 16 }}>
+        <Statistic title="时长" value={duration} suffix="分钟" />
+        <Statistic title="训练量" value={volume} suffix="kg·rep" />
+        <Statistic title="新 PR" value={prCount} suffix="个" valueStyle={prCount > 0 ? { color: '#52c41a' } : {}} />
+      </Space>
+      {prCount > 0 && (
+        <Card size="small" style={{ background: '#f6ffed', borderColor: '#b7eb8f' }}>
+          <Typography.Text strong>🎉 新打破的记录：</Typography.Text>
+          <ul style={{ marginTop: 8, paddingLeft: 20, marginBottom: 0 }}>
+            {Object.entries(newPersonalRecords).map(([eid, v]) => (
+              <li key={eid}>
+                动作 #{eid} — {Number(v.weight).toFixed(1)} kg
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+    </Modal>
   );
 }
 

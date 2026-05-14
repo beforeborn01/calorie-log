@@ -1,5 +1,5 @@
 // 训练计划列表 + 新建/编辑（合并自 sports 项目）
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   App,
@@ -17,6 +17,8 @@ import {
   Tooltip,
 } from 'antd';
 import {
+  ArrowDownOutlined,
+  ArrowUpOutlined,
   DeleteOutlined,
   EditOutlined,
   PlayCircleOutlined,
@@ -25,8 +27,8 @@ import {
 import {
   createPlan,
   deletePlan as deletePlanApi,
-  listExercises,
   listPlans,
+  searchExercises,
   type PlanExercise,
   type TrainingExercise,
   updatePlan,
@@ -58,7 +60,6 @@ export default function PlansPage() {
   const [loading, setLoading] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [editing, setEditing] = useState<WorkoutPlan | null>(null);
-  const [allExercises, setAllExercises] = useState<TrainingExercise[]>([]);
 
   async function refresh() {
     setLoading(true);
@@ -74,7 +75,6 @@ export default function PlansPage() {
 
   useEffect(() => {
     refresh();
-    listExercises().then(setAllExercises).catch(() => {});
   }, []);
 
   async function onStart(plan: WorkoutPlan) {
@@ -219,7 +219,6 @@ export default function PlansPage() {
         open={editorOpen}
         onClose={() => setEditorOpen(false)}
         plan={editing}
-        allExercises={allExercises}
         onSaved={() => {
           setEditorOpen(false);
           refresh();
@@ -233,24 +232,35 @@ function PlanEditor({
   open,
   onClose,
   plan,
-  allExercises,
   onSaved,
 }: {
   open: boolean;
   onClose: () => void;
   plan: WorkoutPlan | null;
-  allExercises: TrainingExercise[];
   onSaved: () => void;
 }) {
   const { message } = App.useApp();
   const [form] = Form.useForm();
   const [exercises, setExercises] = useState<PlanExercise[]>([]);
   const [saving, setSaving] = useState(false);
-  const exMap = useMemo(() => {
-    const m = new Map<number, TrainingExercise>();
-    allExercises.forEach((e) => m.set(e.id, e));
-    return m;
-  }, [allExercises]);
+
+  // 服务端搜索：默认 popular，输入后用全库搜
+  const [exOptions, setExOptions] = useState<TrainingExercise[]>([]);
+  const [exSearching, setExSearching] = useState(false);
+  const searchTimer = useRef<number | null>(null);
+
+  function doSearch(q: string) {
+    setExSearching(true);
+    searchExercises({ q, all: q.trim().length > 0, limit: 50 })
+      .then(setExOptions)
+      .catch(() => setExOptions([]))
+      .finally(() => setExSearching(false));
+  }
+
+  function onSearchInput(value: string) {
+    if (searchTimer.current) window.clearTimeout(searchTimer.current);
+    searchTimer.current = window.setTimeout(() => doSearch(value), 250) as unknown as number;
+  }
 
   useEffect(() => {
     if (open) {
@@ -266,6 +276,7 @@ function PlanEditor({
         form.setFieldsValue({ type: 'strength' });
         setExercises([]);
       }
+      doSearch(''); // 初始装 popular
     }
   }, [open, plan, form]);
 
@@ -275,7 +286,7 @@ function PlanEditor({
       message.info('已经添加过该动作');
       return;
     }
-    const ex = exMap.get(eid);
+    const ex = exOptions.find((e) => e.id === eid);
     setExercises([
       ...exercises,
       {
@@ -297,6 +308,14 @@ function PlanEditor({
 
   function removeExercise(idx: number) {
     setExercises(exercises.filter((_, i) => i !== idx));
+  }
+
+  function moveExercise(idx: number, delta: -1 | 1) {
+    const next = idx + delta;
+    if (next < 0 || next >= exercises.length) return;
+    const arr = [...exercises];
+    [arr[idx], arr[next]] = [arr[next], arr[idx]];
+    setExercises(arr);
   }
 
   async function onFinish(vals: { name: string; description?: string; type: string }) {
@@ -348,16 +367,31 @@ function PlanEditor({
       <h3 style={{ marginTop: 24 }}>动作清单</h3>
       <Select
         showSearch
-        placeholder="搜索并添加动作..."
+        placeholder="搜索动作（默认只显示常用，输入后全库搜）"
         style={{ width: '100%', marginBottom: 12 }}
         value={null}
+        loading={exSearching}
         onChange={(v) => v && addExercise(v)}
-        filterOption={(input, opt) =>
-          (opt?.label as string)?.toLowerCase().includes(input.toLowerCase())
-        }
-        options={allExercises.map((e) => ({
+        onSearch={onSearchInput}
+        filterOption={false}
+        notFoundContent={exSearching ? '搜索中…' : '没有匹配的动作'}
+        options={exOptions.map((e) => ({
           value: e.id,
-          label: `${e.name} · ${e.bodyPart}`,
+          label: (
+            <Space>
+              {e.imageUrl ? (
+                <img
+                  src={e.imageUrl}
+                  alt=""
+                  style={{ width: 24, height: 24, objectFit: 'cover', borderRadius: 4 }}
+                />
+              ) : null}
+              <span>{e.name}</span>
+              <Tag>{e.bodyPart}</Tag>
+              {e.isCustom ? <Tag color="purple">自建</Tag> : null}
+              {!e.isPopular && !e.isCustom ? <Tag>冷门</Tag> : null}
+            </Space>
+          ),
         }))}
       />
 
@@ -371,12 +405,32 @@ function PlanEditor({
               size="small"
               title={`${i + 1}. ${e.exerciseName || `动作#${e.exerciseId}`}`}
               extra={
-                <Button
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => removeExercise(i)}
-                />
+                <Space size={4}>
+                  <Button
+                    size="small"
+                    icon={<ArrowUpOutlined />}
+                    disabled={i === 0}
+                    onClick={() => moveExercise(i, -1)}
+                    aria-label="上移"
+                    title="上移"
+                  />
+                  <Button
+                    size="small"
+                    icon={<ArrowDownOutlined />}
+                    disabled={i === exercises.length - 1}
+                    onClick={() => moveExercise(i, 1)}
+                    aria-label="下移"
+                    title="下移"
+                  />
+                  <Button
+                    size="small"
+                    danger
+                    icon={<DeleteOutlined />}
+                    onClick={() => removeExercise(i)}
+                    aria-label="删除"
+                    title="删除"
+                  />
+                </Space>
               }
             >
               <Space wrap>

@@ -13,6 +13,7 @@ import com.calorielog.module.training.session.entity.ExerciseSession;
 import com.calorielog.module.training.session.entity.WorkoutSession;
 import com.calorielog.module.record.entity.DailySummary;
 import com.calorielog.module.record.mapper.DailySummaryMapper;
+import com.calorielog.module.record.service.DailySummaryService;
 import com.calorielog.module.training.plan.entity.WorkoutPlan;
 import com.calorielog.module.training.plan.mapper.WorkoutPlanMapper;
 import com.calorielog.module.training.session.mapper.CompletedSetMapper;
@@ -46,6 +47,7 @@ public class WorkoutSessionService {
     private final UserMapper userMapper;
     private final WorkoutPlanMapper planMapper;
     private final DailySummaryMapper dailySummaryMapper;
+    private final DailySummaryService dailySummaryService;
 
     /**
      * 把本次训练的运动消耗累加到当日 t_daily_summary。
@@ -64,6 +66,15 @@ public class WorkoutSessionService {
         }
         BigDecimal kcal = MetTable.estimateKcal(s.getDuration(), getUserBodyWeight(userId), planType);
         if (kcal.signum() <= 0) return;
+
+        // 先触发 DailySummary 重算（按 t_training_rule 算好 dayType / TDEE / 目标卡），
+        // 再把本次训练消耗累加到 exercise_calories。
+        // recompute 内部不动 exercise_calories 列，所以累加是安全的。
+        try {
+            dailySummaryService.recompute(userId, day);
+        } catch (Exception ex) {
+            // 用户没填资料 → 静默跳过；只写 exercise_calories
+        }
 
         DailySummary existing = dailySummaryMapper.findByDate(userId, day);
         if (existing == null) {

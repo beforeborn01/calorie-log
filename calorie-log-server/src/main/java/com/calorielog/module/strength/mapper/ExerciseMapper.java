@@ -22,11 +22,13 @@ public interface ExerciseMapper extends BaseMapper<Exercise> {
         return selectList(qw);
     }
 
-    /** 训练模块用：返回预设 + 该用户自建 */
+    /** 训练模块用：返回预设 + 该用户自建（默认只 popular） */
     @Select("SELECT * FROM t_exercise WHERE deleted_at IS NULL "
           + "AND (created_by IS NULL OR created_by = #{userId}) "
+          + "AND (#{popularOnly} = false OR is_popular = TRUE OR is_custom = TRUE) "
           + "ORDER BY is_custom, name")
-    List<Exercise> findVisibleToUser(@Param("userId") Long userId);
+    List<Exercise> findVisibleToUser(@Param("userId") Long userId,
+                                     @Param("popularOnly") boolean popularOnly);
 
     /** 训练模块用：按 category（英文）+ 名称模糊搜索 */
     @Select("""
@@ -35,11 +37,13 @@ public interface ExerciseMapper extends BaseMapper<Exercise> {
               AND (created_by IS NULL OR created_by = #{userId})
               AND (#{q} = '' OR name ILIKE CONCAT('%', #{q}, '%'))
               AND (#{category} = '' OR category = #{category})
-            ORDER BY is_custom, name
+              AND (#{popularOnly} = false OR is_popular = TRUE OR is_custom = TRUE OR #{q} <> '')
+            ORDER BY is_custom DESC, is_popular DESC, name
             LIMIT #{limit}
             """)
     List<Exercise> search(@Param("userId") Long userId,
                           @Param("q") String q,
                           @Param("category") String category,
+                          @Param("popularOnly") boolean popularOnly,
                           @Param("limit") int limit);
 }

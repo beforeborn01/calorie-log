@@ -38,6 +38,10 @@ public class Exercise {
     private String tips;
     /** 用户自建 = true，系统预设 = false（与 isPreset 互为反面） */
     private Boolean isCustom;
+    /** 动作演示图 URL（远程或本地路径，可空） */
+    private String imageUrl;
+    /** 常用动作（前端默认筛选） */
+    private Boolean isPopular;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;

@@ -32,7 +32,8 @@ public class ExerciseMatcher {
 
     /** 查并缓存当前用户可见的全部动作（每次 quick-log 请求做一次） */
     public List<Exercise> loadCandidates(Long userId) {
-        return exerciseMapper.findVisibleToUser(userId);
+        // 补录场景里需要全库匹配（用户可能输入冷门动作名），不限定 popular
+        return exerciseMapper.findVisibleToUser(userId, false);
     }
 
     public MatchResult match(String rawName, List<Exercise> candidates) {

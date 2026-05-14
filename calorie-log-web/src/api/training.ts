@@ -15,13 +15,20 @@ export interface TrainingExercise {
   instructions: string;
   tips: string;
   isCustom: boolean;
+  isPopular: boolean;
+  imageUrl?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
 
-export const listExercises = () => apiGet<TrainingExercise[]>('/training/exercises');
-export const searchExercises = (params: { q?: string; category?: string; limit?: number }) =>
-  apiGet<TrainingExercise[]>('/training/exercises/search', params);
+export const listExercises = (all = false) =>
+  apiGet<TrainingExercise[]>('/training/exercises', { all });
+export const searchExercises = (params: {
+  q?: string;
+  category?: string;
+  all?: boolean;
+  limit?: number;
+}) => apiGet<TrainingExercise[]>('/training/exercises/search', params);
 export const getExercise = (id: number) => apiGet<TrainingExercise>(`/training/exercises/${id}`);
 export const createCustomTrainingExercise = (data: {
   name: string;

@@ -10,7 +10,7 @@ export default function TrainingStatsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getTrainingStats(), listExercises()])
+    Promise.all([getTrainingStats(), listExercises(true)])
       .then(([s, exs]) => {
         setStats(s);
         const m = new Map<number, TrainingExercise>();

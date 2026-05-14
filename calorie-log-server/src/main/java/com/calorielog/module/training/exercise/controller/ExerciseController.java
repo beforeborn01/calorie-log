@@ -29,19 +29,22 @@ public class ExerciseController {
 
     private final ExerciseService exerciseService;
 
-    @Operation(summary = "获取全部可见动作（预设 + 自定义）")
+    @Operation(summary = "获取可见动作（默认只返回 popular，可加 all=true 拉全量）")
     @GetMapping
-    public Result<List<ExerciseDTO>> list() {
-        return Result.success(exerciseService.list(CurrentUser.requireUserId()));
+    public Result<List<ExerciseDTO>> list(
+            @RequestParam(value = "all", required = false, defaultValue = "false") boolean all) {
+        return Result.success(exerciseService.list(CurrentUser.requireUserId(), !all));
     }
 
-    @Operation(summary = "搜索动作")
+    @Operation(summary = "搜索动作（默认只在 popular + 自建里找；有 q 时全库搜）")
     @GetMapping("/search")
     public Result<List<ExerciseDTO>> search(
             @RequestParam(value = "q", required = false) String q,
             @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "all", required = false, defaultValue = "false") boolean all,
             @RequestParam(value = "limit", required = false, defaultValue = "100") int limit) {
-        return Result.success(exerciseService.search(CurrentUser.requireUserId(), q, category, limit));
+        return Result.success(exerciseService.search(
+                CurrentUser.requireUserId(), q, category, !all, limit));
     }
 
     @Operation(summary = "获取单个动作")

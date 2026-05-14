@@ -20,16 +20,17 @@ public class ExerciseService {
 
     private final ExerciseMapper exerciseMapper;
 
-    public List<ExerciseDTO> list(Long userId) {
-        return exerciseMapper.findVisibleToUser(userId).stream()
+    public List<ExerciseDTO> list(Long userId, boolean popularOnly) {
+        return exerciseMapper.findVisibleToUser(userId, popularOnly).stream()
                 .map(this::toDTO).collect(Collectors.toList());
     }
 
-    public List<ExerciseDTO> search(Long userId, String query, String category, int limit) {
+    public List<ExerciseDTO> search(Long userId, String query, String category,
+                                    boolean popularOnly, int limit) {
         String q = query == null ? "" : query.trim();
         String c = category == null ? "" : category.trim();
         int lim = Math.max(1, Math.min(limit <= 0 ? 100 : limit, 200));
-        return exerciseMapper.search(userId, q, c, lim).stream()
+        return exerciseMapper.search(userId, q, c, popularOnly, lim).stream()
                 .map(this::toDTO).collect(Collectors.toList());
     }
 
@@ -94,12 +95,15 @@ public class ExerciseService {
         d.setId(e.getId());
         d.setName(e.getName());
         d.setCategory(e.getCategory());
+        d.setBodyPart(e.getBodyPart());
         d.setPrimaryMuscles(splitMuscles(e.getPrimaryMuscles()));
         d.setSecondaryMuscles(splitMuscles(e.getSecondaryMuscles()));
         d.setDifficulty(e.getDifficulty());
         d.setInstructions(e.getInstructions());
         d.setTips(e.getTips());
         d.setIsCustom(Boolean.TRUE.equals(e.getIsCustom()));
+        d.setIsPopular(Boolean.TRUE.equals(e.getIsPopular()));
+        d.setImageUrl(e.getImageUrl());
         d.setCreatedAt(e.getCreatedAt());
         d.setUpdatedAt(e.getUpdatedAt());
         return d;

@@ -25,6 +25,11 @@ public class DailySummary {
     private BigDecimal totalFiber;
     private BigDecimal targetCalories;
     private BigDecimal tdee;
+    /**
+     * 与目标卡的差：totalCalories − targetCalories；正=吃过头、负=吃少了。
+     * 注意：与 {@code netDeficit}（在 DailyRecordsResponse 中计算）不同 —
+     * netDeficit 是消耗-摄入视角；calorieGap 是和目标的差异视角。两者保留共存。
+     */
     private BigDecimal calorieGap;
     private BigDecimal dietScore;
     private Integer foodVarietyCount;

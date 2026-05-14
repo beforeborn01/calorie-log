@@ -30,6 +30,7 @@ public class DietRecordService {
     private final FoodMapper foodMapper;
     private final GrossNetWeightService grossNetWeightService;
     private final DailySummaryService summaryService;
+    private final com.calorielog.module.record.mapper.DailySummaryMapper summaryMapper;
     private final DietScoreService dietScoreService;
     private final ExperienceService experienceService;
 
@@ -181,6 +182,17 @@ public class DietRecordService {
         resp.setTotalFat(fat);
         resp.setTotalFiber(fib);
         resp.setTargetCalories(summaryService.resolveTargetCalories(userId, date));
+
+        // 净赤字 = TDEE + 运动消耗 - 饮食卡。从 daily_summary 取，没填资料就为 null
+        com.calorielog.module.record.entity.DailySummary summary = summaryMapper.findByDate(userId, date);
+        BigDecimal tdee = summary != null ? summary.getTdee() : null;
+        BigDecimal exKcal = (summary != null && summary.getExerciseCalories() != null)
+                ? summary.getExerciseCalories() : BigDecimal.ZERO;
+        resp.setTdee(tdee);
+        resp.setExerciseCalories(exKcal);
+        if (tdee != null) {
+            resp.setNetDeficit(tdee.add(exKcal).subtract(cal));
+        }
         return resp;
     }
 }

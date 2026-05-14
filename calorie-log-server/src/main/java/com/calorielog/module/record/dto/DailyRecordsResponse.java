@@ -23,4 +23,11 @@ public class DailyRecordsResponse {
 
     /** Phase 1 暂用写死的 2000，Phase 2 替换为 TDEE 计算 */
     private BigDecimal targetCalories;
+
+    /** 基础代谢 + 活动消耗（来自 user profile + activityLevel） */
+    private BigDecimal tdee;
+    /** 当日运动总消耗 kcal（来自 t_workout_session 完成累加） */
+    private BigDecimal exerciseCalories;
+    /** 净赤字 = tdee + exerciseCalories − totalCalories；正=赤字（减脂）、负=盈余 */
+    private BigDecimal netDeficit;
 }

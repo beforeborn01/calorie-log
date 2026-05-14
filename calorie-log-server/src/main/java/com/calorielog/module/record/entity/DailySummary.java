@@ -29,6 +29,9 @@ public class DailySummary {
     private BigDecimal dietScore;
     private Integer foodVarietyCount;
 
+    /** 当日运动总消耗 kcal（来自训练 session 完成） */
+    private BigDecimal exerciseCalories;
+
     @Version
     private Integer version;
 

@@ -147,6 +147,7 @@ public class UserStatsService {
         int totalWorkouts = sessions.size();
         BigDecimal totalVolume = BigDecimal.ZERO;
         LocalDateTime lastWorkoutDate = null;
+        java.util.TreeSet<java.time.LocalDate> trainingDays = new java.util.TreeSet<>();
         for (WorkoutSession s : sessions) {
             if (s.getTotalVolume() != null) {
                 totalVolume = totalVolume.add(s.getTotalVolume());
@@ -155,7 +156,16 @@ public class UserStatsService {
             if (end != null && (lastWorkoutDate == null || end.isAfter(lastWorkoutDate))) {
                 lastWorkoutDate = end;
             }
+            if (end != null) trainingDays.add(end.toLocalDate());
         }
+
+        // streak / weekly_average 抽到 StreakCalculator 便于单测
+        java.time.LocalDate today = java.time.LocalDate.now();
+        StreakCalculator.Streaks streaks = StreakCalculator.streaks(trainingDays, today);
+        int currentStreak = streaks.currentStreak();
+        int longestStreak = streaks.longestStreak();
+        BigDecimal weeklyAverage = BigDecimal.valueOf(StreakCalculator.weeklyAverage(trainingDays, today, 8))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
 
         UserStats stats = userStatsMapper.selectById(userId);
         if (stats == null) {
@@ -165,6 +175,9 @@ public class UserStatsService {
         stats.setTotalWorkouts(totalWorkouts);
         stats.setTotalVolume(totalVolume);
         stats.setLastWorkoutDate(lastWorkoutDate);
+        stats.setCurrentStreak(currentStreak);
+        stats.setLongestStreak(longestStreak);
+        stats.setWeeklyAverage(weeklyAverage);
         userStatsMapper.updateById(stats);
 
         Map<Long, BigDecimal> maxWeightByExercise = new HashMap<>();

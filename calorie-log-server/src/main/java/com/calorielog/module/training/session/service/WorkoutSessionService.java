@@ -23,11 +23,13 @@ import com.calorielog.module.training.stats.dto.UserStatsResponse;
 import com.calorielog.module.training.stats.service.UserStatsService;
 import com.calorielog.module.user.entity.User;
 import com.calorielog.module.user.mapper.UserMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,44 +52,61 @@ public class WorkoutSessionService {
     private final DailySummaryService dailySummaryService;
 
     /**
-     * 把本次训练的运动消耗累加到当日 t_daily_summary。
-     * 公式：kcal = MET(plan.type) × 体重(kg) × 时长(小时)
-     * 同一天多次训练 → 累加；用户没填体重按 60kg 兜底；没绑 plan 当 strength 估。
+     * 按 (user, day) 全量重算 t_daily_summary.exercise_calories。
+     *
+     * <p>找当天所有 status=completed 且未删除的 session，按 MET × 体重 × 时长 求和后覆盖写。
+     * create/update/delete/finish 都走这条路径，保证「修改 / 删除已完成会话」不会留下脏数据。
+     * 幂等。</p>
+     *
+     * <p>归属规则：以 end_time 的日期归属；end_time 缺失则退到 start_time。跨午夜训练算在结束当天。</p>
      */
-    private void recordExerciseCalories(Long userId, WorkoutSession s) {
-        if (s.getDuration() == null || s.getDuration() <= 0) return;
-        LocalDateTime end = s.getEndTime() != null ? s.getEndTime() : LocalDateTime.now();
-        java.time.LocalDate day = end.toLocalDate();
+    void recomputeDailyExerciseCalories(Long userId, LocalDate day) {
+        if (day == null) return;
 
-        String planType = "strength";
-        if (s.getPlanId() != null) {
-            WorkoutPlan p = planMapper.selectById(s.getPlanId());
-            if (p != null && p.getType() != null) planType = p.getType();
-        }
-        BigDecimal kcal = MetTable.estimateKcal(s.getDuration(), getUserBodyWeight(userId), planType);
-        if (kcal.signum() <= 0) return;
+        QueryWrapper<WorkoutSession> qw = new QueryWrapper<>();
+        qw.eq("user_id", userId)
+          .eq("status", "completed")
+          .isNull("deleted_at");
+        List<WorkoutSession> all = sessionMapper.selectList(qw);
 
-        // 先触发 DailySummary 重算（按 t_training_rule 算好 dayType / TDEE / 目标卡），
-        // 再把本次训练消耗累加到 exercise_calories。
-        // recompute 内部不动 exercise_calories 列，所以累加是安全的。
-        try {
-            dailySummaryService.recompute(userId, day);
-        } catch (Exception ex) {
-            // 用户没填资料 → 静默跳过；只写 exercise_calories
+        BigDecimal bodyWeight = getUserBodyWeight(userId);
+        Map<Long, WorkoutPlan> planCache = new HashMap<>();
+        BigDecimal total = BigDecimal.ZERO;
+        for (WorkoutSession s : all) {
+            LocalDateTime ref = s.getEndTime() != null ? s.getEndTime() : s.getStartTime();
+            if (ref == null) continue;
+            if (!day.equals(ref.toLocalDate())) continue;
+            if (s.getDuration() == null || s.getDuration() <= 0) continue;
+
+            String planType = "strength";
+            if (s.getPlanId() != null) {
+                WorkoutPlan p = planCache.computeIfAbsent(s.getPlanId(), planMapper::selectById);
+                if (p != null && p.getType() != null) planType = p.getType();
+            }
+            total = total.add(MetTable.estimateKcal(s.getDuration(), bodyWeight, planType));
         }
 
         DailySummary existing = dailySummaryMapper.findByDate(userId, day);
         if (existing == null) {
-            DailySummary ds = new DailySummary();
-            ds.setUserId(userId);
-            ds.setSummaryDate(day);
-            ds.setExerciseCalories(kcal);
-            dailySummaryMapper.insert(ds);
-        } else {
-            BigDecimal prev = existing.getExerciseCalories() == null ? BigDecimal.ZERO : existing.getExerciseCalories();
-            existing.setExerciseCalories(prev.add(kcal));
-            dailySummaryMapper.updateById(existing);
+            if (total.signum() == 0) return;  // 没消耗也没汇总行就别新建空行
+            // 先尝试走 DailySummaryService.recompute 把 diet / tdee / target 字段补齐
+            try {
+                dailySummaryService.recompute(userId, day);
+            } catch (Exception ex) {
+                // 用户没填资料 → 落最小行兜底
+            }
+            existing = dailySummaryMapper.findByDate(userId, day);
+            if (existing == null) {
+                existing = new DailySummary();
+                existing.setUserId(userId);
+                existing.setSummaryDate(day);
+                existing.setExerciseCalories(total);
+                dailySummaryMapper.insert(existing);
+                return;
+            }
         }
+        existing.setExerciseCalories(total);
+        dailySummaryMapper.updateById(existing);
     }
 
     /** 自重 set 用用户体重兜底；用户未填体重时返回 0（即不计入 volume） */
@@ -128,7 +147,8 @@ public class WorkoutSessionService {
         s.setUserId(userId);
         s.setPlanId(req.getPlanId());
         s.setName(req.getName());
-        s.setStatus(req.getStatus() != null ? req.getStatus() : "active");
+        // 状态机：planned / in_progress / completed / abandoned（与 V10 schema 一致）
+        s.setStatus(req.getStatus() != null ? req.getStatus() : "planned");
         s.setStartTime(req.getStartTime() != null ? req.getStartTime() : LocalDateTime.now());
         s.setEndTime(req.getEndTime());
         s.setDuration(req.getDuration());
@@ -140,9 +160,10 @@ public class WorkoutSessionService {
         sessionMapper.insert(s);
 
         saveExercises(s.getId(), req.getExercises());
-        // 若以 completed 状态直接落库（quick-log），同步触发统计
+        // 若以 completed 状态直接落库（quick_log 走这条路径），同步触发统计 + 当日运动消耗
         if ("completed".equals(s.getStatus())) {
-            recomputeStatsIfCompleted(userId, s.getId());
+            recomputeStatsForCompletedSession(userId, s.getId());
+            recomputeDailyExerciseCalories(userId, sessionDay(s));
         }
         return get(userId, s.getId());
     }
@@ -154,6 +175,7 @@ public class WorkoutSessionService {
         if (!s.getUserId().equals(userId)) throw new BizException(ErrorCode.SESSION_NO_PERMISSION);
 
         boolean wasCompleted = "completed".equals(s.getStatus());
+        LocalDate oldDay = sessionDay(s);  // 改 end_time 前先记下
 
         if (req.getName() != null) s.setName(req.getName());
         if (req.getStatus() != null) s.setStatus(req.getStatus());
@@ -172,40 +194,58 @@ public class WorkoutSessionService {
             saveExercises(id, req.getExercises());
         }
 
-        // 已完成会话被编辑 → 重算 totalVolume + PR + UserStats
         boolean stillCompleted = "completed".equals(s.getStatus());
+        LocalDate newDay = sessionDay(s);
+
+        // 已完成会话被编辑、或从 completed 切回其他状态 → 都需要重算 stats + PR
+        // （单看 stillCompleted 会漏掉「completed → in_progress」的回滚场景）
         if (wasCompleted || stillCompleted) {
-            recomputeStatsIfCompleted(userId, id);
+            recomputeStatsForCompletedSession(userId, id);
+            // 当日运动消耗：oldDay 和 newDay 都要重算（end_time 跨日 / 状态切换都覆盖）
+            recomputeDailyExerciseCalories(userId, oldDay);
+            if (newDay != null && !newDay.equals(oldDay)) {
+                recomputeDailyExerciseCalories(userId, newDay);
+            }
         }
         return get(userId, id);
     }
 
-    /** 重新汇总已完成会话的 totalVolume 并同步用户统计与 PR */
-    private void recomputeStatsIfCompleted(Long userId, Long sessionId) {
+    /**
+     * 已完成会话的 totalVolume 回算 + 全量 stats/PR 重算。
+     * 当前 session 仍为 completed 时回写 totalVolume；从 completed 切回 in_progress 时跳过 totalVolume，
+     * 但仍跑 recomputeForUser 让 stats / PR 反映新的「completed session 集合」。
+     */
+    private void recomputeStatsForCompletedSession(Long userId, Long sessionId) {
         WorkoutSession s = sessionMapper.selectById(sessionId);
-        if (s == null || !"completed".equals(s.getStatus())) return;
+        if (s != null && "completed".equals(s.getStatus())) {
+            List<ExerciseSession> exs = exerciseSessionMapper.findBySession(sessionId);
+            List<Long> exIds = exs.stream().map(ExerciseSession::getId).collect(Collectors.toList());
+            Map<Long, List<CompletedSet>> setsByEx = completedSetMapper.findByExerciseSessionIds(exIds).stream()
+                    .collect(Collectors.groupingBy(CompletedSet::getExerciseSessionId));
 
-        List<ExerciseSession> exs = exerciseSessionMapper.findBySession(sessionId);
-        List<Long> exIds = exs.stream().map(ExerciseSession::getId).collect(Collectors.toList());
-        Map<Long, List<CompletedSet>> setsByEx = completedSetMapper.findByExerciseSessionIds(exIds).stream()
-                .collect(Collectors.groupingBy(CompletedSet::getExerciseSessionId));
-
-        BigDecimal bodyWeight = getUserBodyWeight(userId);
-        BigDecimal totalVolume = BigDecimal.ZERO;
-        for (ExerciseSession ex : exs) {
-            for (CompletedSet cs : setsByEx.getOrDefault(ex.getId(), List.of())) {
-                if (!Boolean.TRUE.equals(cs.getIsCompleted())) continue;
-                BigDecimal w = effectiveWeight(cs.getWeight(), bodyWeight);
-                int reps = cs.getReps() == null ? 0 : cs.getReps();
-                totalVolume = totalVolume.add(w.multiply(BigDecimal.valueOf(reps)));
+            BigDecimal bodyWeight = getUserBodyWeight(userId);
+            BigDecimal totalVolume = BigDecimal.ZERO;
+            for (ExerciseSession ex : exs) {
+                for (CompletedSet cs : setsByEx.getOrDefault(ex.getId(), List.of())) {
+                    if (!Boolean.TRUE.equals(cs.getIsCompleted())) continue;
+                    BigDecimal w = effectiveWeight(cs.getWeight(), bodyWeight);
+                    int reps = cs.getReps() == null ? 0 : cs.getReps();
+                    totalVolume = totalVolume.add(w.multiply(BigDecimal.valueOf(reps)));
+                }
+            }
+            if (totalVolume.compareTo(s.getTotalVolume() == null ? BigDecimal.ZERO : s.getTotalVolume()) != 0) {
+                s.setTotalVolume(totalVolume);
+                sessionMapper.updateById(s);
             }
         }
-        if (totalVolume.compareTo(s.getTotalVolume() == null ? BigDecimal.ZERO : s.getTotalVolume()) != 0) {
-            s.setTotalVolume(totalVolume);
-            sessionMapper.updateById(s);
-        }
-        // 用户总览统计 + 该用户所有 PR 全量重算，避免遗漏
+        // 用户总览统计 + 该用户所有 PR 全量重算
         userStatsService.recomputeForUser(userId);
+    }
+
+    /** 取 session 归属日（end_time 优先，缺失退到 start_time） */
+    private LocalDate sessionDay(WorkoutSession s) {
+        LocalDateTime ref = s.getEndTime() != null ? s.getEndTime() : s.getStartTime();
+        return ref != null ? ref.toLocalDate() : null;
     }
 
     /** 完成训练：计算 totalVolume + PR，同时更新全局 stats */
@@ -214,7 +254,7 @@ public class WorkoutSessionService {
         WorkoutSession s = sessionMapper.selectById(id);
         if (s == null) throw new BizException(ErrorCode.SESSION_NOT_FOUND);
         if (!s.getUserId().equals(userId)) throw new BizException(ErrorCode.SESSION_NO_PERMISSION);
-        if ("completed".equals(s.getStatus()) || "aborted".equals(s.getStatus())) {
+        if ("completed".equals(s.getStatus()) || "abandoned".equals(s.getStatus())) {
             throw new BizException(ErrorCode.SESSION_ALREADY_FINISHED);
         }
 
@@ -254,8 +294,8 @@ public class WorkoutSessionService {
         if (req.getNotes() != null) s.setNotes(req.getNotes());
         sessionMapper.updateById(s);
 
-        // 训练 → 当日运动消耗（净赤字依赖项）
-        recordExerciseCalories(userId, s);
+        // 训练 → 当日运动消耗（净赤字依赖项）；走 user+day 全量重算，幂等
+        recomputeDailyExerciseCalories(userId, sessionDay(s));
 
         List<UserStatsService.ExerciseMaxWeight> maxList = maxWeightByExercise.entrySet().stream()
                 .map(e -> new UserStatsService.ExerciseMaxWeight(e.getKey(), e.getValue()))
@@ -274,7 +314,8 @@ public class WorkoutSessionService {
         WorkoutSession s = sessionMapper.selectById(id);
         if (s == null) throw new BizException(ErrorCode.SESSION_NOT_FOUND);
         if (!s.getUserId().equals(userId)) throw new BizException(ErrorCode.SESSION_NO_PERMISSION);
-        s.setStatus("aborted");
+        // schema 注释里写的是 abandoned（不是 aborted）—— 与 V10 保持一致
+        s.setStatus("abandoned");
         s.setEndTime(LocalDateTime.now());
         sessionMapper.updateById(s);
         return get(userId, id);
@@ -286,19 +327,19 @@ public class WorkoutSessionService {
         if (s == null) throw new BizException(ErrorCode.SESSION_NOT_FOUND);
         if (!s.getUserId().equals(userId)) throw new BizException(ErrorCode.SESSION_NO_PERMISSION);
         boolean wasCompleted = "completed".equals(s.getStatus());
+        LocalDate day = sessionDay(s);  // 删之前先记下归属日
         sessionMapper.deleteById(id);
-        // 删除已完成会话后全量重算 stats + PR，避免留下孤儿统计
+        // 删除已完成会话后全量重算 stats + PR + 当日运动消耗，避免留下孤儿数据
         if (wasCompleted) {
             userStatsService.recomputeForUser(userId);
+            recomputeDailyExerciseCalories(userId, day);
         }
     }
 
     // ------------- 内部辅助 -------------
 
     private void clearExercises(Long sessionId) {
-        List<ExerciseSession> exs = exerciseSessionMapper.findBySession(sessionId);
-        if (exs.isEmpty()) return;
-        // 级联删除 completed_set（外键 ON DELETE CASCADE），再删 exercise_session
+        // 级联删除 completed_set 由 ON DELETE CASCADE 走外键自动完成
         exerciseSessionMapper.deleteBySession(sessionId);
     }
 

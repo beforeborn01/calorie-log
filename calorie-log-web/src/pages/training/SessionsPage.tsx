@@ -8,12 +8,12 @@ import QuickLogModal from './QuickLogModal';
 
 function statusColor(s: WorkoutSession['status']) {
   if (s === 'completed') return 'success';
-  if (s === 'in_progress' || s === 'active') return 'processing';
-  if (s === 'aborted') return 'default';
+  if (s === 'in_progress') return 'processing';
+  if (s === 'abandoned') return 'default';
   return 'default';
 }
 function statusLabel(s: WorkoutSession['status']) {
-  return { completed: '已完成', in_progress: '进行中', active: '进行中', aborted: '已放弃', planned: '计划中' }[s] || s;
+  return { completed: '已完成', in_progress: '进行中', abandoned: '已放弃', planned: '计划中' }[s] || s;
 }
 
 export default function SessionsPage() {
@@ -77,11 +77,11 @@ export default function SessionsPage() {
               title={s.name}
               extra={<Tag color={statusColor(s.status)}>{statusLabel(s.status)}</Tag>}
               onClick={() => {
-                if (s.status === 'in_progress' || s.status === 'active') {
+                if (s.status === 'in_progress') {
                   navigate(`/training/active/${s.id}`);
                 }
               }}
-              hoverable={s.status === 'in_progress' || s.status === 'active'}
+              hoverable={s.status === 'in_progress'}
             >
               <Space size="large" wrap>
                 <span style={{ color: '#888' }}>

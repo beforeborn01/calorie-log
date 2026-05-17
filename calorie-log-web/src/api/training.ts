@@ -100,7 +100,7 @@ export interface WorkoutSession {
   id: number;
   planId?: number;
   name: string;
-  status: 'planned' | 'in_progress' | 'completed' | 'aborted' | 'active';
+  status: 'planned' | 'in_progress' | 'completed' | 'abandoned';
   startTime: string;
   endTime?: string;
   duration?: number;

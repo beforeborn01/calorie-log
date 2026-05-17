@@ -16,6 +16,6 @@ public interface WorkoutSessionMapper extends BaseMapper<WorkoutSession> {
                                     @Param("limit") int limit,
                                     @Param("offset") int offset);
 
-    @Select("SELECT * FROM t_workout_session WHERE user_id = #{userId} AND status IN ('active','paused') AND deleted_at IS NULL ORDER BY start_time DESC LIMIT 1")
+    @Select("SELECT * FROM t_workout_session WHERE user_id = #{userId} AND status = 'in_progress' AND deleted_at IS NULL ORDER BY start_time DESC LIMIT 1")
     WorkoutSession findActive(@Param("userId") Long userId);
 }

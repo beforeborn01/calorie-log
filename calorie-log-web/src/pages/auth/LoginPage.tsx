@@ -8,6 +8,7 @@ import { getWechatQrCode, mockConfirmWechat, pollWechat, type WechatQrCode } fro
 import { useAuthStore } from '../../store/auth';
 import type { UserProfile } from '../../types';
 import { Chip, PaperCard, Pill, SketchButton } from '../../components/sketch';
+import { isMiniprogram, redirectToNative } from '../../utils/wxBridge';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -180,10 +181,20 @@ export default function LoginPage() {
           </SketchButton>
         </Form>
 
-        <SketchButton onClick={openWechatQr} style={{ width: '100%', marginTop: 12 }}>
-          <WechatOutlined style={{ marginRight: 6 }} />
-          微信扫码登录
-        </SketchButton>
+        {isMiniprogram() ? (
+          <SketchButton
+            onClick={() => redirectToNative('/pages/login/login?from=logout')}
+            style={{ width: '100%', marginTop: 12 }}
+          >
+            <WechatOutlined style={{ marginRight: 6 }} />
+            微信一键登录
+          </SketchButton>
+        ) : (
+          <SketchButton onClick={openWechatQr} style={{ width: '100%', marginTop: 12 }}>
+            <WechatOutlined style={{ marginRight: 6 }} />
+            微信扫码登录
+          </SketchButton>
+        )}
 
         <div style={{ marginTop: 20, textAlign: 'center' }}>
           <Link className="hand accent" to="/register">还没有账号？立即注册</Link>

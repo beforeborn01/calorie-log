@@ -30,6 +30,8 @@ cd "$(dirname "$0")/.."
 ECS_HOST="${ECS_HOST:-root@115.190.210.138}"
 ECS_KEY="${ECS_KEY:-$HOME/program/volc/volc-meet.pem}"
 ECS_PROJECT_DIR="${ECS_PROJECT_DIR:-/root/calorie-log}"
+# 默认仍是 IP+8088 的 HTTP；启用 HTTPS 后请覆盖：
+#   PUBLIC_BASE_URL=https://your.domain ./scripts/release.sh
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-http://115.190.210.138:8088}"
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"
 

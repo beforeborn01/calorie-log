@@ -10,6 +10,8 @@ import com.calorielog.module.user.dto.TokenResponse;
 import com.calorielog.module.user.dto.WechatBindRequest;
 import com.calorielog.module.user.dto.WechatLoginRequest;
 import com.calorielog.module.user.dto.WechatLoginResponse;
+import com.calorielog.module.user.dto.WechatMiniLoginRequest;
+import com.calorielog.module.user.dto.WechatMiniLoginResponse;
 import com.calorielog.module.user.dto.WechatPollResponse;
 import com.calorielog.module.user.dto.WechatQrCodeResponse;
 import com.calorielog.module.user.service.AuthService;
@@ -80,10 +82,16 @@ public class AuthController {
         return Result.success();
     }
 
-    @Operation(summary = "微信登录")
+    @Operation(summary = "微信登录（公众号 / 网站应用 OAuth）")
     @PostMapping("/wechat")
     public Result<WechatLoginResponse> wechat(@Valid @RequestBody WechatLoginRequest req) {
         return Result.success(wechatAuthService.loginByCode(req.getCode()));
+    }
+
+    @Operation(summary = "微信小程序一键登录（wx.login → code2Session，软提醒绑手机号）")
+    @PostMapping("/wechat/miniprogram")
+    public Result<WechatMiniLoginResponse> wechatMini(@Valid @RequestBody WechatMiniLoginRequest req) {
+        return Result.success(wechatAuthService.loginByMiniprogramCode(req.getCode()));
     }
 
     @Operation(summary = "微信绑定手机号")

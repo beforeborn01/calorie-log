@@ -79,3 +79,6 @@ tmp/
 temp/
 .gstack/
 .claude/
+
+# SSL 证书与 ACME 缓存（由 scripts/setup-ssl.sh 在 ECS 端生成；勿入库）
+ssl/

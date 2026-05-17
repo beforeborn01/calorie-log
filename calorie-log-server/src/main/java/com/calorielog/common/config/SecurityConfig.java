@@ -39,6 +39,7 @@ public class SecurityConfig {
             "/api/v1/auth/wechat/qrcode",
             "/api/v1/auth/wechat/poll",
             "/api/v1/auth/wechat/mock-confirm",
+            "/api/v1/auth/wechat/miniprogram",
             "/api/v1/auth/reset-password",
             "/v3/api-docs/**",
             "/swagger-ui/**",

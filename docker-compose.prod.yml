@@ -78,6 +78,9 @@ services:
       # 可选集成（未配则走 Mock）
       WECHAT_APP_ID: ${WECHAT_APP_ID:-}
       WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
+      # 小程序 wx.login 凭据；与公众号 AppID 不同
+      WECHAT_MA_APP_ID: ${WECHAT_MA_APP_ID:-}
+      WECHAT_MA_APP_SECRET: ${WECHAT_MA_APP_SECRET:-}
       VOLC_ACCESS_KEY_ID: ${VOLC_ACCESS_KEY_ID:-}
       VOLC_ACCESS_KEY_SECRET: ${VOLC_ACCESS_KEY_SECRET:-}
       VOLC_SMS_SIGN_NAME: ${VOLC_SMS_SIGN_NAME:-}
@@ -104,9 +107,19 @@ services:
       dockerfile: Dockerfile
     image: calorie-log-web:latest
     restart: unless-stopped
+    environment:
+      # 设置后会启用 HTTPS（前提是证书已挂载）
+      DOMAIN: ${DOMAIN:-}
     ports:
-      # 宿主 8088 → 容器 80（nginx 内部监听仍是 80）
+      # 80：HTTP（含 ACME challenge）；443：HTTPS（仅当 DOMAIN+证书都就绪时生效）
       - "${WEB_PORT:-8088}:80"
+      - "${WEB_HTTPS_PORT:-8443}:443"
+    volumes:
+      # 证书目录：宿主 ./ssl/<domain>/{fullchain,privkey}.pem → 容器 /etc/nginx/ssl/
+      # 由 scripts/setup-ssl.sh 写入；未申请时目录可不存在（entrypoint 会兜底为 HTTP）
+      - ./ssl/live:/etc/nginx/ssl:ro
+      # ACME http-01 challenge 共享给 certbot 写入
+      - ./ssl/acme-webroot:/var/www/certbot
     depends_on:
       - app
     healthcheck:

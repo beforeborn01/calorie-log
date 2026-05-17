@@ -8,6 +8,7 @@ import com.calorielog.integration.wechat.WechatOAuthService;
 import com.calorielog.module.user.dto.TokenResponse;
 import com.calorielog.module.user.dto.WechatBindRequest;
 import com.calorielog.module.user.dto.WechatLoginResponse;
+import com.calorielog.module.user.dto.WechatMiniLoginResponse;
 import com.calorielog.module.user.entity.User;
 import com.calorielog.module.user.entity.UserExperience;
 import com.calorielog.module.user.mapper.UserExperienceMapper;
@@ -48,6 +49,51 @@ public class WechatAuthService {
         String tempToken = jwtUtils.generateWechatTempToken(wx.getOpenid());
         redis.opsForValue().set(WECHAT_TEMP_PREFIX + tempToken, wx.getOpenid(), TEMP_TTL);
         return new WechatLoginResponse(false, null, tempToken, wx.getOpenid());
+    }
+
+    /**
+     * 小程序 wx.login 一键登录（软提醒方案）。
+     *
+     * <p>个人主体小程序拿不到手机号，所以未注册用户直接创建一个无 phone 的 User；
+     * 已注册（按 openid 匹配）则正常发 token。前端按 needBindPhone 软提醒用户去绑手机号。</p>
+     *
+     * <p>账号合并：若同一微信号之前在网页扫码登录中绑过手机号 → 此处会按 openid 命中
+     * 同一条 User 记录，token 可直接发；不会出现"两套账号"。</p>
+     */
+    @Transactional
+    public WechatMiniLoginResponse loginByMiniprogramCode(String code) {
+        WechatOAuthService.WechatUserInfo wx = wechatOAuthService.miniprogramCode2Session(code);
+        User user = userMapper.findByWechatOpenid(wx.getOpenid());
+
+        if (user == null) {
+            user = new User();
+            user.setWechatOpenid(wx.getOpenid());
+            user.setWechatUnionid(wx.getUnionid());
+            user.setStatus(1);
+            user.setGender(0);
+            user.setTimezone("Asia/Shanghai");
+            // 个人小程序没手机号；用 openid 后 4 位作昵称兜底
+            String tail = wx.getOpenid().length() > 4
+                    ? wx.getOpenid().substring(wx.getOpenid().length() - 4)
+                    : wx.getOpenid();
+            user.setNickname("微信用户" + tail);
+            userMapper.insert(user);
+
+            UserExperience exp = new UserExperience();
+            exp.setUserId(user.getId());
+            exp.setTotalExp(0L);
+            exp.setLevel(1);
+            exp.setContinuousDays(0);
+            userExperienceMapper.insert(exp);
+        } else if (user.getWechatUnionid() == null && wx.getUnionid() != null) {
+            // 老用户首次回填 unionid（开放平台后绑时常见）
+            user.setWechatUnionid(wx.getUnionid());
+            userMapper.updateById(user);
+        }
+
+        TokenResponse token = authService.issueTokens(user, authService.isProfileComplete(user));
+        boolean needBindPhone = user.getPhone() == null || user.getPhone().isBlank();
+        return new WechatMiniLoginResponse(token, needBindPhone);
     }
 
     @Transactional

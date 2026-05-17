@@ -1,0 +1,5 @@
+/* 全局空样式占位（pages/index 单页全屏 web-view，不需要全局样式） */
+page {
+  height: 100%;
+  background: #F5F1E8;
+}

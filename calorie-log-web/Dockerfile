@@ -26,7 +26,17 @@ RUN apk add --no-cache tzdata && \
     ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone
 
+# 主 server 配置（80）
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# 443 模板（仅当挂载证书且设置 DOMAIN 时由 entrypoint 启用）
+COPY nginx-ssl.conf /etc/nginx/_ssl.conf.tpl
+# 启用 HTTPS 的 entrypoint 钩子（nginx 官方镜像会自动执行 /docker-entrypoint.d/*.sh）
+COPY docker-entrypoint.d/10-enable-ssl.sh /docker-entrypoint.d/10-enable-ssl.sh
+RUN chmod +x /docker-entrypoint.d/10-enable-ssl.sh
+
+# webroot for ACME http-01 challenge
+RUN mkdir -p /var/www/certbot
+
 COPY --from=builder /build/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 80 443

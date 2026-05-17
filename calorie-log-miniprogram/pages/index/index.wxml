@@ -1,0 +1,10 @@
+<!-- 全屏 web-view，把 web 端整个套进来。
+     - bindmessage 仅在用户分享/后退/页面销毁时触发，用来收 wx.miniProgram.postMessage 的累积消息
+     - bindload 是 web-view 加载完成事件（注意不是 Page.onLoad）
+     - binderror 是加载失败（用于排查白屏） -->
+<web-view
+  src="{{src}}"
+  bindmessage="onMessage"
+  bindload="onWebviewLoad"
+  binderror="onError"
+/>

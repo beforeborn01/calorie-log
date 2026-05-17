@@ -39,6 +39,10 @@ wechat:
   mp:
     app-id: ${WECHAT_APP_ID:}
     app-secret: ${WECHAT_APP_SECRET:}
+  # 小程序 wx.login 用，与公众号 / 开放平台 AppID 是不同的两套
+  ma:
+    app-id: ${WECHAT_MA_APP_ID:}
+    app-secret: ${WECHAT_MA_APP_SECRET:}
 
 volcengine:
   sms:

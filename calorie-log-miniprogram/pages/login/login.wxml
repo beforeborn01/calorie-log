@@ -1,0 +1,27 @@
+<view class="container">
+  <view class="brand">
+    <image class="logo" src="/assets/logo.png" mode="aspectFit" wx:if="{{false}}"/>
+    <view class="title">食养记</view>
+    <view class="subtitle">饮食 · 训练 · 一念一记</view>
+  </view>
+
+  <view class="cta">
+    <!-- 不用 open-type=getUserInfo（已废弃且无 bindgetuserinfo 时无意义）；
+         普通 bindtap 已足够触发 wx.login → code2Session 流程 -->
+    <button
+      class="btn-primary"
+      bindtap="onTapLogin"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+    >微信一键登录</button>
+
+    <view class="terms">
+      点击登录代表同意
+      <text class="link" bindtap="onTapAgreement">用户协议</text>
+      与
+      <text class="link" bindtap="onTapPrivacy">隐私政策</text>
+    </view>
+
+    <view class="error" wx:if="{{errMsg}}">{{errMsg}}</view>
+  </view>
+</view>

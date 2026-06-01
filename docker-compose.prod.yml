@@ -123,7 +123,9 @@ services:
     depends_on:
       - app
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz > /dev/null || exit 1"]
+      # 容器内 wget 解 localhost 优先 ipv6（::1）但 nginx 只 listen ipv4 0.0.0.0 → refused；
+      # 改用 curl + 127.0.0.1 显式 ipv4 走 80 上的 /healthz。
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/healthz > /dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5

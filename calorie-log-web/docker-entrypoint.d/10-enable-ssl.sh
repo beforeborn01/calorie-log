@@ -41,6 +41,7 @@ if ! grep -q '# >>> https-redirect injected' "$MAIN_CONF"; then
             print "    # >>> https-redirect injected"
             print "    if ($scheme = http) { set $do_redirect 1; }"
             print "    if ($request_uri ~ ^/\\.well-known/acme-challenge/) { set $do_redirect 0; }"
+            print "    if ($request_uri = /healthz) { set $do_redirect 0; }"
             print "    if ($do_redirect = 1) { return 301 https://$host$request_uri; }"
             print "    # <<< https-redirect injected"
             injected=1

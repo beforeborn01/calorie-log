@@ -8,16 +8,11 @@ import com.calorielog.module.user.dto.ResetPasswordRequest;
 import com.calorielog.module.user.dto.SendCodeRequest;
 import com.calorielog.module.user.dto.TokenResponse;
 import com.calorielog.module.user.dto.WechatBindRequest;
-import com.calorielog.module.user.dto.WechatLoginRequest;
-import com.calorielog.module.user.dto.WechatLoginResponse;
 import com.calorielog.module.user.dto.WechatMiniLoginRequest;
 import com.calorielog.module.user.dto.WechatMiniLoginResponse;
-import com.calorielog.module.user.dto.WechatPollResponse;
-import com.calorielog.module.user.dto.WechatQrCodeResponse;
 import com.calorielog.module.user.service.AuthService;
 import com.calorielog.module.user.service.VerifyCodeService;
 import com.calorielog.module.user.service.WechatAuthService;
-import com.calorielog.module.user.service.WechatQrLoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,7 +37,6 @@ public class AuthController {
     private final AuthService authService;
     private final VerifyCodeService verifyCodeService;
     private final WechatAuthService wechatAuthService;
-    private final WechatQrLoginService wechatQrLoginService;
 
     @Operation(summary = "发送验证码")
     @PostMapping("/send-code")
@@ -82,12 +76,6 @@ public class AuthController {
         return Result.success();
     }
 
-    @Operation(summary = "微信登录（公众号 / 网站应用 OAuth）")
-    @PostMapping("/wechat")
-    public Result<WechatLoginResponse> wechat(@Valid @RequestBody WechatLoginRequest req) {
-        return Result.success(wechatAuthService.loginByCode(req.getCode()));
-    }
-
     @Operation(summary = "微信小程序一键登录（wx.login → code2Session，软提醒绑手机号）")
     @PostMapping("/wechat/miniprogram")
     public Result<WechatMiniLoginResponse> wechatMini(@Valid @RequestBody WechatMiniLoginRequest req) {
@@ -104,26 +92,6 @@ public class AuthController {
     @PostMapping("/reset-password")
     public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
         authService.resetPassword(req.getIdentifier(), req.getVerifyCode(), req.getNewPassword());
-        return Result.success();
-    }
-
-    @Operation(summary = "网页扫码登录：申请 ticket + 二维码")
-    @GetMapping("/wechat/qrcode")
-    public Result<WechatQrCodeResponse> wechatQrCode() {
-        return Result.success(wechatQrLoginService.createTicket());
-    }
-
-    @Operation(summary = "网页扫码登录：轮询状态")
-    @GetMapping("/wechat/poll")
-    public Result<WechatPollResponse> wechatPoll(@RequestParam String ticket) {
-        return Result.success(wechatQrLoginService.poll(ticket));
-    }
-
-    @Operation(summary = "仅 dev：模拟扫码确认", description = "targetUserId 可省略（默认绑定第一个启用账号）")
-    @PostMapping("/wechat/mock-confirm")
-    public Result<Void> wechatMockConfirm(@RequestParam String ticket,
-                                          @RequestParam(required = false) Long targetUserId) {
-        wechatQrLoginService.mockConfirm(ticket, targetUserId);
         return Result.success();
     }
 }

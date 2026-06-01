@@ -82,3 +82,6 @@ temp/
 
 # SSL 证书与 ACME 缓存（由 scripts/setup-ssl.sh 在 ECS 端生成；勿入库）
 ssl/
+
+# 微信开发者工具本机偏好（"private" 字面意思就是不入库）
+project.private.config.json

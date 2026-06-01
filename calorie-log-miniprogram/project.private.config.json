@@ -1,9 +1,0 @@
-{
-  "description": "项目私有配置文件。此文件中的配置仅对自己生效，不会影响其他开发者。",
-  "projectname": "calorie-log",
-  "setting": {
-    "compileHotReLoad": true,
-    "urlCheck": false
-  },
-  "libVersion": "3.5.0"
-}

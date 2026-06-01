@@ -12,7 +12,23 @@
     "newFeature": true,
     "uglifyFileName": true,
     "useCompilerPlugins": false,
-    "compileHotReLoad": true
+    "compileHotReLoad": true,
+    "compileWorklet": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "condition": false,
+    "swc": false,
+    "disableSWC": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
   },
   "compileType": "miniprogram",
   "libVersion": "3.5.0",
@@ -23,5 +39,6 @@
   "editorSetting": {
     "tabIndent": "auto",
     "tabSize": 2
-  }
+  },
+  "simulatorPluginLibVersion": {}
 }

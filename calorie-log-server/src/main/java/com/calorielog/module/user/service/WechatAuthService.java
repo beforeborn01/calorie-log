@@ -7,7 +7,6 @@ import com.calorielog.common.utils.JwtUtils;
 import com.calorielog.integration.wechat.WechatOAuthService;
 import com.calorielog.module.user.dto.TokenResponse;
 import com.calorielog.module.user.dto.WechatBindRequest;
-import com.calorielog.module.user.dto.WechatLoginResponse;
 import com.calorielog.module.user.dto.WechatMiniLoginResponse;
 import com.calorielog.module.user.entity.User;
 import com.calorielog.module.user.entity.UserExperience;
@@ -37,19 +36,6 @@ public class WechatAuthService {
 
     private static final String WECHAT_TEMP_PREFIX = "wechat:temp_token:";
     private static final Duration TEMP_TTL = Duration.ofMinutes(10);
-
-    public WechatLoginResponse loginByCode(String code) {
-        WechatOAuthService.WechatUserInfo wx = wechatOAuthService.exchangeCode(code);
-        User user = userMapper.findByWechatOpenid(wx.getOpenid());
-        if (user != null) {
-            TokenResponse token = authService.issueTokens(user, authService.isProfileComplete(user));
-            return new WechatLoginResponse(true, token, null, wx.getOpenid());
-        }
-        // Issue short-lived temp token
-        String tempToken = jwtUtils.generateWechatTempToken(wx.getOpenid());
-        redis.opsForValue().set(WECHAT_TEMP_PREFIX + tempToken, wx.getOpenid(), TEMP_TTL);
-        return new WechatLoginResponse(false, null, tempToken, wx.getOpenid());
-    }
 
     /**
      * 小程序 wx.login 一键登录（软提醒方案）。

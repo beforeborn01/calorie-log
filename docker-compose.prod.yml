@@ -123,7 +123,7 @@ services:
     depends_on:
       - app
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/ > /dev/null || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz > /dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5

@@ -14,13 +14,7 @@ import org.springframework.stereotype.Service;
 /**
  * 微信登录 OAuth 封装。
  *
- * <p>两条入口：</p>
- * <ul>
- *   <li>{@link #exchangeCode(String)} —— 公众号 / 网站应用 OAuth（PC 扫码、H5 网页授权）。</li>
- *   <li>{@link #miniprogramCode2Session(String)} —— 小程序 wx.login 拿到的 jscode 换 openid。</li>
- * </ul>
- *
- * <p>未配置真实凭据时（dev 或 prod 但 app-id 为空）走 mock，便于前端联调。</p>
+ * <p>当前只支持小程序 wx.login → code2Session。网页扫码登录已下线（个人主体小程序不允许 web-view）。</p>
  */
 @Slf4j
 @Service
@@ -30,31 +24,8 @@ public class WechatOAuthService {
     private final WxMaService wxMaService;
     private final WxMaConfig wxMaConfig;
 
-    @Value("${wechat.mp.app-id:}")
-    private String mpAppId;
-
-    @Value("${wechat.mp.app-secret:}")
-    private String mpAppSecret;
-
     @Value("${spring.profiles.active:prod}")
     private String profile;
-
-    public WechatUserInfo exchangeCode(String code) {
-        if ("dev".equals(profile) && (mpAppId == null || mpAppId.isBlank())) {
-            log.info("[MOCK-MP] wechat exchange code={} -> openid=mock-openid-{}", code, code);
-            WechatUserInfo info = new WechatUserInfo();
-            info.setOpenid("mock-openid-" + code);
-            info.setUnionid("mock-unionid-" + code);
-            info.setNickname("微信用户");
-            info.setAvatarUrl(null);
-            return info;
-        }
-        // TODO: 集成 WxJava 公众号 OAuth
-        //   WxMpService service = new WxMpServiceImpl();
-        //   WxMpOAuth2AccessToken token = service.getOAuth2Service().getAccessToken(code);
-        //   WxOAuth2UserInfo user = service.getOAuth2Service().getUserInfo(token, null);
-        throw new UnsupportedOperationException("WxJava MP integration not implemented yet");
-    }
 
     /**
      * 小程序 wx.login → code2Session。

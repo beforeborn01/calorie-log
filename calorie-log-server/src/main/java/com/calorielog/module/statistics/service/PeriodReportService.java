@@ -5,7 +5,7 @@ import com.calorielog.module.body.mapper.BodyRecordMapper;
 import com.calorielog.module.record.entity.DailySummary;
 import com.calorielog.module.record.mapper.DailySummaryMapper;
 import com.calorielog.module.statistics.dto.PeriodReportResponse;
-import com.calorielog.module.strength.mapper.StrengthRecordMapper;
+import com.calorielog.module.training.session.mapper.WorkoutSessionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,9 @@ public class PeriodReportService {
 
     private final DailySummaryMapper summaryMapper;
     private final BodyRecordMapper bodyRecordMapper;
-    private final StrengthRecordMapper strengthRecordMapper;
+    // 注：周月报告原本读 t_strength_record（老的"力量训练快记"表），
+    // 重构后所有运动记录统一走 t_workout_session + t_exercise_session + t_completed_set。
+    private final WorkoutSessionMapper workoutSessionMapper;
 
     public PeriodReportResponse weekly(Long userId, LocalDate startDate) {
         LocalDate endDate = startDate.plusDays(6);
@@ -110,9 +112,9 @@ public class PeriodReportService {
             resp.setBodyFatChange(diff(last.getBodyFat(), first.getBodyFat()));
         }
 
-        // 力量训练
-        resp.setStrengthTrainingDays(strengthRecordMapper.countTrainingDays(userId, from, to));
-        Map<String, Object> vol = strengthRecordMapper.aggregateVolume(userId, from, to);
+        // 运动（原力量训练）— 读 t_workout_session + t_exercise_session + t_completed_set
+        resp.setStrengthTrainingDays(workoutSessionMapper.countTrainingDaysInRange(userId, from, to));
+        Map<String, Object> vol = workoutSessionMapper.aggregateVolumeInRange(userId, from, to);
         resp.setStrengthTotalSets(asInt(vol.get("total_sets")));
         resp.setStrengthTotalReps(asLong(vol.get("total_reps")));
         resp.setStrengthTotalVolume(asDecimal(vol.get("total_volume")));
@@ -165,7 +167,7 @@ public class PeriodReportService {
             sb.append("。");
         }
         if (r.getStrengthTrainingDays() != null && r.getStrengthTrainingDays() > 0) {
-            sb.append("力量训练 ").append(r.getStrengthTrainingDays()).append(" 天");
+            sb.append("运动 ").append(r.getStrengthTrainingDays()).append(" 天");
             if (r.getStrengthTotalVolume() != null && r.getStrengthTotalVolume().signum() > 0) {
                 sb.append("，累计容量 ").append(r.getStrengthTotalVolume().setScale(0, RoundingMode.HALF_UP)).append(" kg");
             }

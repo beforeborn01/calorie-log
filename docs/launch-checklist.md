@@ -134,3 +134,45 @@
 | 后端日志 `wechat.ma.app-id 未配置` | `.env` 缺 `WECHAT_MA_APP_ID/SECRET`（步骤 1） |
 | 模拟器请求被拦 | 开发者工具 → 详情 → 本地设置 → 勾「不校验合法域名」（仅调试期，真机不生效） |
 
+---
+
+## 重要发现：个人主体小程序不能 web-view
+
+**时间**：2026-06-01。
+
+**事实**：微信官方文档 [domain.html](https://developers.weixin.qq.com/miniprogram/dev/framework/ability/domain.html) 明确：
+> "目前小程序内嵌网页能力暂不开放给个人类型账号和小游戏账号。"
+
+**影响**：当前 `wx817fc1d01ac853c7` 是个人主体小程序，**业务域名入口在公众平台不可见**，**web-view 套壳方案不可执行**。本仓库的 `calorie-log-miniprogram/` 壳工程因此无法上线。
+
+**应对路线（暂未决定）**：
+
+| 路线 | 工作量 | 成本 | 何时回归小程序 |
+|---|---|---|---|
+| **A. 升级个体工商户主体** | 注册电子营业执照 + 微信主体变更 | ¥300/年微信认证费 | 完成后业务域名直接可配，**代码 0 改动** |
+| **B. 只发 H5（当前路线）** | 0 | 0 | 不发小程序，纯 `https://bcappandgame.com` H5 + 可选公众号入口 |
+| **C. Taro 重写为原生小程序** | 2-3 周全职 | 0 | 无需主体升级（不用 web-view）；维护成本高 |
+
+**当前选择**：B，等用户反馈再决定。详细 Taro 路线见 [docs/web-to-miniprogram-migration.md](web-to-miniprogram-migration.md)。
+
+---
+
+## 2026-06-01 转写前盘点（ABCDE 已完成）
+
+为了让"H5 能稳定灰度 + 万一启动 Taro 重写时不带债"，做了一轮清理：
+
+| 项 | 改动 |
+|---|---|
+| **A** | nginx 容器 healthcheck 假阳性修复：80 server 加 `/healthz` 不被 redirect，docker-compose healthcheck 改用此端点 |
+| **B** | 周月报告（`PeriodReportService`）的"力量运动"数据源从老表 `t_strength_record` 切到新表 `t_workout_session + t_exercise_session + t_completed_set`；新增 `countTrainingDaysInRange / aggregateVolumeInRange` mapper 方法，按 `sessionDay()` 归属日（end_time 优先回退 start_time）聚合 |
+| **C** | 删 H5 网页扫码登录：前端 `LoginPage` 移除扫码按钮 + 二维码 Modal + 轮询逻辑；删 `src/api/wechat.ts`；后端 `AuthController` 移除 `/wechat`、`/wechat/qrcode`、`/wechat/poll`、`/wechat/mock-confirm`；删 `WechatQrLoginService` / `WechatPollResponse` / `WechatQrCodeResponse` / `WechatLoginRequest` / `WechatLoginResponse`；`WechatOAuthService.exchangeCode()` 移除（公众号 OAuth TODO 一并清掉，剩 `miniprogramCode2Session` 给小程序用） |
+| **D** | 新增 [docs/web-to-miniprogram-migration.md](web-to-miniprogram-migration.md) —— Taro 转写策略、依赖兼容性、可复用层 vs 重写层 |
+| **E** | 本文档增补「个人主体限制」+「ABCDE 完成项」两节 |
+
+### 还遗留的事
+
+- **验证码 123456**：本次按用户决定**保持不变**。正式放量前必修。
+- **老 `t_strength_record` 表**：写入接口仍在（`/api/v1/strength/records`），但前端不再调用，新数据全部走 `t_workout_session`。下个版本可删 controller/DTO/Mapper，再下下版本 drop 表。
+- **AntD 4 个 deprecated 警告**：`direction / valueStyle / destroyOnClose / Cell` 等，跟随 antd 6 升级带来的，不影响功能。要做就批量改一次。
+- **`calorie-log-miniprogram/` 壳工程**：当前个人主体下不可用。如果走 A 路线（主体升级）就可以直接用；如果走 C（Taro 重写）则废弃。**先保留**。
+

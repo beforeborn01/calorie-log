@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "训练会话")
@@ -31,12 +33,18 @@ public class WorkoutSessionController {
 
     private final WorkoutSessionService sessionService;
 
-    @Operation(summary = "分页获取历史")
+    @Operation(summary = "分页获取历史 / 按日期过滤")
     @GetMapping
     public Result<List<WorkoutSessionDTO>> list(
             @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size) {
-        return Result.success(sessionService.list(CurrentUser.requireUserId(), page, size));
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @RequestParam(value = "date", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        Long userId = CurrentUser.requireUserId();
+        if (date != null) {
+            return Result.success(sessionService.listByDate(userId, date));
+        }
+        return Result.success(sessionService.list(userId, page, size));
     }
 
     @Operation(summary = "获取当前活跃会话（active/paused，最多一条）")

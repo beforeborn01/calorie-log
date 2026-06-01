@@ -67,7 +67,7 @@ export default function ActiveWorkoutPage() {
     setLoading(true);
     getSession(Number(sessionId))
       .then(setSession)
-      .catch((e) => message.error((e as Error).message || '加载训练失败'))
+      .catch((e) => message.error((e as Error).message || '加载运动失败'))
       .finally(() => setLoading(false));
   }, [sessionId]);
 
@@ -213,8 +213,8 @@ export default function ActiveWorkoutPage() {
   async function onFinish() {
     if (!session || !sessionId) return;
     modal.confirm({
-      title: '结束训练？',
-      content: '会写入总训练量、PR 与统计',
+      title: '结束运动？',
+      content: '会写入总运动量、PR 与统计',
       onOk: async () => {
         try {
           await persist(true);
@@ -236,7 +236,7 @@ export default function ActiveWorkoutPage() {
   async function onAbort() {
     if (!sessionId) return;
     modal.confirm({
-      title: '放弃本次训练？',
+      title: '放弃本次运动？',
       content: '本次记录会被标记为已放弃，不计入统计',
       okType: 'danger',
       onOk: async () => {
@@ -283,7 +283,7 @@ export default function ActiveWorkoutPage() {
             放弃
           </Button>
           <Button type="primary" icon={<CheckOutlined />} onClick={onFinish}>
-            结束训练
+            结束运动
           </Button>
         </Space>
       </div>
@@ -371,7 +371,7 @@ function FinishSummaryModal({
       title={
         <Space>
           <TrophyOutlined style={{ color: '#fadb14' }} />
-          训练完成
+          运动完成
         </Space>
       }
     >
@@ -380,7 +380,7 @@ function FinishSummaryModal({
       </Typography.Paragraph>
       <Space size="large" wrap style={{ marginBottom: 16 }}>
         <Statistic title="时长" value={duration} suffix="分钟" />
-        <Statistic title="训练量" value={volume} suffix="kg·rep" />
+        <Statistic title="运动量" value={volume} suffix="kg·rep" />
         <Statistic title="新 PR" value={prCount} suffix="个" valueStyle={prCount > 0 ? { color: '#52c41a' } : {}} />
       </Space>
       {prCount > 0 && (

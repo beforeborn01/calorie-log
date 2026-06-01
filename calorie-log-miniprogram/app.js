@@ -7,6 +7,6 @@ App({
   },
   globalData: {
     // 改成你自己的域名后再上线发布
-    baseUrl: 'https://REPLACE_WITH_YOUR_DOMAIN'
+    baseUrl: 'https://bcappandgame.com'
   }
 });

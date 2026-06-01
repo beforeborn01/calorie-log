@@ -93,7 +93,7 @@ export default function StatisticsPage() {
             <Space>
               {daily.dayType != null && (
                 <Tag color={daily.dayType === 1 ? 'blue' : 'default'}>
-                  {daily.dayType === 1 ? '训练日' : '休息日'}
+                  {daily.dayType === 1 ? '运动日' : '休息日'}
                 </Tag>
               )}
               <Tag color={STATUS_COLOR[daily.calorieStatus]}>{daily.statusHint}</Tag>

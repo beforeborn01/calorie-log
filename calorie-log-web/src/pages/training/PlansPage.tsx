@@ -67,7 +67,7 @@ export default function PlansPage() {
       const ps = await listPlans();
       setPlans(ps);
     } catch (e) {
-      message.error((e as Error).message || '加载训练计划失败');
+      message.error((e as Error).message || '加载运动计划失败');
     } finally {
       setLoading(false);
     }
@@ -99,7 +99,7 @@ export default function PlansPage() {
       });
       navigate(`/training/active/${session.id}`);
     } catch (e) {
-      message.error((e as Error).message || '开始训练失败');
+      message.error((e as Error).message || '开始运动失败');
     }
   }
 
@@ -130,9 +130,9 @@ export default function PlansPage() {
           marginBottom: 16,
         }}
       >
-        <h2 style={{ margin: 0 }}>训练计划</h2>
+        <h2 style={{ margin: 0 }}>运动计划</h2>
         <Space>
-          <Button onClick={() => navigate('/training/history')}>训练历史</Button>
+          <Button onClick={() => navigate('/training/history')}>运动历史</Button>
           <Button onClick={() => navigate('/training/stats')}>统计 / PR</Button>
           <Button
             type="primary"
@@ -148,7 +148,7 @@ export default function PlansPage() {
       </div>
 
       {plans.length === 0 && !loading ? (
-        <Empty description="还没有训练计划，新建一个开始吧" />
+        <Empty description="还没有运动计划，新建一个开始吧" />
       ) : (
         <div
           style={{
@@ -163,7 +163,7 @@ export default function PlansPage() {
               title={p.name}
               extra={
                 <Space>
-                  <Tooltip title="开始训练">
+                  <Tooltip title="开始运动">
                     <Button
                       type="primary"
                       size="small"
@@ -341,7 +341,7 @@ function PlanEditor({
 
   return (
     <Drawer
-      title={plan ? `编辑：${plan.name}` : '新建训练计划'}
+      title={plan ? `编辑：${plan.name}` : '新建运动计划'}
       open={open}
       onClose={onClose}
       width={640}

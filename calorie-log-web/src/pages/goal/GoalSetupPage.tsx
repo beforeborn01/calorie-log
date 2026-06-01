@@ -78,7 +78,7 @@ export default function GoalSetupPage() {
               <Descriptions size="small" column={2}>
                 <Descriptions.Item label="BMR">{Number(goal.bmr).toFixed(0)} kcal</Descriptions.Item>
                 <Descriptions.Item label="基础 TDEE">{Number(goal.tdeeBase).toFixed(0)} kcal</Descriptions.Item>
-                <Descriptions.Item label="训练日目标">{Number(goal.targetCaloriesTraining).toFixed(0)} kcal</Descriptions.Item>
+                <Descriptions.Item label="运动日目标">{Number(goal.targetCaloriesTraining).toFixed(0)} kcal</Descriptions.Item>
                 <Descriptions.Item label="休息日目标">{Number(goal.targetCaloriesRest).toFixed(0)} kcal</Descriptions.Item>
                 <Descriptions.Item label="蛋白/碳水/脂肪">
                   {goal.proteinRatio}% / {goal.carbRatio}% / {goal.fatRatio}%
@@ -103,7 +103,7 @@ export default function GoalSetupPage() {
               : {}
           }
         >
-          <Form.Item label="训练日目标热量 (kcal, 可微调)" name="targetCaloriesTraining">
+          <Form.Item label="运动日目标热量 (kcal, 可微调)" name="targetCaloriesTraining">
             <InputNumber style={{ width: '100%' }} min={800} max={5000} />
           </Form.Item>
           <Form.Item label="休息日目标热量 (kcal, 可微调)" name="targetCaloriesRest">
@@ -120,14 +120,14 @@ export default function GoalSetupPage() {
               <InputNumber min={15} max={50} />
             </Form.Item>
           </Space>
-          <Form.Item label="每周哪些天训练">
+          <Form.Item label="每周哪些天运动">
             <Checkbox.Group
               value={weekdays}
               onChange={(v) => setWeekdays(v as number[])}
               options={WEEKDAYS}
             />
           </Form.Item>
-          <Form.Item label="默认训练强度">
+          <Form.Item label="默认运动强度">
             <Radio.Group value={intensity} onChange={(e) => setIntensity(e.target.value)}>
               <Radio value={1}>低</Radio>
               <Radio value={2}>中</Radio>

@@ -15,12 +15,7 @@
       disabled="{{loading}}"
     >微信一键登录</button>
 
-    <view class="terms">
-      点击登录代表同意
-      <text class="link" bindtap="onTapAgreement">用户协议</text>
-      与
-      <text class="link" bindtap="onTapPrivacy">隐私政策</text>
-    </view>
+    <!-- 协议/隐私入口待真实文案补齐后再放出（避免审核被驳回） -->
 
     <view class="error" wx:if="{{errMsg}}">{{errMsg}}</view>
   </view>

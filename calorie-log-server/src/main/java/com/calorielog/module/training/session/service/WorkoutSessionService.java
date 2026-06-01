@@ -127,6 +127,12 @@ public class WorkoutSessionService {
         return inflate(sessions);
     }
 
+    public List<WorkoutSessionDTO> listByDate(Long userId, LocalDate day) {
+        if (day == null) return List.of();
+        List<WorkoutSession> sessions = sessionMapper.findByUserAndDay(userId, day);
+        return inflate(sessions);
+    }
+
     public WorkoutSessionDTO get(Long userId, Long id) {
         WorkoutSession s = sessionMapper.selectById(id);
         if (s == null) throw new BizException(ErrorCode.SESSION_NOT_FOUND);

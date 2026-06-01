@@ -176,9 +176,9 @@ export default function ReportsPage() {
         </Space>
       </Card>
 
-      <Card title="力量训练">
+      <Card title="力量运动">
         <Space size="large" wrap>
-          <Statistic title="训练天数" value={report?.strengthTrainingDays ?? 0} suffix="天" />
+          <Statistic title="运动天数" value={report?.strengthTrainingDays ?? 0} suffix="天" />
           <Statistic title="总组数" value={report?.strengthTotalSets ?? 0} />
           <Statistic title="总次数" value={report?.strengthTotalReps ?? 0} />
           <Statistic

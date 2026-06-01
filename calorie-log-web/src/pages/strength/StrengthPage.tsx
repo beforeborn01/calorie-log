@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   DatePicker,
   Form,
   Input,
@@ -13,20 +14,62 @@ import dayjs, { Dayjs } from 'dayjs';
 import { Link } from 'react-router-dom';
 import {
   createCustomExercise,
-  createStrengthRecord,
-  deleteStrengthRecord,
   listExercises,
-  listStrengthRecords,
   type Exercise,
-  type StrengthRecord,
 } from '../../api/strength';
+import {
+  createSession,
+  deleteSession,
+  listSessionsByDate,
+  type WorkoutSession,
+} from '../../api/training';
 import { Chip, PaperCard, Pill, SketchButton } from '../../components/sketch';
 
 const BODY_PARTS = ['腿部', '胸部', '背部', '手臂', '肩部', '核心'];
 
+/**
+ * 速记一条 → 新建一个 status=completed、source=quick_form 的 mini-session。
+ * 单动作单 session：方便单条删除。duration 用「sets × 90s」粗算，够 MET 模型估卡路里。
+ */
+function buildSessionPayload(
+  date: Dayjs,
+  exercise: Exercise,
+  sets: number,
+  repsPerSet: number,
+  weight: number | undefined,
+  note: string | undefined
+): Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'> {
+  const occurredAt = date.hour(12).minute(0).second(0).toISOString();
+  const duration = Math.max(60, sets * 90);
+  const completedSets = Array.from({ length: sets }, (_, i) => ({
+    setNumber: i + 1,
+    reps: repsPerSet,
+    weight: weight ?? 0,
+    isCompleted: true,
+    completedAt: occurredAt,
+  }));
+  return {
+    name: `${exercise.name} · 速记`,
+    status: 'completed',
+    startTime: occurredAt,
+    endTime: occurredAt,
+    duration,
+    source: 'quick_form',
+    notes: note,
+    exercises: [
+      {
+        exerciseId: exercise.id,
+        plannedSets: sets,
+        completedSets,
+      },
+    ],
+  };
+}
+
+// __CONTINUE_HERE__
 export default function StrengthPage() {
   const [date, setDate] = useState<Dayjs>(dayjs());
-  const [records, setRecords] = useState<StrengthRecord[]>([]);
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [bodyPartTab, setBodyPartTab] = useState<string>(BODY_PARTS[0]);
@@ -34,71 +77,99 @@ export default function StrengthPage() {
   const [customOpen, setCustomOpen] = useState(false);
   const [form] = Form.useForm();
   const [customForm] = Form.useForm();
-  const [notTraining, setNotTraining] = useState(false);
 
   const dateStr = date.format('YYYY-MM-DD');
 
-  const reloadRecords = async () => {
+  const reloadSessions = async () => {
     setLoading(true);
     try {
-      const d = await listStrengthRecords(dateStr);
-      setRecords(d);
+      const d = await listSessionsByDate(dateStr);
+      // 只把通过本页"速记"建的 session 显示出来；计划训练在「运动管理 → 计划」里看
+      setSessions(d.filter((s) => s.source === 'quick_form'));
     } finally {
       setLoading(false);
     }
   };
 
+  // 速记表单的"动作"下拉用全量动作库（按部位筛）
   const reloadExercises = async () => {
     const d = await listExercises({ bodyPart: bodyPartTab });
     setExercises(d);
   };
 
   useEffect(() => {
-    reloadRecords();
+    reloadSessions();
   }, [dateStr]);
   useEffect(() => {
     reloadExercises();
   }, [bodyPartTab]);
 
+  // 单条速记一组：组数 × 每组次数 × 重量
+  type FlatRecord = {
+    sessionId: number;
+    exerciseName: string;
+    bodyPart?: string;
+    sets: number;
+    repsPerSet: number;
+    weight: number;
+    note?: string;
+  };
+
+  // 把当天所有 quick_form session 展平：每个 session 就是一条速记记录（单动作单 session）
+  const flatRecords = useMemo<FlatRecord[]>(() => {
+    const out: FlatRecord[] = [];
+    for (const s of sessions) {
+      const ex = (s.exercises || [])[0];
+      if (!ex) continue;
+      const sets = ex.completedSets || [];
+      if (sets.length === 0) continue;
+      // 速记是同一动作的等组等重等次，取第一组的 reps/weight 显示
+      const first = sets[0];
+      out.push({
+        sessionId: s.id,
+        exerciseName: ex.exerciseName ?? s.name.replace(/ · 速记$/, ''),
+        sets: sets.length,
+        repsPerSet: first.reps ?? 0,
+        weight: Number(first.weight ?? 0),
+        note: s.notes,
+      });
+    }
+    return out;
+  }, [sessions]);
+
   const totalVolume = useMemo(
     () =>
-      records.reduce(
+      flatRecords.reduce(
         (s, r) => s + Number(r.weight || 0) * Number(r.sets) * Number(r.repsPerSet),
         0
       ),
-    [records]
+    [flatRecords]
   );
 
   const onAdd = async () => {
     const v = await form.validateFields();
-    try {
-      await createStrengthRecord({
-        recordDate: dateStr,
-        exerciseId: v.exerciseId,
-        sets: v.sets,
-        repsPerSet: v.repsPerSet,
-        weight: v.weight,
-        note: v.note,
-      });
-      message.success('已记录');
-      setAddOpen(false);
-      form.resetFields();
-      setNotTraining(false);
-      reloadRecords();
-    } catch (e) {
-      const m = e instanceof Error ? e.message : '';
-      if (m.includes('休息日')) setNotTraining(true);
+    const ex = exercises.find((e) => e.id === v.exerciseId);
+    if (!ex) {
+      message.error('请选择动作');
+      return;
     }
+    await createSession(
+      buildSessionPayload(date, ex, v.sets, v.repsPerSet, v.weight, v.note)
+    );
+    message.success('已记录');
+    setAddOpen(false);
+    form.resetFields();
+    reloadSessions();
   };
 
-  const onDelete = (id: number) => {
+  const onDelete = (sessionId: number) => {
     Modal.confirm({
-      title: '删除这条训练记录？',
+      title: '删除这条运动记录？',
       okType: 'danger',
       onOk: async () => {
-        await deleteStrengthRecord(id);
+        await deleteSession(sessionId);
         message.success('已删除');
-        reloadRecords();
+        reloadSessions();
       },
     });
   };
@@ -130,24 +201,31 @@ export default function StrengthPage() {
         }}
       >
         <div>
-          <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>STRENGTH · 力量</div>
+          <div className="mono ink-soft" style={{ fontSize: 11, letterSpacing: 2 }}>SPORT · 运动</div>
           <h1 className="display" style={{ fontSize: 36, margin: '4px 0 0' }}>
-            <span className="scribble-u">力量训练</span>
+            <span className="scribble-u">运动速记</span>
           </h1>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <DatePicker value={date} onChange={(d) => d && setDate(d)} />
           <SketchButton primary onClick={() => setAddOpen(true)}>
-            <PlusOutlined style={{ marginRight: 4 }} />添加训练
+            <PlusOutlined style={{ marginRight: 4 }} />速记一条
           </SketchButton>
         </div>
       </div>
+
+      <Alert
+        type="info"
+        showIcon
+        style={{ marginBottom: 16 }}
+        message="本页和「运动管理 → 计划」共享数据，已记录会自动计入今日运动消耗"
+      />
 
       <PaperCard style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 40, flexWrap: 'wrap' }}>
           <div>
             <div className="hand ink-soft" style={{ fontSize: 12 }}>当日记录</div>
-            <div className="mono" style={{ fontSize: 26, fontWeight: 500 }}>{records.length} <span className="hand ink-soft" style={{ fontSize: 13 }}>条</span></div>
+            <div className="mono" style={{ fontSize: 26, fontWeight: 500 }}>{flatRecords.length} <span className="hand ink-soft" style={{ fontSize: 13 }}>条</span></div>
           </div>
           <div>
             <div className="hand ink-soft" style={{ fontSize: 12 }}>累计容量</div>
@@ -156,27 +234,26 @@ export default function StrengthPage() {
         </div>
       </PaperCard>
 
-      <h3 className="display" style={{ fontSize: 22, margin: '24px 0 12px' }}>训练记录</h3>
-      {loading && records.length === 0 ? (
+      <h3 className="display" style={{ fontSize: 22, margin: '24px 0 12px' }}>速记记录</h3>
+      {loading && flatRecords.length === 0 ? (
         <PaperCard><div className="hand ink-faint" style={{ padding: '12px 0' }}>加载中…</div></PaperCard>
-      ) : records.length === 0 ? (
+      ) : flatRecords.length === 0 ? (
         <PaperCard>
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <div className="display" style={{ fontSize: 36, color: 'var(--ink-faint)' }}>暂无</div>
-            <div className="hand ink-soft" style={{ marginTop: 6 }}>今天还没有训练记录</div>
+            <div className="hand ink-soft" style={{ marginTop: 6 }}>今天还没有速记</div>
             <SketchButton primary style={{ marginTop: 16 }} onClick={() => setAddOpen(true)}>
-              + 添加第一条
+              + 速记第一条
             </SketchButton>
           </div>
         </PaperCard>
       ) : (
-        records.map((r) => (
-          <PaperCard key={r.id} style={{ marginBottom: 10, padding: '14px 18px' }}>
+        flatRecords.map((r) => (
+          <PaperCard key={r.sessionId} style={{ marginBottom: 10, padding: '14px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                   <span className="hand" style={{ fontWeight: 700, fontSize: 15 }}>{r.exerciseName}</span>
-                  <Chip color="var(--accent-soft)">{r.bodyPart}</Chip>
                 </div>
                 <div className="hand ink-soft" style={{ fontSize: 13, marginTop: 4 }}>
                   <span className="mono">{r.sets}</span> 组 ×{' '}
@@ -185,7 +262,7 @@ export default function StrengthPage() {
                   {r.note && ` · ${r.note}`}
                 </div>
               </div>
-              <SketchButton size="sm" aria-label="删除" onClick={() => onDelete(r.id)}>
+              <SketchButton size="sm" aria-label="删除" onClick={() => onDelete(r.sessionId)}>
                 <DeleteOutlined />
               </SketchButton>
             </div>
@@ -227,25 +304,17 @@ export default function StrengthPage() {
       </PaperCard>
 
       <Modal
-        title={<span className="display" style={{ fontSize: 22 }}>添加训练（{dateStr}）</span>}
+        title={<span className="display" style={{ fontSize: 22 }}>速记一条（{dateStr}）</span>}
         open={addOpen}
-        onCancel={() => {
-          setAddOpen(false);
-          setNotTraining(false);
-        }}
+        onCancel={() => setAddOpen(false)}
         footer={
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <SketchButton onClick={() => { setAddOpen(false); setNotTraining(false); }}>取消</SketchButton>
+            <SketchButton onClick={() => setAddOpen(false)}>取消</SketchButton>
             <SketchButton primary onClick={onAdd}>保存</SketchButton>
           </div>
         }
         destroyOnHidden
       >
-        {notTraining && (
-          <p className="hand" style={{ color: 'var(--accent-deep)', marginBottom: 12 }}>
-            当前为休息日，无法记录力量训练
-          </p>
-        )}
         <Form form={form} layout="vertical">
           <Form.Item name="exerciseId" label={<span className="hand">动作</span>} rules={[{ required: true }]}>
             <Select

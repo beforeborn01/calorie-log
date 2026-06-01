@@ -23,9 +23,8 @@ export default function RegisterPage() {
     }
     setSending(true);
     try {
-      const resp = await sendCode(identifier, 'register');
-      if (resp.code) message.success(`验证码已发送（测试码: ${resp.code}）`);
-      else message.success('验证码已发送');
+      await sendCode(identifier, 'register');
+      message.success('验证码已发送');
     } finally {
       setSending(false);
     }
@@ -67,7 +66,7 @@ export default function RegisterPage() {
         <h1 className="display" style={{ fontSize: 40, lineHeight: 1.05, margin: '0 0 8px' }}>
           <span className="scribble-u">注册</span>
         </h1>
-        <p className="hand ink-soft" style={{ marginBottom: 20 }}>开始你的饮食与训练日记</p>
+        <p className="hand ink-soft" style={{ marginBottom: 20 }}>开始你的饮食与运动日记</p>
 
         <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item

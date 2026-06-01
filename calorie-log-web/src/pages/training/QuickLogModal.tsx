@@ -27,7 +27,7 @@ export default function QuickLogModal({ open, onClose, onSuccess }: Props) {
 
   async function submit() {
     if (!text.trim()) {
-      message.warning('请输入要补录的训练内容');
+      message.warning('请输入要补录的运动内容');
       return;
     }
     setLoading(true);
@@ -49,7 +49,7 @@ export default function QuickLogModal({ open, onClose, onSuccess }: Props) {
 
   return (
     <Modal
-      title="自然语言补录训练"
+      title="自然语言补录运动"
       open={open}
       onCancel={() => {
         reset();
@@ -81,7 +81,7 @@ export default function QuickLogModal({ open, onClose, onSuccess }: Props) {
       {!result ? (
         <>
           <Typography.Paragraph type="secondary" style={{ marginBottom: 8 }}>
-            把你脑子里记的训练写下来，系统会自动解析并新建一次"已完成"的训练记录。
+            把你脑子里记的运动写下来，系统会自动解析并新建一次"已完成"的运动记录。
             支持中文动作名、重量 (kg)、组×次 / 多组组合。
           </Typography.Paragraph>
           <Input.TextArea

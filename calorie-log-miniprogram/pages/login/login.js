@@ -93,12 +93,5 @@ Page({
     wx.redirectTo({
       url: `/pages/index/index?${params}`
     });
-  },
-
-  onTapAgreement() {
-    wx.showModal({ title: '用户协议', content: '使用即视为同意（占位文案）。', showCancel: false });
-  },
-  onTapPrivacy() {
-    wx.showModal({ title: '隐私政策', content: '我们仅收集必要的微信账号信息（占位文案）。', showCancel: false });
   }
 });

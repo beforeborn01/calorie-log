@@ -50,25 +50,25 @@ export default function SessionsPage() {
           marginBottom: 16,
         }}
       >
-        <h2 style={{ margin: 0 }}>训练历史</h2>
+        <h2 style={{ margin: 0 }}>运动历史</h2>
         <Space>
           <Button icon={<EditOutlined />} onClick={() => setQuickOpen(true)}>
             补录
           </Button>
-          <Button onClick={() => navigate('/training/plans')}>训练计划</Button>
+          <Button onClick={() => navigate('/training/plans')}>运动计划</Button>
           <Button onClick={() => navigate('/training/stats')}>统计 / PR</Button>
         </Space>
       </div>
 
       <Space size="large" style={{ marginBottom: 16 }}>
-        <Statistic title="累计完成训练" value={totalCompleted} suffix="次" />
-        <Statistic title="累计训练量" value={totalVolume.toFixed(1)} suffix="kg·rep" />
+        <Statistic title="累计完成运动" value={totalCompleted} suffix="次" />
+        <Statistic title="累计运动量" value={totalVolume.toFixed(1)} suffix="kg·rep" />
       </Space>
 
       {loading ? (
         <div>加载中…</div>
       ) : sessions.length === 0 ? (
-        <Empty description="还没有训练记录" />
+        <Empty description="还没有运动记录" />
       ) : (
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           {sessions.map((s) => (

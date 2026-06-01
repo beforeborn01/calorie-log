@@ -39,7 +39,7 @@ export default function TrainingStatsPage() {
 
   return (
     <div style={{ padding: 24 }}>
-      <h2 style={{ marginTop: 0 }}>训练统计</h2>
+      <h2 style={{ marginTop: 0 }}>运动统计</h2>
 
       <Card
         title="今日能量闭环"
@@ -63,22 +63,22 @@ export default function TrainingStatsPage() {
               ? '今天处于赤字，长期保持会减脂。'
               : netDeficit < 0
               ? '今天处于盈余，长期保持会增重。'
-              : '请先在「健身目标」填好 TDEE、并记录饮食与训练'}
+              : '请先在「健身目标」填好 TDEE、并记录饮食与运动'}
           </div>
         </Space>
       </Card>
 
       <Space size="large" wrap style={{ marginBottom: 24 }}>
-        <Statistic title="累计完成训练" value={stats.totalWorkouts} suffix="次" />
-        <Statistic title="累计训练量" value={(stats.totalVolume || 0).toFixed(1)} suffix="kg·rep" />
-        <Statistic title="当前连续训练" value={stats.currentStreak} suffix="天" />
-        <Statistic title="最长连续训练" value={stats.longestStreak} suffix="天" />
-        <Statistic title="周均训练" value={(stats.weeklyAverage || 0).toFixed(1)} suffix="次/周" />
+        <Statistic title="累计完成运动" value={stats.totalWorkouts} suffix="次" />
+        <Statistic title="累计运动量" value={(stats.totalVolume || 0).toFixed(1)} suffix="kg·rep" />
+        <Statistic title="当前连续运动" value={stats.currentStreak} suffix="天" />
+        <Statistic title="最长连续运动" value={stats.longestStreak} suffix="天" />
+        <Statistic title="周均运动" value={(stats.weeklyAverage || 0).toFixed(1)} suffix="次/周" />
       </Space>
 
       <Card title={`个人最佳记录（${prRows.length}）`} style={{ marginBottom: 24 }}>
         {prRows.length === 0 ? (
-          <Empty description="还没有 PR 记录，去训练吧" />
+          <Empty description="还没有 PR 记录，去运动吧" />
         ) : (
           <Table
             size="middle"
@@ -109,7 +109,7 @@ export default function TrainingStatsPage() {
 
       {stats.lastWorkoutDate && (
         <div style={{ color: '#888' }}>
-          上次训练：{new Date(stats.lastWorkoutDate).toLocaleString('zh-CN', { hour12: false })}
+          上次运动：{new Date(stats.lastWorkoutDate).toLocaleString('zh-CN', { hour12: false })}
         </div>
       )}
     </div>

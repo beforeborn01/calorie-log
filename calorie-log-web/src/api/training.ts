@@ -106,7 +106,7 @@ export interface WorkoutSession {
   duration?: number;
   totalVolume?: number;
   notes?: string;
-  source?: 'plan' | 'manual' | 'quick_log';
+  source?: 'plan' | 'manual' | 'quick_log' | 'quick_form';
   rawText?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -120,6 +120,8 @@ export interface FinishSessionResponse {
 
 export const listSessions = (page = 1, size = 20) =>
   apiGet<WorkoutSession[]>('/training/sessions', { page, size });
+export const listSessionsByDate = (date: string) =>
+  apiGet<WorkoutSession[]>('/training/sessions', { date });
 export const getSession = (id: number) => apiGet<WorkoutSession>(`/training/sessions/${id}`);
 export const getActiveSession = () => apiGet<WorkoutSession | null>('/training/sessions/active');
 export const createSession = (data: Omit<WorkoutSession, 'id' | 'createdAt' | 'updatedAt'>) =>

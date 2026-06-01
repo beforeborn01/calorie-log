@@ -44,9 +44,8 @@ export default function LoginPage() {
     }
     setSending(true);
     try {
-      const resp = await sendCode(identifier, 'login');
-      if (resp.code) message.success(`验证码已发送（测试码: ${resp.code}）`);
-      else message.success('验证码已发送');
+      await sendCode(identifier, 'login');
+      message.success('验证码已发送');
     } finally {
       setSending(false);
     }
@@ -131,7 +130,7 @@ export default function LoginPage() {
         <h1 className="display" style={{ fontSize: 40, lineHeight: 1.05, margin: '0 0 8px' }}>
           <span className="scribble-u">登录</span>
         </h1>
-        <p className="hand ink-soft" style={{ marginBottom: 20 }}>继续记录你的饮食与训练</p>
+        <p className="hand ink-soft" style={{ marginBottom: 20 }}>继续记录你的饮食与运动</p>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <Pill active={loginType === 'password'} onClick={() => setLoginType('password')}>

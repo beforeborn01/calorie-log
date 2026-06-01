@@ -14,6 +14,8 @@ import {
   MenuFoldOutlined,
   MenuOutlined,
   MenuUnfoldOutlined,
+  PlusOutlined,
+  ScheduleOutlined,
   SettingOutlined,
   TeamOutlined,
   ThunderboltOutlined,
@@ -28,25 +30,64 @@ import { useAuthStore } from '../store/auth';
 import { useAddFoodStore } from '../store/addFood';
 import AddFoodModal from '../components/AddFoodModal';
 import type { UserProfile } from '../types';
+import { FEATURES, type FeatureKey } from '../config/features';
 
 const { Sider, Header, Content } = Layout;
 
-const NAV: { key: string; path: string; label: string; icon: React.ReactNode }[] = [
+type NavLeaf = {
+  key: string;
+  path: string;
+  label: string;
+  icon: React.ReactNode;
+  flag?: FeatureKey;
+};
+
+type NavGroup = {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  children: NavLeaf[];
+};
+
+type NavItem = NavLeaf | NavGroup;
+
+const isGroup = (n: NavItem): n is NavGroup => 'children' in n;
+
+const NAV_ALL: NavItem[] = [
   { key: 'home', path: '/', label: '首页', icon: <HomeOutlined /> },
   { key: 'history', path: '/history', label: '历史记录', icon: <HistoryOutlined /> },
   { key: 'goal', path: '/goal', label: '健身目标', icon: <TrophyOutlined /> },
   { key: 'statistics', path: '/statistics', label: '每日统计', icon: <BarChartOutlined /> },
   { key: 'body', path: '/body', label: '体重体脂', icon: <HeartOutlined /> },
-  { key: 'strength', path: '/strength', label: '力量训练', icon: <ThunderboltOutlined /> },
-  { key: 'training', path: '/training/plans', label: '训练计划', icon: <ThunderboltOutlined /> },
+  {
+    key: 'sport',
+    label: '运动管理',
+    icon: <ThunderboltOutlined />,
+    children: [
+      { key: 'sport-quick', path: '/strength', label: '运动速记', icon: <PlusOutlined /> },
+      { key: 'sport-plans', path: '/training/plans', label: '计划', icon: <ScheduleOutlined /> },
+      { key: 'sport-history', path: '/training/history', label: '历史', icon: <HistoryOutlined /> },
+      { key: 'sport-stats', path: '/training/stats', label: '统计', icon: <BarChartOutlined /> },
+    ],
+  },
   { key: 'reports', path: '/reports', label: '周月报告', icon: <DashboardOutlined /> },
   { key: 'friends', path: '/friends', label: '好友', icon: <TeamOutlined /> },
   { key: 'ranking', path: '/ranking', label: '排行榜', icon: <CrownOutlined /> },
-  { key: 'recognize', path: '/recognize', label: '拍照识别', icon: <CameraOutlined /> },
-  { key: 'cooking', path: '/cooking', label: '烹饪推荐', icon: <ExperimentOutlined /> },
-  { key: 'favorites', path: '/favorites', label: '烹饪收藏', icon: <HeartOutlined /> },
+  { key: 'recognize', path: '/recognize', label: '拍照识别', icon: <CameraOutlined />, flag: 'aiRecognize' },
+  { key: 'cooking', path: '/cooking', label: '烹饪推荐', icon: <ExperimentOutlined />, flag: 'aiCooking' },
+  { key: 'favorites', path: '/favorites', label: '烹饪收藏', icon: <HeartOutlined />, flag: 'aiFavorites' },
   { key: 'settings', path: '/settings', label: '设置', icon: <SettingOutlined /> },
 ];
+
+const NAV: NavItem[] = NAV_ALL.flatMap((n): NavItem[] => {
+  if (isGroup(n)) {
+    const kids = n.children.filter((c) => !c.flag || FEATURES[c.flag]);
+    return kids.length === 0 ? [] : [{ ...n, children: kids }];
+  }
+  return !n.flag || FEATURES[n.flag] ? [n] : [];
+});
+
+const NAV_LEAVES: NavLeaf[] = NAV.flatMap((n) => (isGroup(n) ? n.children : [n]));
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -93,9 +134,17 @@ export default function AppLayout() {
   }, []);
 
   const selectedKey = useMemo(() => {
-    const hit = NAV.find((n) => (n.path === '/' ? location.pathname === '/' : location.pathname.startsWith(n.path)));
+    // 子项的 path 比父级更具体（如 /training/plans），按声明顺序匹配第一个命中即可
+    const hit = NAV_LEAVES.find((n) =>
+      n.path === '/' ? location.pathname === '/' : location.pathname.startsWith(n.path)
+    );
     return hit?.key ?? 'home';
   }, [location.pathname]);
+
+  const openKeys = useMemo(
+    () => NAV.filter(isGroup).filter((g) => g.children.some((c) => c.key === selectedKey)).map((g) => g.key),
+    [selectedKey]
+  );
 
   const onLogout = async () => {
     try {
@@ -114,18 +163,30 @@ export default function AppLayout() {
     { key: 'logout', icon: <LogoutOutlined />, label: '退出登录', onClick: onLogout },
   ];
 
+  const menuItems: MenuProps['items'] = NAV.map((n) =>
+    isGroup(n)
+      ? {
+          key: n.key,
+          icon: n.icon,
+          label: n.label,
+          children: n.children.map((c) => ({ key: c.key, icon: c.icon, label: c.label })),
+        }
+      : { key: n.key, icon: n.icon, label: n.label }
+  );
+
   const menuEl = (
     <Menu
       mode="inline"
       selectedKeys={[selectedKey]}
+      defaultOpenKeys={openKeys}
       onClick={({ key }) => {
-        const item = NAV.find((n) => n.key === key);
+        const item = NAV_LEAVES.find((n) => n.key === key);
         if (item) {
           navigate(item.path);
           setDrawerOpen(false);
         }
       }}
-      items={NAV.map(({ key, label, icon }) => ({ key, icon, label }))}
+      items={menuItems}
       style={{ border: 'none', padding: '8px 0' }}
     />
   );

@@ -2,7 +2,7 @@
   "miniprogramRoot": "./",
   "projectname": "calorie-log",
   "description": "食养记 - 微信小程序壳（web-view 套壳）",
-  "appid": "REPLACE_WITH_YOUR_APPID",
+  "appid": "wx817fc1d01ac853c7",
   "setting": {
     "urlCheck": true,
     "es6": true,

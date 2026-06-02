@@ -1,0 +1,29 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">REPORTS</view>
+  <view class="page-title">周月报告</view>
+  <view class="card">
+    <view class="grid-2">
+      <view class="field"><text class="field-label">周期</text><picker mode="selector" range="{{periodOptions}}" value="{{periodIndex}}" bindchange="onPeriodChange"><view class="picker-box">{{periodOptions[periodIndex]}}</view></picker></view>
+      <view class="field" wx:if="{{periodIndex === 0}}"><text class="field-label">选择周内任一天</text><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="picker-box">{{date}}</view></picker></view>
+      <view class="field" wx:else><text class="field-label">月份</text><picker mode="date" fields="month" value="{{yearMonth}}" bindchange="onMonthChange"><view class="picker-box">{{yearMonth}}</view></picker></view>
+    </view>
+  </view>
+  <view class="card range-card" wx:if="{{report}}"><view class="card-title">{{report.startDate}} 至 {{report.endDate}}</view><view class="card-subtitle">{{report.conclusion || '继续记录，趋势才会更清晰。'}}</view></view>
+  <view class="grid-2 report-grid">
+    <view class="card" wx:for="{{cards}}" wx:key="label"><view class="stat-value mono">{{item.value}}</view><view class="stat-label">{{item.label}} {{item.unit}}</view></view>
+  </view>
+  <view class="section-title" wx:if="{{report && report.dailyPoints}}">每日趋势</view>
+  <view class="card chart-card" wx:if="{{calorieBars.length > 0}}">
+    <view class="card-title">热量柱状趋势</view>
+    <view class="bar-chart">
+      <view class="bar-col" wx:for="{{calorieBars}}" wx:key="date">
+        <view class="bar-value mono">{{item.value}}</view>
+        <view class="bar" style="height: {{item.height}}rpx;"></view>
+        <view class="bar-date">{{item.date}}</view>
+      </view>
+    </view>
+  </view>
+  <view class="card point-row" wx:for="{{report.dailyPoints}}" wx:key="date">
+    <view class="row-between"><view>{{item.date}}</view><view class="mono">{{item.calories || '-'}} kcal · {{item.dietScore || '-'}} 分</view></view>
+  </view>
+</view>

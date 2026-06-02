@@ -1,0 +1,23 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">EDIT RECORD</view>
+  <view class="page-title">编辑记录</view>
+  <view class="card">
+    <view class="field"><text class="field-label">食物名称</text><input class="input" value="{{form.foodName}}" data-field="foodName" bindinput="onInput" /></view>
+    <view class="field">
+      <text class="field-label">餐次</text>
+      <picker mode="selector" range="{{mealOptions}}" value="{{form.mealType - 1}}" bindchange="onMealChange">
+        <view class="picker-box">{{mealOptions[form.mealType - 1]}}</view>
+      </picker>
+    </view>
+    <view class="grid-2">
+      <view class="field"><text class="field-label">净重 g</text><input class="input" type="digit" value="{{form.quantity}}" data-field="quantity" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">毛重 g</text><input class="input" type="digit" value="{{form.grossQuantity}}" data-field="grossQuantity" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">热量 kcal</text><input class="input" type="digit" value="{{form.calories}}" data-field="calories" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">蛋白 g</text><input class="input" type="digit" value="{{form.protein}}" data-field="protein" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">碳水 g</text><input class="input" type="digit" value="{{form.carbohydrate}}" data-field="carbohydrate" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">脂肪 g</text><input class="input" type="digit" value="{{form.fat}}" data-field="fat" bindinput="onInput" /></view>
+    </view>
+    <button class="btn btn-primary" style="width:100%;" bindtap="onSubmit" loading="{{saving}}">保存修改</button>
+    <button class="btn btn-danger" style="width:100%; margin-top:18rpx;" bindtap="onDelete">删除这条记录</button>
+  </view>
+</view>

@@ -1,0 +1,6 @@
+.date-picker { text-align:center; min-width:250rpx; }
+.card-grid { margin:22rpx 0; }
+.status-hint { margin-top:10rpx; line-height:1.7; }
+.score-row { display:flex; justify-content:space-between; padding:18rpx 0; border-top:2rpx dashed rgba(44,38,32,.08); }
+.suggestion { margin-bottom:18rpx; }
+.detail { margin-top:12rpx; line-height:1.7; }

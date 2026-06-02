@@ -1,0 +1,51 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">PROFILE</view>
+  <view class="page-title">{{edit ? '编辑资料' : '先完成建档'}}</view>
+  <view class="card">
+    <view class="avatar-section">
+      <button class="avatar-button" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+        <image wx:if="{{displayAvatar}}" class="avatar-img" src="{{displayAvatar}}" mode="aspectFill" />
+        <view wx:else class="avatar-placeholder">{{form.nickname ? form.nickname[0] : '头像'}}</view>
+      </button>
+      <view class="avatar-copy">
+        <view class="card-title">头像与昵称</view>
+        <view class="card-subtitle">点击头像可选择微信头像；昵称输入框会唤起微信昵称建议。</view>
+      </view>
+    </view>
+
+    <view class="field">
+      <text class="field-label">昵称</text>
+      <input class="input" type="nickname" placeholder="填写昵称" value="{{form.nickname}}" data-field="nickname" bindinput="onInput" />
+    </view>
+    <view class="grid-2">
+      <view class="field">
+        <text class="field-label">性别</text>
+        <picker mode="selector" range="{{genderOptions}}" value="{{form.gender}}" bindchange="onGenderChange">
+          <view class="picker-box">{{genderOptions[form.gender]}}</view>
+        </picker>
+      </view>
+      <view class="field">
+        <text class="field-label">年龄</text>
+        <input class="input" type="number" placeholder="岁" value="{{form.age}}" data-field="age" bindinput="onInput" />
+      </view>
+    </view>
+    <view class="grid-2">
+      <view class="field">
+        <text class="field-label">身高 cm</text>
+        <input class="input" type="digit" placeholder="例如 175" value="{{form.height}}" data-field="height" bindinput="onInput" />
+      </view>
+      <view class="field">
+        <text class="field-label">体重 kg</text>
+        <input class="input" type="digit" placeholder="例如 70" value="{{form.weight}}" data-field="weight" bindinput="onInput" />
+      </view>
+    </view>
+    <view class="field">
+      <text class="field-label">日常活动量</text>
+      <picker mode="selector" range="{{activityOptions}}" value="{{form.activityLevel - 1}}" bindchange="onActivityChange">
+        <view class="picker-box">{{activityOptions[form.activityLevel - 1]}}</view>
+      </picker>
+    </view>
+    <button class="btn btn-primary" style="width: 100%; margin-top: 18rpx;" bindtap="onSubmit" loading="{{saving || uploadingAvatar}}">{{uploadingAvatar ? '头像上传中…' : '保存并开始记录'}}</button>
+  </view>
+  <view class="muted tiny tip">这些信息只用于计算基础消耗和目标热量，可随时在“我的”里修改。</view>
+</view>

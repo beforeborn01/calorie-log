@@ -1,5 +1,202 @@
-/* 全局空样式占位（pages/index 单页全屏 web-view，不需要全局样式） */
 page {
-  height: 100%;
+  min-height: 100%;
   background: #F5F1E8;
+  color: #2C2620;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  font-size: 28rpx;
+}
+
+.container {
+  padding: 28rpx 28rpx 56rpx;
+  box-sizing: border-box;
+}
+
+.safe-bottom {
+  padding-bottom: calc(56rpx + env(safe-area-inset-bottom));
+}
+
+.row { display: flex; align-items: center; }
+.row-between { display: flex; align-items: center; justify-content: space-between; }
+.row-wrap { display: flex; flex-wrap: wrap; align-items: center; }
+.col { display: flex; flex-direction: column; }
+.gap-sm { gap: 12rpx; }
+.gap { gap: 20rpx; }
+.gap-lg { gap: 32rpx; }
+.flex-1 { flex: 1; min-width: 0; }
+
+.card {
+  background: #FFFDF8;
+  border: 2rpx dashed rgba(44, 38, 32, 0.14);
+  border-radius: 28rpx;
+  padding: 28rpx;
+  box-shadow: 0 12rpx 28rpx rgba(44, 38, 32, 0.06);
+  box-sizing: border-box;
+}
+.card + .card { margin-top: 22rpx; }
+.card-title { font-weight: 700; font-size: 32rpx; }
+.card-subtitle { color: #8A7F73; font-size: 24rpx; margin-top: 6rpx; }
+
+.page-kicker {
+  color: #8A7F73;
+  font-size: 22rpx;
+  letter-spacing: 4rpx;
+  text-transform: uppercase;
+}
+.page-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  line-height: 1.15;
+  margin: 8rpx 0 24rpx;
+}
+.section-title {
+  font-size: 34rpx;
+  font-weight: 800;
+  margin: 34rpx 0 18rpx;
+}
+.muted { color: #8A7F73; }
+.faint { color: #B8AEA2; }
+.danger { color: #B0413E; }
+.success { color: #2F7D4E; }
+.accent { color: #5D6BEA; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.small { font-size: 24rpx; }
+.tiny { font-size: 22rpx; }
+.text-right { text-align: right; }
+.center { text-align: center; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 76rpx;
+  padding: 0 28rpx;
+  margin: 0;
+  border-radius: 999rpx;
+  border: 2rpx solid rgba(44, 38, 32, 0.16);
+  background: #FFFDF8;
+  color: #2C2620;
+  font-size: 28rpx;
+  line-height: 76rpx;
+  box-sizing: border-box;
+}
+.btn::after { border: none; }
+.btn-primary {
+  background: #2C2620;
+  color: #F5F1E8;
+  border-color: #2C2620;
+}
+.btn-danger {
+  color: #B0413E;
+  border-color: rgba(176, 65, 62, 0.28);
+}
+.btn-ghost {
+  background: transparent;
+  border-color: rgba(44, 38, 32, 0.12);
+}
+.btn-sm {
+  min-height: 56rpx;
+  line-height: 56rpx;
+  padding: 0 20rpx;
+  font-size: 24rpx;
+}
+
+.input, .textarea, .picker-box {
+  width: 100%;
+  min-height: 78rpx;
+  padding: 0 22rpx;
+  border-radius: 20rpx;
+  border: 2rpx solid rgba(44, 38, 32, 0.14);
+  background: #FFFDF8;
+  box-sizing: border-box;
+  font-size: 28rpx;
+}
+.textarea {
+  min-height: 180rpx;
+  padding-top: 18rpx;
+  line-height: 1.5;
+}
+.field { margin-bottom: 22rpx; }
+.field-label { display: block; margin-bottom: 10rpx; color: #665B50; font-size: 25rpx; }
+.picker-box { display: flex; align-items: center; color: #2C2620; }
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6rpx 16rpx;
+  border-radius: 999rpx;
+  background: #EEE6D7;
+  color: #665B50;
+  font-size: 22rpx;
+  margin-right: 10rpx;
+  margin-bottom: 10rpx;
+}
+.tag-active { background: #2C2620; color: #F5F1E8; }
+
+.divider { border-top: 2rpx dashed rgba(44, 38, 32, 0.12); margin: 22rpx 0; }
+.empty { color: #B8AEA2; text-align: center; padding: 64rpx 0; }
+
+.progress-track {
+  height: 18rpx;
+  background: #EEE6D7;
+  border-radius: 999rpx;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #2C2620;
+  border-radius: 999rpx;
+}
+
+.fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: calc(40rpx + env(safe-area-inset-bottom));
+  z-index: 20;
+  min-width: 112rpx;
+  height: 112rpx;
+  line-height: 112rpx;
+  border-radius: 56rpx;
+  box-shadow: 0 16rpx 36rpx rgba(44,38,32,0.2);
+}
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18rpx; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18rpx; }
+.stat-value { font-size: 38rpx; font-weight: 800; line-height: 1.1; }
+.stat-label { color: #8A7F73; font-size: 22rpx; margin-top: 6rpx; }
+
+/* 运动模块同级页签：运动速记 / 计划 / 历史 / 统计 */
+.sport-nav {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin: 0 0 24rpx;
+  padding: 8rpx;
+  background: #FFFDF8;
+  border: 2rpx dashed rgba(44, 38, 32, 0.14);
+  border-radius: 999rpx;
+  box-shadow: 0 10rpx 24rpx rgba(44, 38, 32, 0.05);
+  box-sizing: border-box;
+}
+.sport-nav-item {
+  flex: 1;
+  width: auto !important;
+  height: 68rpx;
+  min-height: 68rpx;
+  line-height: 68rpx;
+  padding: 0;
+  margin: 0;
+  border-radius: 999rpx;
+  border: none;
+  background: transparent;
+  color: #665B50;
+  font-size: 26rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+.sport-nav-item::after { border: none; }
+.sport-nav-item.active {
+  background: #2C2620;
+  color: #F5F1E8;
+  font-weight: 700;
+  box-shadow: 0 8rpx 18rpx rgba(44, 38, 32, 0.18);
 }

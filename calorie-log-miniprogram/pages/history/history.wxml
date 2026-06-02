@@ -1,0 +1,23 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">HISTORY</view>
+  <view class="page-title">历史记录</view>
+  <view class="card">
+    <view class="row-between">
+      <button class="btn btn-sm" bindtap="onPrevDay">前一天</button>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="date-picker"><view class="mono">{{date}}</view><view class="muted small">{{displayDate}}</view></view></picker>
+      <button class="btn btn-sm" bindtap="onNextDay">后一天</button>
+    </view>
+  </view>
+  <view class="grid-2 summary-grid">
+    <view class="card" wx:for="{{summary}}" wx:key="label"><view class="stat-value mono">{{item.value}}</view><view class="stat-label">{{item.label}} {{item.unit}}</view></view>
+  </view>
+  <view class="card meal-card" wx:for="{{meals}}" wx:for-index="mealIndex" wx:key="type">
+    <view class="row-between"><view class="card-title">{{item.label}}</view><button class="btn btn-sm btn-primary" data-meal="{{item.type}}" bindtap="onAddFood">添加</button></view>
+    <view class="empty" wx:if="{{item.list.length === 0}}">暂无记录</view>
+    <view class="record-row" wx:for="{{item.list}}" wx:for-item="record" wx:for-index="recordIndex" wx:key="id">
+      <view class="flex-1"><view class="record-name">{{record.foodName}}</view><view class="muted small">{{record.quantity}} g · {{record.calories}} kcal</view></view>
+      <button class="btn btn-sm" data-meal-index="{{mealIndex}}" data-record-index="{{recordIndex}}" bindtap="onEdit">改</button>
+      <button class="btn btn-sm btn-danger" data-meal-index="{{mealIndex}}" data-record-index="{{recordIndex}}" bindtap="onDelete">删</button>
+    </view>
+  </view>
+</view>

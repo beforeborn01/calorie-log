@@ -1,0 +1,21 @@
+<view class="container safe-bottom" wx:if="{{session}}">
+  <view class="page-kicker">ACTIVE</view>
+  <view class="page-title">{{session.name}}</view>
+  <view class="card">
+    <view class="row-between"><view><view class="stat-value mono">{{timerText}}</view><view class="stat-label">已训练</view></view><view class="text-right"><view class="stat-value mono">{{stats.done}}/{{stats.total}}</view><view class="stat-label">完成组数</view></view></view>
+    <view class="progress-track active-progress"><view class="progress-fill" style="width: {{stats.pct}}%;"></view></view>
+  </view>
+  <view class="card exercise-card" wx:for="{{session.exercises}}" wx:for-index="exIdx" wx:key="exerciseId">
+    <view class="card-title">{{item.exerciseName || ('动作#' + item.exerciseId)}}</view>
+    <view class="set-row head"><text>组</text><text>次数</text><text>重量</text><text>状态</text></view>
+    <view class="set-row" wx:for="{{item.completedSets}}" wx:for-item="set" wx:for-index="setIdx" wx:key="setNumber">
+      <text class="mono">{{set.setNumber}}</text>
+      <input class="mini-input" type="number" value="{{set.reps}}" data-exidx="{{exIdx}}" data-setidx="{{setIdx}}" data-field="reps" bindinput="onSetInput" />
+      <input class="mini-input" type="digit" value="{{set.weight}}" data-exidx="{{exIdx}}" data-setidx="{{setIdx}}" data-field="weight" bindinput="onSetInput" />
+      <button class="btn btn-sm {{set.isCompleted ? 'btn-primary' : ''}}" data-exidx="{{exIdx}}" data-setidx="{{setIdx}}" bindtap="onToggleSet">{{set.isCompleted ? '已完成' : '完成'}}</button>
+    </view>
+  </view>
+  <view class="card"><view class="field"><text class="field-label">备注</text><textarea class="textarea" value="{{session.notes}}" bindinput="onNotesInput" /></view></view>
+  <view class="row gap action-bar"><button class="btn flex-1" bindtap="onSave" loading="{{saving}}">保存</button><button class="btn btn-primary flex-1" bindtap="onFinish" loading="{{finishing}}">结束运动</button><button class="btn btn-danger" bindtap="onAbort">放弃</button></view>
+</view>
+<view class="container" wx:else><view class="empty">加载中…</view></view>

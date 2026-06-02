@@ -1,0 +1,4 @@
+.account-card { margin-bottom:22rpx; }
+.bind-field { margin-top:22rpx; }
+.setting-row { display:flex; align-items:center; justify-content:space-between; padding:24rpx 0 12rpx; }
+.time-box { margin-bottom:16rpx; }

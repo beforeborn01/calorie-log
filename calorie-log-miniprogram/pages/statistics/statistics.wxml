@@ -1,0 +1,32 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">STATISTICS</view>
+  <view class="page-title">每日统计</view>
+  <view class="card"><view class="row-between"><button class="btn btn-sm" bindtap="onPrevDay">前一天</button><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="date-picker"><view class="mono">{{date}}</view><view class="muted small">{{displayDate}}</view></view></picker><button class="btn btn-sm" bindtap="onNextDay">后一天</button></view></view>
+  <view class="grid-2 card-grid">
+    <view class="card" wx:for="{{cards}}" wx:key="label"><view class="stat-value mono">{{item.value}}</view><view class="stat-label">{{item.label}} {{item.unit}}</view></view>
+  </view>
+  <view class="card" wx:if="{{daily}}">
+    <view class="card-title">状态</view>
+    <view class="muted small status-hint">{{daily.statusHint}}</view>
+    <view class="divider"></view>
+    <view class="grid-3">
+      <view><view class="stat-value mono">{{daily.totalProtein}}</view><view class="stat-label">蛋白 g</view></view>
+      <view><view class="stat-value mono">{{daily.totalCarb}}</view><view class="stat-label">碳水 g</view></view>
+      <view><view class="stat-value mono">{{daily.totalFat}}</view><view class="stat-label">脂肪 g</view></view>
+    </view>
+  </view>
+  <view class="section-title" wx:if="{{score}}">评分拆解</view>
+  <view class="card" wx:if="{{score}}">
+    <view class="score-row"><text>热量</text><text class="mono">{{score.calorieScore}}</text></view>
+    <view class="score-row"><text>营养素</text><text class="mono">{{score.nutrientScore}}</text></view>
+    <view class="score-row"><text>餐次分布</text><text class="mono">{{score.mealDistributionScore}}</text></view>
+    <view class="score-row"><text>多样性</text><text class="mono">{{score.varietyScore}}</text></view>
+  </view>
+  <view class="section-title">建议</view>
+  <view class="card" wx:if="{{suggestions.length === 0}}"><view class="empty">暂无建议</view></view>
+  <view class="card suggestion" wx:for="{{suggestions}}" wx:key="title">
+    <view class="row-between"><view class="card-title">{{item.title}}</view><view class="tag">{{item.severity}}</view></view>
+    <view class="muted small detail">{{item.detail}}</view>
+    <view class="row-wrap" wx:if="{{item.recommendedFoods}}"><view class="tag" wx:for="{{item.recommendedFoods}}" wx:key="*this">{{item}}</view></view>
+  </view>
+</view>

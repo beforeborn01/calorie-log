@@ -1,0 +1,10 @@
+<view class="cl-card {{extraClass}}">
+  <view class="cl-card-head" wx:if="{{title || subtitle}}">
+    <view>
+      <view class="cl-card-title" wx:if="{{title}}">{{title}}</view>
+      <view class="cl-card-subtitle" wx:if="{{subtitle}}">{{subtitle}}</view>
+    </view>
+    <slot name="extra"></slot>
+  </view>
+  <slot></slot>
+</view>

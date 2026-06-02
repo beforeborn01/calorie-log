@@ -1,0 +1,15 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">FRIENDS</view>
+  <view class="page-title">好友</view>
+  <view class="card">
+    <view class="card-title">添加好友</view>
+    <view class="row gap search-row"><input class="input flex-1" type="number" placeholder="输入手机号搜索" value="{{phone}}" data-field="phone" bindinput="onInput" /><button class="btn btn-primary" bindtap="onSearch">搜索</button></view>
+    <view class="search-result" wx:if="{{searchResult}}"><view class="card-subtitle">{{searchResult.nickname}} · Lv{{searchResult.level}} · {{searchResult.relation}}</view><input class="input" placeholder="申请备注" value="{{requestMessage}}" data-field="requestMessage" bindinput="onInput" /><button class="btn" style="width:100%; margin-top:16rpx;" bindtap="onSendRequest">发送申请</button></view>
+  </view>
+  <view class="section-title">待处理申请</view>
+  <view class="card" wx:if="{{requests.length === 0}}"><view class="empty">暂无待处理申请</view></view>
+  <view class="card request-row" wx:for="{{requests}}" wx:key="id"><view class="flex-1"><view class="card-title">{{item.fromNickname}}</view><view class="card-subtitle">{{item.message || '请求添加你为好友'}}</view></view><button class="btn btn-sm btn-primary" data-id="{{item.id}}" data-action="accept" bindtap="onHandle">接受</button><button class="btn btn-sm" data-id="{{item.id}}" data-action="reject" bindtap="onHandle">拒绝</button></view>
+  <view class="section-title">我的好友</view>
+  <view class="card" wx:if="{{friends.length === 0}}"><view class="empty">暂无好友</view></view>
+  <view class="card friend-row" wx:for="{{friends}}" wx:key="friendUserId"><view class="flex-1"><view class="card-title">{{item.remark || item.nickname}}</view><view class="card-subtitle">Lv{{item.level}} · 连续 {{item.continuousDays}} 天 · {{item.recordedToday ? '今日已记录' : '今日未记录'}}</view></view><button class="btn btn-sm btn-danger" data-id="{{item.friendUserId}}" bindtap="onDeleteFriend">删</button></view>
+</view>

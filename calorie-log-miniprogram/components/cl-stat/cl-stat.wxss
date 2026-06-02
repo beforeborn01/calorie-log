@@ -1,0 +1,4 @@
+.stat { min-width:0; }
+.value { font-size:38rpx; font-weight:800; color:#2C2620; line-height:1.1; }
+.unit { font-size:22rpx; color:#8A7F73; font-weight:400; }
+.label { color:#8A7F73; font-size:22rpx; margin-top:6rpx; }

@@ -9,6 +9,8 @@ import com.calorielog.module.training.plan.entity.WorkoutPlan;
 import com.calorielog.module.training.plan.entity.WorkoutPlanExercise;
 import com.calorielog.module.training.plan.mapper.WorkoutPlanExerciseMapper;
 import com.calorielog.module.training.plan.mapper.WorkoutPlanMapper;
+import com.calorielog.module.strength.entity.Exercise;
+import com.calorielog.module.strength.mapper.ExerciseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,16 +26,19 @@ public class WorkoutPlanService {
 
     private final WorkoutPlanMapper planMapper;
     private final WorkoutPlanExerciseMapper planExerciseMapper;
+    private final ExerciseMapper exerciseMapper;
 
     public List<WorkoutPlanDTO> list(Long userId) {
         List<WorkoutPlan> plans = planMapper.findByUser(userId);
         if (plans.isEmpty()) return List.of();
 
         List<Long> ids = plans.stream().map(WorkoutPlan::getId).collect(Collectors.toList());
-        Map<Long, List<WorkoutPlanExercise>> byPlan = planExerciseMapper.findByPlanIds(ids).stream()
+        List<WorkoutPlanExercise> allExercises = planExerciseMapper.findByPlanIds(ids);
+        Map<Long, List<WorkoutPlanExercise>> byPlan = allExercises.stream()
                 .collect(Collectors.groupingBy(WorkoutPlanExercise::getPlanId));
+        Map<Long, Exercise> exerciseMap = exerciseMap(allExercises);
         return plans.stream()
-                .map(p -> toDTO(p, byPlan.getOrDefault(p.getId(), List.of())))
+                .map(p -> toDTO(p, byPlan.getOrDefault(p.getId(), List.of()), exerciseMap))
                 .collect(Collectors.toList());
     }
 
@@ -41,7 +46,8 @@ public class WorkoutPlanService {
         WorkoutPlan p = planMapper.selectById(id);
         if (p == null) throw new BizException(ErrorCode.PLAN_NOT_FOUND);
         if (!p.getUserId().equals(userId)) throw new BizException(ErrorCode.PLAN_NO_PERMISSION);
-        return toDTO(p, planExerciseMapper.findByPlan(id));
+        List<WorkoutPlanExercise> exs = planExerciseMapper.findByPlan(id);
+        return toDTO(p, exs, exerciseMap(exs));
     }
 
     @Transactional
@@ -105,7 +111,19 @@ public class WorkoutPlanService {
         }
     }
 
-    private WorkoutPlanDTO toDTO(WorkoutPlan p, List<WorkoutPlanExercise> exs) {
+    private Map<Long, Exercise> exerciseMap(List<WorkoutPlanExercise> exs) {
+        if (exs == null || exs.isEmpty()) return Map.of();
+        List<Long> exerciseIds = exs.stream()
+                .map(WorkoutPlanExercise::getExerciseId)
+                .filter(id -> id != null)
+                .distinct()
+                .collect(Collectors.toList());
+        if (exerciseIds.isEmpty()) return Map.of();
+        return exerciseMapper.selectBatchIds(exerciseIds).stream()
+                .collect(Collectors.toMap(Exercise::getId, e -> e));
+    }
+
+    private WorkoutPlanDTO toDTO(WorkoutPlan p, List<WorkoutPlanExercise> exs, Map<Long, Exercise> exerciseMap) {
         WorkoutPlanDTO d = new WorkoutPlanDTO();
         d.setId(p.getId());
         d.setName(p.getName());
@@ -120,6 +138,11 @@ public class WorkoutPlanService {
         for (WorkoutPlanExercise e : exs) {
             WorkoutExerciseDTO x = new WorkoutExerciseDTO();
             x.setExerciseId(e.getExerciseId());
+            Exercise exercise = exerciseMap.get(e.getExerciseId());
+            if (exercise != null) {
+                x.setExerciseName(exercise.getName());
+                x.setBodyPart(exercise.getBodyPart());
+            }
             x.setSets(e.getSets());
             x.setReps(e.getReps());
             x.setWeight(e.getWeight());

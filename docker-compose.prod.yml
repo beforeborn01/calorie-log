@@ -87,6 +87,8 @@ services:
       VOLC_SMS_TEMPLATE_ID: ${VOLC_SMS_TEMPLATE_ID:-}
       BAIDU_AI_API_KEY: ${BAIDU_AI_API_KEY:-}
       BAIDU_AI_SECRET_KEY: ${BAIDU_AI_SECRET_KEY:-}
+    volumes:
+      - app-uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -133,3 +135,4 @@ services:
 volumes:
   postgres-data:
   redis-data:
+  app-uploads:

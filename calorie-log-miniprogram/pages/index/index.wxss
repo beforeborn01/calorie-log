@@ -1,4 +1,0 @@
-/* 让 web-view 占满整个页面（小程序默认 web-view 100% 高度，但安全起见显式声明一下） */
-page, web-view {
-  height: 100%;
-}

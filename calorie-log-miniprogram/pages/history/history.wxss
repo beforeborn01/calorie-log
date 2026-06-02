@@ -1,0 +1,5 @@
+.date-picker { text-align:center; min-width:250rpx; }
+.summary-grid { margin:22rpx 0; }
+.meal-card { margin-bottom:22rpx; }
+.record-row { display:flex; align-items:center; gap:12rpx; padding:18rpx 0; border-top:2rpx dashed rgba(44,38,32,.08); }
+.record-name { font-weight:700; }

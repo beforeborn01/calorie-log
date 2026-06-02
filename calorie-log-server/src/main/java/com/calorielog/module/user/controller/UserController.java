@@ -7,6 +7,16 @@ import com.calorielog.module.user.dto.UpdateProfileRequest;
 import com.calorielog.module.user.dto.UserProfileResponse;
 import com.calorielog.module.user.service.AuthService;
 import com.calorielog.module.user.service.UserService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.concurrent.TimeUnit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,6 +46,22 @@ public class UserController {
     @PutMapping("/profile")
     public Result<UserProfileResponse> updateProfile(@Valid @RequestBody UpdateProfileRequest req) {
         return Result.success(userService.updateProfile(CurrentUser.requireUserId(), req));
+    }
+
+    @Operation(summary = "上传/更新头像")
+    @PostMapping(value = "/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result<UserProfileResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
+        return Result.success(userService.updateAvatar(CurrentUser.requireUserId(), file));
+    }
+
+    @Operation(summary = "读取头像文件")
+    @GetMapping("/avatar/{filename:.+}")
+    public ResponseEntity<Resource> getAvatar(@PathVariable String filename) {
+        Resource resource = userService.loadAvatar(filename);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(userService.avatarContentType(filename)))
+                .cacheControl(CacheControl.maxAge(30, TimeUnit.DAYS).cachePublic())
+                .body(resource);
     }
 
     @Operation(summary = "修改密码（需原密码，成功后所有 Token 失效）")

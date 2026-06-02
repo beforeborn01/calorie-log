@@ -1,0 +1,35 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">GOAL</view>
+  <view class="page-title">健身目标</view>
+  <view class="card" wx:if="{{goal}}">
+    <view class="card-title">当前：{{goal.goalTypeLabel}}</view>
+    <view class="grid-2 goal-grid">
+      <view><view class="stat-value mono">{{goal.targetCaloriesTraining}}</view><view class="stat-label">训练日 kcal</view></view>
+      <view><view class="stat-value mono">{{goal.targetCaloriesRest}}</view><view class="stat-label">休息日 kcal</view></view>
+      <view><view class="stat-value mono">{{goal.bmr}}</view><view class="stat-label">BMR</view></view>
+      <view><view class="stat-value mono">{{goal.tdeeBase}}</view><view class="stat-label">基础 TDEE</view></view>
+    </view>
+  </view>
+  <view class="card" wx:else><view class="empty">尚未设置目标。先完善资料，再设置目标热量。</view></view>
+
+  <view class="section-title">设置目标</view>
+  <view class="card">
+    <view class="field"><text class="field-label">目标类型</text><picker mode="selector" range="{{goalOptions}}" value="{{form.goalType - 1}}" bindchange="onGoalTypeChange"><view class="picker-box">{{goalOptions[form.goalType - 1]}}</view></picker></view>
+    <view class="grid-2">
+      <view class="field"><text class="field-label">训练日目标 kcal</text><input class="input" type="digit" value="{{form.targetCaloriesTraining}}" placeholder="留空自动计算" data-field="targetCaloriesTraining" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">休息日目标 kcal</text><input class="input" type="digit" value="{{form.targetCaloriesRest}}" placeholder="留空自动计算" data-field="targetCaloriesRest" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">蛋白比例 %</text><input class="input" type="digit" value="{{form.proteinRatio}}" data-field="proteinRatio" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">碳水比例 %</text><input class="input" type="digit" value="{{form.carbRatio}}" data-field="carbRatio" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">脂肪比例 %</text><input class="input" type="digit" value="{{form.fatRatio}}" data-field="fatRatio" bindinput="onInput" /></view>
+    </view>
+    <button class="btn btn-primary" style="width:100%;" bindtap="onSubmit" loading="{{saving}}">保存目标</button>
+  </view>
+
+  <view class="section-title" wx:if="{{mealDistribution}}">今日餐次建议</view>
+  <view class="card" wx:if="{{mealDistribution}}">
+    <view class="card-subtitle">目标 {{mealDistribution.targetCalories}} kcal</view>
+    <view class="meal-dist" wx:for="{{mealDistribution.meals}}" wx:key="mealType">
+      <view class="row-between"><text>{{item.label}}</text><text class="mono">{{item.minCalories}}-{{item.maxCalories}} kcal</text></view>
+    </view>
+  </view>
+</view>

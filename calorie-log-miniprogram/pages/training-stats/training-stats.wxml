@@ -1,0 +1,14 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">SPORT</view>
+  <view class="page-title">运动统计</view>
+  <view class="sport-nav">
+    <button class="sport-nav-item" bindtap="goQuick">速记</button>
+    <button class="sport-nav-item" bindtap="goPlans">计划</button>
+    <button class="sport-nav-item" bindtap="goSessions">历史</button>
+    <button class="sport-nav-item active">统计</button>
+  </view>
+  <view class="grid-2"><view class="card" wx:for="{{cards}}" wx:key="label"><view class="stat-value mono">{{item.value}}</view><view class="stat-label">{{item.label}} {{item.unit}}</view></view></view>
+  <view class="section-title">个人记录 PR</view>
+  <view class="card" wx:if="{{prs.length === 0}}"><view class="empty">暂无 PR</view></view>
+  <view class="card pr-row" wx:for="{{prs}}" wx:key="name"><view class="flex-1"><view class="card-title">{{item.name}}</view><view class="card-subtitle">{{item.date}}</view></view><view class="mono stat-value">{{item.weight}}kg</view></view>
+</view>

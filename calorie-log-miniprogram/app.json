@@ -1,14 +1,44 @@
 {
   "pages": [
     "pages/login/login",
-    "pages/index/index"
+    "pages/profile-setup/profile-setup",
+    "pages/home/home",
+    "pages/add-food/add-food",
+    "pages/custom-food/custom-food",
+    "pages/record-edit/record-edit",
+    "pages/history/history",
+    "pages/goal/goal",
+    "pages/statistics/statistics",
+    "pages/reports/reports",
+    "pages/body/body",
+    "pages/profile/profile",
+    "pages/settings/settings",
+    "pages/training-quick/training-quick",
+    "pages/training-plans/training-plans",
+    "pages/training-active/training-active",
+    "pages/training-sessions/training-sessions",
+    "pages/training-stats/training-stats",
+    "pages/social-friends/social-friends",
+    "pages/social-ranking/social-ranking"
   ],
   "window": {
     "backgroundTextStyle": "light",
     "navigationBarBackgroundColor": "#F5F1E8",
     "navigationBarTitleText": "食养记",
     "navigationBarTextStyle": "black",
-    "navigationStyle": "default"
+    "backgroundColor": "#F5F1E8"
+  },
+  "tabBar": {
+    "color": "#8A7F73",
+    "selectedColor": "#2C2620",
+    "backgroundColor": "#F5F1E8",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "首页" },
+      { "pagePath": "pages/history/history", "text": "记录" },
+      { "pagePath": "pages/training-quick/training-quick", "text": "运动" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
   },
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"

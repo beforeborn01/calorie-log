@@ -1,179 +1,103 @@
-# Web → 微信小程序迁移指南
+# Web → 原生微信小程序迁移记录
 
-记录把现有 React web 端（`calorie-log-web/`）转换为小程序的关键决策、依赖兼容性、转换策略。
+最后更新：2026-06-01
 
-转换的触发条件：上线后决定接入小程序入口，且**完成主体升级**（个人主体小程序不允许 web-view，参考 `launch-checklist.md`）。
-
-如果用户量始终走 H5 + 公众号链接就足够，这份文档不需要执行。
+由于当前小程序为**个人主体**，不能使用 `<web-view>` 内嵌 H5，原先 `calorie-log-miniprogram/` 的壳工程已废弃。现在采用**原生小程序 WXML / WXSS / JS** 复刻核心业务；后端 `calorie-log-server/` 继续复用同一套 `/api/v1/*` 接口。
 
 ---
 
-## 路线选择
+## 当前结论
 
-| 路线 | 工作量 | 维护成本 | 推荐度 |
-|---|---|---|---|
-| Taro + NutUI-React-Taro + echarts-for-taro | ~2-3 周 | 单一代码库可同时出 web/小程序 | ★★★★ |
-| 原生小程序（wxml/wxss/js） | ~3-4 周 | 与 web 双份维护 | ★ |
-| Remax / Kbone | — | 框架已停更/官方 deprecated | ★ |
-| uni-app | ~2-3 周 | 同 Taro 但 Vue 优先 | ★★ |
-
-**推荐 Taro**。下面所有迁移条目都假定 Taro 路线。
+- 不再使用 `<web-view>`，也不需要配置「业务域名」。
+- 小程序后台仍需配置「服务器域名 → request 合法域名」：`https://bcappandgame.com`。
+- 登录继续走 `wx.login()` → `POST /api/v1/auth/wechat/miniprogram`。
+- Web 端继续保留；小程序端是独立原生实现，二者共享后端和数据。
 
 ---
 
-## 能直接复用的层（约占 40%）
+## 已完成的原生小程序改造
 
-转写时这些**不动**或**改极少**：
+### 1. 基础设施
 
-| 模块 | 文件 | 复用方式 |
-|---|---|---|
-| API 调用层 | `src/api/*.ts` | 改底层 `apiGet/apiPost`（见下）后业务调用 0 改动 |
-| Zustand store | `src/store/*.ts` | 直接拷过去，Taro 支持 React 生态 |
-| TypeScript 类型 | `src/types/*.ts` | 直接拷过去 |
-| dayjs / axios（业务调用） / 业务函数 | 散布于各页 | 纯 JS 逻辑，无 DOM 依赖 |
-| 后端 (`calorie-log-server/`) | 整套 | 完全不需要动；同一份 API |
-
----
-
-## 必须重写的层
-
-### 1. UI 组件：antd → NutUI-React-Taro
-
-`package.json` 里 `antd ^6.3.5` + `@ant-design/icons` 全部依赖 DOM，小程序里没有 DOM，**必须替换**。
-
-| antd 组件 | NutUI-React-Taro 对应 | 注意点 |
-|---|---|---|
-| Button / SketchButton | Button | SketchButton 的 paper-and-ink 风格在 wxss 里复刻有限度 |
-| Input / Input.Password | Input | 验证码 6 位 input 注意 maxlength |
-| Form | Form | Taro Form 有自己的 validation；现有 antd Form rules 要重写 |
-| Modal / Modal.confirm | Dialog | Form-in-Modal 模式建议改成**独立页面** |
-| Drawer | Popup（带 placement） | mobile sidebar 用得多 |
-| Select / DatePicker / TimePicker | Picker | 小程序 picker 是滚轮式，体验和 antd 完全不同 |
-| Table | List + 自渲染 | 小程序无原生 Table |
-| Tabs | Tabs | 类似 |
-| Tag / Chip / Pill | Tag | sketch 风格难还原 |
-| Tooltip / Popconfirm | Popover / Dialog | 移动端少用 |
-| Avatar | Avatar | 一致 |
-| Progress | Progress | 一致 |
-| Spin / Loading | Loading | 一致 |
-| Statistic | 自定义 | 用 Text 拼 |
-| Empty | Empty | 一致 |
-
-### 2. 图表：recharts → echarts-for-taro
-
-| 用到 recharts 的页 | 文件 | 替换方案 |
-|---|---|---|
-| 周月报告 | `src/pages/reports/ReportsPage.tsx` | echarts-for-taro 折线图 |
-| 每日统计 | `src/pages/statistics/StatisticsPage.tsx` | 同上 + Cell（已 deprecated 警告，迁移时一起处理） |
-| 体重体脂 | `src/pages/body/BodyPage.tsx` | 双轴折线图 |
-| ChartTheme | `src/components/ChartTheme.ts` | 重写为 echarts option |
-
-### 3. 路由：react-router → app.json pages
-
-| 当前 SPA route | 转 Taro 后 pages 目录 |
+| 模块 | 文件 |
 |---|---|
-| `/` | `pages/home/index` |
-| `/login` | `pages/login/index` |
-| `/register` / `/reset-password` | `pages/auth-register/index` / `pages/auth-reset/index` |
-| `/profile` / `/profile/setup` | `pages/profile/index` / `pages/profile-setup/index` |
-| `/history` | `pages/history/index` |
-| `/goal` | `pages/goal/index` |
-| `/statistics` | `pages/statistics/index` |
-| `/body` | `pages/body/index` |
-| `/strength` | `pages/sport-quick/index`（运动速记） |
-| `/training/plans` | `pages/sport-plans/index` |
-| `/training/active/:sessionId` | `pages/sport-active/index?id=` |
-| `/training/history` | `pages/sport-history/index` |
-| `/training/stats` | `pages/sport-stats/index` |
-| `/reports` | `pages/reports/index` |
-| `/settings` | `pages/settings/index` |
-| `/friends` / `/ranking` | `pages/friends/index` / `pages/ranking/index` |
-| `/recognize` / `/cooking` / `/favorites` | 默认 feature flag 关闭，转写时一并跳过 |
+| 运行配置 | `calorie-log-miniprogram/config/env.js` |
+| token / profile storage | `utils/storage.js` |
+| request 封装、401 refresh、X-Timezone | `utils/request.js` |
+| 登录守卫 | `utils/authGuard.js` |
+| 日期 / 格式化工具 | `utils/date.js`, `utils/format.js` |
+| API service 层 | `services/*.js` |
+| 全局样式系统 | `app.wxss` |
+| 基础组件 | `components/cl-card`, `components/cl-empty`, `components/cl-stat` |
 
-所有 `useNavigate / useLocation / Link` 改为：
-```js
-import Taro from '@tarojs/taro'
-Taro.navigateTo({ url: '/pages/xxx/index?id=123' })
-Taro.redirectTo({ url: '...' })   // 不在历史栈
-Taro.reLaunch({ url: '...' })     // 清栈
-```
+### 2. 页面与功能
 
-### 4. 网络层：axios → 双端 adapter
-
-`src/api/client.ts` 当前用 axios。转写时：
-
-- 抽出 `apiGet / apiPost / apiPut / apiDelete` 接口签名不动
-- 底层实现两份：
-  - `client.web.ts`：保留 axios
-  - `client.taro.ts`：用 `Taro.request`，token 注入和 401 刷新逻辑搬过来
-- 用 `process.env.TARO_ENV` 或构建期分支选实现
-
-### 5. Storage：localStorage → Taro 包装
-
-```ts
-// storage.ts
-export const storage = {
-  get: (k) => /* TARO ? Taro.getStorageSync(k) : localStorage.getItem(k) */,
-  set: (k, v) => ...,
-  remove: (k) => ...,
-}
-```
-
-业务侧（如 `tokenStore` in `client.ts`）改用这个抽象。
-
-### 6. 全局快捷键
-
-`AppLayout.tsx:95` 监听 `Ctrl/Cmd+K` 唤起添加食物——**小程序里删掉**。改用首页固定的"+"快捷按钮。
-
-### 7. 设计系统降级
-
-`DESIGN.md` 的纸感 / 钢笔风格在 wxss 里实现受限：
-
-| 设计元素 | wxss 兼容性 | 处理 |
+| 功能 | 小程序页面 | 状态 |
 |---|---|---|
-| `oklch()` 色值 | ❌ 不支持 | 全部换 hex / rgb |
-| SVG `<filter>`（钢笔涂鸦） | ❌ web-view 才有 | 装饰元素移除，仅保留色调 |
-| `backdrop-filter` | ❌ 部分不支持 | 改半透明背景 |
-| `scribble-u` 涂鸦下划线 | ❌ 依赖 SVG | 改 border-bottom dashed |
-| `1.5px dashed` 边框 | ✅ | 保留 |
-| 圆角 / 阴影 | ✅ | 保留 |
-| 自定义字体（hand / display） | ⚠️ | 字体文件需上传到 CDN，wxss 引用绝对 URL |
+| 微信一键登录 | `pages/login/login` | 已原生化 |
+| 完善 / 编辑资料 | `pages/profile-setup/profile-setup` | 已原生化，支持微信头像选择与昵称建议 |
+| 首页饮食闭环 | `pages/home/home` | 已原生化 |
+| 添加食物 | `pages/add-food/add-food` | 已原生化 |
+| 自定义食物 | `pages/custom-food/custom-food` | 已原生化 |
+| 编辑饮食记录 | `pages/record-edit/record-edit` | 已原生化 |
+| 历史记录 | `pages/history/history` | 已原生化 |
+| 目标设置 | `pages/goal/goal` | 已原生化 |
+| 每日统计 | `pages/statistics/statistics` | 已原生化，图表先降级为卡片/列表 |
+| 周月报告 | `pages/reports/reports` | 已原生化，含轻量柱状趋势 |
+| 体重体脂 | `pages/body/body` | 已原生化，含轻量体重趋势 |
+| 我的 | `pages/profile/profile` | 已原生化 |
+| 设置 | `pages/settings/settings` | 已原生化，含提醒设置、当前用户绑定/换绑手机号、修改密码 |
+| 运动速记 | `pages/training-quick/training-quick` | 已原生化 |
+| 运动计划 | `pages/training-plans/training-plans` | 已原生化：多动作创建/编辑/排序、开始、删除、继续活跃会话 |
+| 运动中 | `pages/training-active/training-active` | 已原生化简版：组编辑/完成/保存/结束/放弃 |
+| 运动历史 | `pages/training-sessions/training-sessions` | 已原生化 |
+| 运动统计 | `pages/training-stats/training-stats` | 已原生化 |
+| 好友 | `pages/social-friends/social-friends` | 已原生化 |
+| 排行榜 | `pages/social-ranking/social-ranking` | 已原生化 |
 
-### 8. 弃用清单
+### 3. 导航结构
 
-| 删除项 | 原因 |
+原 Web 侧栏改为小程序底部 Tab：
+
+1. 首页：`pages/home/home`
+2. 记录：`pages/history/history`
+3. 运动：`pages/training-quick/training-quick`
+4. 我的：`pages/profile/profile`
+
+其它页面用 `wx.navigateTo` 进入。
+
+---
+
+## 与 Web 版的差异 / 取舍
+
+| Web 实现 | 小程序原生处理 |
 |---|---|
-| `utils/wxBridge.ts` | web-view 套壳遗留；Taro 项目里直接用 `Taro.*` |
-| `calorie-log-miniprogram/`（壳工程） | 转 Taro 后 wx 客户端从 Taro build 产物里来；旧壳废弃 |
+| AntD 组件 | 原生 `view/input/picker/switch/button` + WXSS 卡片风格 |
+| React Router | `app.json` pages + `wx.navigateTo/switchTab/redirectTo` |
+| Zustand | 页面 `data` + `app.globalData` + `wxStorage` |
+| AddFoodModal | 独立添加食物页面 |
+| Recharts | 原生轻量卡片/列表/柱状趋势；后续如需更复杂交互可接 ECharts/canvas |
+| 桌面侧栏 | 底部 Tab + 我的页功能入口 |
+| Ctrl/Cmd+K | 首页悬浮「+」按钮 |
+| web-view token 注入 | 原生 `wx.login` 登录后 token 写入小程序 storage |
 
 ---
 
-## 后端不变项
+## 头像昵称能力
 
-转写小程序**不影响后端**：
+微信一键登录只用于拿 openid/unionid；头像昵称不做静默获取。原生版在完善资料页接入：
 
-- API 路径不变（`/api/v1/*`）
-- HTTPS 域名不变（`https://bcappandgame.com`）
-- 小程序登录走 `POST /api/v1/auth/wechat/miniprogram`（已配齐 `WECHAT_MA_APP_ID/SECRET`）
-- 数据库表结构不变
+- `button open-type="chooseAvatar"`：用户主动选择微信头像；
+- `input type="nickname"`：唤起微信昵称建议；
+- `POST /api/v1/users/avatar`：上传头像到后端并保存长期 URL。
 
----
+头像文件保存在后端 `/app/uploads/avatars`，Docker Compose 使用 `app-uploads` volume 持久化。
 
-## 工作流建议
+## 后续建议
 
-1. **新建 `calorie-log-taro/` 目录**，独立于 web 工程
-2. 用 `taro init` 选 React + TypeScript
-3. 第一周：
-   - 拷贝 `src/api/`、`src/store/`、`src/types/` 到 Taro 工程
-   - 抽 `storage` / `client` 双端 adapter
-   - 跑通登录页 + 首页（不带图表）
-4. 第二周：把剩余 12 个核心页面按重要性逐个移植，UI 用 NutUI
-5. 第三周：图表（reports/statistics/body）+ 联调 + 真机测试
+1. 用微信开发者工具打开 `calorie-log-miniprogram/` 做编译检查。
+2. 在小程序后台配置 request 合法域名：`https://bcappandgame.com`。
+3. 真机验证：登录 → 建档 → 添加食物 → 首页刷新 → 目标/统计/体重/运动速记。
+4. 若统计体验需要增强，再引入 ECharts 小程序版或 canvas 自绘趋势图。
+5. 若运动计划还要完全对齐 Web，可继续补动作搜索分页、更多模板与拖拽手势；当前已支持多动作编辑和上下排序。
 
----
-
-## 相关文档
-
-- [launch-checklist.md](launch-checklist.md) —— 上线开关、个人主体限制
-- [DESIGN.md](../calorie-log-web/DESIGN.md) —— 现有设计规范
-- [training-webview-miniprogram.md](training-webview-miniprogram.md) —— web-view 套壳实施记录（已废弃，因主体限制不可用）

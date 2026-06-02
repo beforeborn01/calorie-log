@@ -1,22 +1,21 @@
-<view class="container">
+<view class="login-page">
   <view class="brand">
-    <image class="logo" src="/assets/logo.png" mode="aspectFit" wx:if="{{false}}"/>
+    <view class="logo">🥗</view>
     <view class="title">食养记</view>
     <view class="subtitle">饮食 · 训练 · 一念一记</view>
   </view>
 
-  <view class="cta">
-    <!-- 不用 open-type=getUserInfo（已废弃且无 bindgetuserinfo 时无意义）；
-         普通 bindtap 已足够触发 wx.login → code2Session 流程 -->
-    <button
-      class="btn-primary"
-      bindtap="onTapLogin"
-      loading="{{loading}}"
-      disabled="{{loading}}"
-    >微信一键登录</button>
+  <view class="card login-card">
+    <view class="page-kicker">WECHAT MINI PROGRAM</view>
+    <view class="headline">原生小程序版</view>
+    <view class="muted small desc">不用内嵌 H5，直接使用微信登录和原生页面记录每日饮食与运动。</view>
 
-    <!-- 协议/隐私入口待真实文案补齐后再放出（避免审核被驳回） -->
+    <button class="btn btn-primary login-btn" bindtap="onTapLogin" loading="{{loading}}" disabled="{{loading}}">
+      微信一键登录
+    </button>
+    <button wx:if="{{hasToken}}" class="btn btn-ghost login-btn" bindtap="onTapClear">清除本地登录态</button>
 
     <view class="error" wx:if="{{errMsg}}">{{errMsg}}</view>
+    <view class="muted tiny terms">记录与建议仅供个人参考，不构成医疗意见。</view>
   </view>
 </view>

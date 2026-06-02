@@ -1,0 +1,4 @@
+.empty-wrap { text-align: center; padding: 64rpx 24rpx; color: #B8AEA2; }
+.empty-icon { font-size: 56rpx; margin-bottom: 12rpx; }
+.empty-title { font-size: 30rpx; color: #8A7F73; }
+.empty-desc { font-size: 24rpx; margin-top: 8rpx; }

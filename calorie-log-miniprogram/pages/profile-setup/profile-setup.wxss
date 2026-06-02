@@ -1,0 +1,7 @@
+.avatar-section { display:flex; align-items:center; gap:24rpx; margin-bottom:30rpx; }
+.avatar-button { width:132rpx; height:132rpx; padding:0; margin:0; border-radius:66rpx; background:#2C2620; overflow:hidden; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.avatar-button::after { border:none; }
+.avatar-img { width:132rpx; height:132rpx; border-radius:66rpx; display:block; }
+.avatar-placeholder { width:132rpx; height:132rpx; border-radius:66rpx; display:flex; align-items:center; justify-content:center; color:#F5F1E8; font-size:28rpx; font-weight:800; }
+.avatar-copy { flex:1; min-width:0; }
+.tip { margin-top: 24rpx; line-height: 1.7; }

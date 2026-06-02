@@ -82,6 +82,30 @@ public class WechatAuthService {
         return new WechatMiniLoginResponse(token, needBindPhone);
     }
 
+    /**
+     * 已登录小程序用户绑定手机号。个人主体小程序无法直接拿手机号，
+     * 因此使用短信/邮箱验证码把手机号绑定到当前 JWT 用户。
+     */
+    @Transactional
+    public void bindCurrentPhone(Long userId, String phone, String verifyCode) {
+        IdentifierUtils.IdentifierType idType = IdentifierUtils.detect(phone);
+        if (idType != IdentifierUtils.IdentifierType.PHONE) {
+            throw new BizException(ErrorCode.IDENTIFIER_FORMAT_INVALID);
+        }
+        verifyCodeService.verify(phone, "wechat_bind", verifyCode);
+
+        User current = userMapper.selectById(userId);
+        if (current == null) {
+            throw new BizException(ErrorCode.USER_NOT_FOUND);
+        }
+        User existing = userMapper.findByPhone(phone);
+        if (existing != null && !existing.getId().equals(userId)) {
+            throw new BizException(ErrorCode.PHONE_ALREADY_BOUND);
+        }
+        current.setPhone(phone);
+        userMapper.updateById(current);
+    }
+
     @Transactional
     public TokenResponse bindPhone(WechatBindRequest req) {
         Claims claims;

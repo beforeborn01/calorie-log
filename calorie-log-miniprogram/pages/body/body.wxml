@@ -1,0 +1,23 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">BODY</view>
+  <view class="page-title">体重体脂</view>
+  <view class="card">
+    <view class="field"><text class="field-label">日期</text><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="picker-box">{{date}}</view></picker></view>
+    <view class="grid-2"><view class="field"><text class="field-label">体重 kg</text><input class="input" type="digit" value="{{weight}}" data-field="weight" bindinput="onInput" /></view><view class="field"><text class="field-label">体脂 %</text><input class="input" type="digit" value="{{bodyFat}}" data-field="bodyFat" bindinput="onInput" /></view></view>
+    <button class="btn btn-primary" style="width:100%;" bindtap="onSubmit" loading="{{saving}}">保存记录</button>
+  </view>
+  <view class="grid-3 body-grid"><view class="card" wx:for="{{cards}}" wx:key="label"><view class="stat-value mono">{{item.value}}</view><view class="stat-label">{{item.label}} {{item.unit}}</view></view></view>
+  <view class="card trend-card" wx:if="{{chartPoints.length > 0}}">
+    <view class="card-title">体重趋势</view>
+    <view class="bar-chart">
+      <view class="bar-col" wx:for="{{chartPoints}}" wx:key="date">
+        <view class="bar-value mono">{{item.value}}</view>
+        <view class="bar" style="height: {{item.height}}rpx;"></view>
+        <view class="bar-date">{{item.date}}</view>
+      </view>
+    </view>
+  </view>
+  <view class="section-title">近 30 天记录</view>
+  <view class="card" wx:if="{{records.length === 0}}"><view class="empty">暂无体重体脂记录</view></view>
+  <view class="card record-row" wx:for="{{records}}" wx:key="id"><view class="flex-1"><view class="card-title">{{item.recordDate}}</view><view class="card-subtitle">体重 {{item.weight || '-'}} kg · 体脂 {{item.bodyFat || '-'}}%</view></view><button class="btn btn-sm btn-danger" data-id="{{item.id}}" bindtap="onDelete">删</button></view>
+</view>

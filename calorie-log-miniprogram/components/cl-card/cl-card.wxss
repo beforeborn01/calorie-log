@@ -1,0 +1,4 @@
+.cl-card { background:#FFFDF8; border:2rpx dashed rgba(44,38,32,.14); border-radius:28rpx; padding:28rpx; box-shadow:0 12rpx 28rpx rgba(44,38,32,.06); box-sizing:border-box; }
+.cl-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:20rpx; gap:16rpx; }
+.cl-card-title { font-size:32rpx; font-weight:800; color:#2C2620; }
+.cl-card-subtitle { font-size:24rpx; color:#8A7F73; margin-top:4rpx; }

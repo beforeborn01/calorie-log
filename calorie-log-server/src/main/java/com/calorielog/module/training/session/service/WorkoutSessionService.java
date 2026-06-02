@@ -14,6 +14,8 @@ import com.calorielog.module.training.session.entity.WorkoutSession;
 import com.calorielog.module.record.entity.DailySummary;
 import com.calorielog.module.record.mapper.DailySummaryMapper;
 import com.calorielog.module.record.service.DailySummaryService;
+import com.calorielog.module.strength.entity.Exercise;
+import com.calorielog.module.strength.mapper.ExerciseMapper;
 import com.calorielog.module.training.plan.entity.WorkoutPlan;
 import com.calorielog.module.training.plan.mapper.WorkoutPlanMapper;
 import com.calorielog.module.training.session.mapper.CompletedSetMapper;
@@ -50,6 +52,7 @@ public class WorkoutSessionService {
     private final WorkoutPlanMapper planMapper;
     private final DailySummaryMapper dailySummaryMapper;
     private final DailySummaryService dailySummaryService;
+    private final ExerciseMapper exerciseMapper;
 
     /**
      * 按 (user, day) 全量重算 t_daily_summary.exercise_calories。
@@ -272,6 +275,7 @@ public class WorkoutSessionService {
 
         List<ExerciseSession> exs = exerciseSessionMapper.findBySession(id);
         List<Long> exIds = exs.stream().map(ExerciseSession::getId).collect(Collectors.toList());
+        Map<Long, Exercise> exerciseMap = exerciseMapForSessions(exs);
         Map<Long, List<CompletedSet>> setsByEx = completedSetMapper.findByExerciseSessionIds(exIds).stream()
                 .collect(Collectors.groupingBy(CompletedSet::getExerciseSessionId));
 
@@ -377,6 +381,19 @@ public class WorkoutSessionService {
         }
     }
 
+
+    private Map<Long, Exercise> exerciseMapForSessions(List<ExerciseSession> exs) {
+        if (exs == null || exs.isEmpty()) return Map.of();
+        List<Long> exerciseIds = exs.stream()
+                .map(ExerciseSession::getExerciseId)
+                .filter(id -> id != null)
+                .distinct()
+                .collect(Collectors.toList());
+        if (exerciseIds.isEmpty()) return Map.of();
+        return exerciseMapper.selectBatchIds(exerciseIds).stream()
+                .collect(Collectors.toMap(Exercise::getId, e -> e));
+    }
+
     private List<WorkoutSessionDTO> inflate(List<WorkoutSession> sessions) {
         if (sessions.isEmpty()) return List.of();
         List<Long> sessionIds = sessions.stream().map(WorkoutSession::getId).collect(Collectors.toList());
@@ -384,6 +401,7 @@ public class WorkoutSessionService {
         Map<Long, List<ExerciseSession>> exBySession = exs.stream()
                 .collect(Collectors.groupingBy(ExerciseSession::getSessionId));
         List<Long> exIds = exs.stream().map(ExerciseSession::getId).collect(Collectors.toList());
+        Map<Long, Exercise> exerciseMap = exerciseMapForSessions(exs);
         Map<Long, List<CompletedSet>> setsByEx = completedSetMapper.findByExerciseSessionIds(exIds).stream()
                 .collect(Collectors.groupingBy(CompletedSet::getExerciseSessionId));
 
@@ -409,6 +427,11 @@ public class WorkoutSessionService {
             for (ExerciseSession ex : exBySession.getOrDefault(s.getId(), Collections.emptyList())) {
                 ExerciseSessionDTO ed = new ExerciseSessionDTO();
                 ed.setExerciseId(ex.getExerciseId());
+                Exercise exercise = exerciseMap.get(ex.getExerciseId());
+                if (exercise != null) {
+                    ed.setExerciseName(exercise.getName());
+                    ed.setBodyPart(exercise.getBodyPart());
+                }
                 ed.setPlannedSets(ex.getPlannedSets());
                 ed.setNotes(ex.getNotes());
                 List<CompletedSetDTO> setDtos = new ArrayList<>();

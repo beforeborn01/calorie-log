@@ -1,0 +1,18 @@
+.header-row { align-items: flex-start; }
+.warning { margin-bottom: 22rpx; background: #FFF8E6; }
+.date-card { margin-bottom: 22rpx; }
+.date-picker { text-align: center; min-width: 250rpx; }
+.ring { width: 190rpx; height: 190rpx; border-radius: 96rpx; border: 14rpx solid #2C2620; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F5F1E8; }
+.ring-main { font-size: 30rpx; font-weight: 800; }
+.ring-sub { color: #8A7F73; font-size: 22rpx; margin-top: 4rpx; }
+.progress-home { margin: 18rpx 0 24rpx; }
+.macro-grid { margin-top: 18rpx; }
+.net-grid { margin-top: 22rpx; }
+.mini-stat { padding: 20rpx; }
+.exp-card { margin-top: 22rpx; }
+.exp-fill { background: #5D6BEA; }
+.meal-card { margin-bottom: 22rpx; }
+.meal-head { padding-bottom: 18rpx; border-bottom: 2rpx dashed rgba(44,38,32,.1); }
+.record-row { display: flex; align-items: center; gap: 12rpx; padding: 20rpx 0; border-bottom: 2rpx dashed rgba(44,38,32,.08); }
+.record-row:last-child { border-bottom: none; }
+.record-name { font-weight: 700; }

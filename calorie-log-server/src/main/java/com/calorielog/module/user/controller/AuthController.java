@@ -1,7 +1,9 @@
 package com.calorielog.module.user.controller;
 
 import com.calorielog.common.result.Result;
+import com.calorielog.common.security.CurrentUser;
 import com.calorielog.module.user.dto.LoginRequest;
+import com.calorielog.module.user.dto.BindPhoneRequest;
 import com.calorielog.module.user.dto.RefreshRequest;
 import com.calorielog.module.user.dto.RegisterRequest;
 import com.calorielog.module.user.dto.ResetPasswordRequest;
@@ -86,6 +88,13 @@ public class AuthController {
     @PostMapping("/wechat/bind")
     public Result<TokenResponse> wechatBind(@Valid @RequestBody WechatBindRequest req) {
         return Result.success(wechatAuthService.bindPhone(req));
+    }
+
+    @Operation(summary = "已登录小程序用户绑定手机号")
+    @PostMapping("/wechat/bind-current")
+    public Result<Void> bindCurrentPhone(@Valid @RequestBody BindPhoneRequest req) {
+        wechatAuthService.bindCurrentPhone(CurrentUser.requireUserId(), req.getPhone(), req.getVerifyCode());
+        return Result.success();
     }
 
     @Operation(summary = "忘记密码：凭验证码重置")

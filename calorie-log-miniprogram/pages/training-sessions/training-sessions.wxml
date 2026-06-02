@@ -1,0 +1,15 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">SPORT</view>
+  <view class="page-title">运动历史</view>
+  <view class="sport-nav">
+    <button class="sport-nav-item" bindtap="goQuick">速记</button>
+    <button class="sport-nav-item" bindtap="goPlans">计划</button>
+    <button class="sport-nav-item active">历史</button>
+    <button class="sport-nav-item" bindtap="goStats">统计</button>
+  </view>
+  <view class="card" wx:if="{{sessions.length === 0}}"><view class="empty">暂无运动记录</view></view>
+  <view class="card session-row" wx:for="{{sessions}}" wx:for-index="index" wx:key="id" data-index="{{index}}" bindtap="onOpen">
+    <view class="flex-1"><view class="card-title">{{item.name}}</view><view class="card-subtitle">{{item.statusLabel}} · {{item.exerciseCount}} 个动作 · {{item.duration || 0}} 秒</view><view class="muted tiny">{{item.startTime}}</view></view>
+    <button class="btn btn-sm btn-danger" catchtap="onDelete" data-index="{{index}}">删</button>
+  </view>
+</view>

@@ -37,6 +37,8 @@ RUN apt-get update && \
 
 WORKDIR /app
 
+RUN mkdir -p /app/uploads/avatars && chown -R app:app /app/uploads
+
 COPY --from=builder --chown=app:app /build/app.jar app.jar
 
 USER app

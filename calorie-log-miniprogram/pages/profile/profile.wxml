@@ -1,0 +1,28 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">ME</view>
+  <view class="page-title">我的</view>
+  <view class="card profile-card" wx:if="{{profile}}">
+    <view class="row gap">
+      <image wx:if="{{displayAvatar}}" class="avatar-img" src="{{displayAvatar}}" mode="aspectFill" />
+      <view wx:else class="avatar">{{profile.nickname ? profile.nickname[0] : 'U'}}</view>
+      <view class="flex-1">
+        <view class="card-title">{{profile.nickname || '未命名'}}</view>
+        <view class="card-subtitle">{{profile.phone || '微信账号'}} · {{profile.profileComplete ? '资料已完善' : '待完善资料'}}</view>
+      </view>
+      <button class="btn btn-sm" bindtap="goEdit">编辑</button>
+    </view>
+    <view class="grid-3 profile-stats">
+      <view><view class="stat-value mono">{{profile.age || '-'}}</view><view class="stat-label">年龄</view></view>
+      <view><view class="stat-value mono">{{profile.height || '-'}}</view><view class="stat-label">身高 cm</view></view>
+      <view><view class="stat-value mono">{{profile.weight || '-'}}</view><view class="stat-label">体重 kg</view></view>
+    </view>
+  </view>
+  <view class="card" wx:if="{{experience}}">
+    <view class="row-between"><view><view class="card-title">Lv{{experience.level}}</view><view class="card-subtitle">连续记录 {{experience.continuousDays}} 天 · {{experience.totalExp}} exp</view></view><text>👑</text></view>
+  </view>
+  <view class="section-title">功能</view>
+  <view class="card menu-row" wx:for="{{menu}}" wx:key="title" data-url="{{item.url}}" bindtap="goPage">
+    <view class="flex-1"><view class="menu-title">{{item.title}}</view><view class="muted small">{{item.desc}}</view></view><view class="muted">›</view>
+  </view>
+  <button class="btn btn-danger" style="width:100%; margin-top:30rpx;" bindtap="onLogout">退出登录</button>
+</view>

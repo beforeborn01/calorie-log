@@ -1,0 +1,9 @@
+.body-grid { margin:22rpx 0; }
+.record-row { display:flex; align-items:center; gap:18rpx; margin-bottom:14rpx; }
+
+.trend-card { margin-bottom:22rpx; }
+.bar-chart { display:flex; align-items:flex-end; gap:12rpx; min-height:190rpx; overflow-x:auto; padding-top:20rpx; }
+.bar-col { min-width:54rpx; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+.bar { width:24rpx; min-height:16rpx; border-radius:999rpx 999rpx 4rpx 4rpx; background:#2C2620; }
+.bar-value { font-size:20rpx; color:#8A7F73; margin-bottom:8rpx; }
+.bar-date { font-size:20rpx; color:#B8AEA2; margin-top:8rpx; }

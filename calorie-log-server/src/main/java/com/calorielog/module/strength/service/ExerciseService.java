@@ -31,7 +31,13 @@ public class ExerciseService {
         Exercise e = new Exercise();
         e.setName(req.getName());
         e.setBodyPart(req.getBodyPart());
+        e.setCategory(categoryOf(req.getBodyPart()));
+        e.setPrimaryMuscles(req.getBodyPart());
+        e.setSecondaryMuscles("");
+        e.setDifficulty(1);
         e.setIsPreset(false);
+        e.setIsCustom(true);
+        e.setIsPopular(false);
         e.setCreatedBy(userId);
         exerciseMapper.insert(e);
         return toResponse(e);
@@ -62,6 +68,20 @@ public class ExerciseService {
             if (!ownedByOther) out.put(e.getId(), e);
         }
         return out;
+    }
+
+    private static String categoryOf(String bodyPart) {
+        if (bodyPart == null) return "other";
+        return switch (bodyPart) {
+            case "胸部" -> "chest";
+            case "背部" -> "back";
+            case "腿部" -> "legs";
+            case "肩部" -> "shoulders";
+            case "手臂" -> "arms";
+            case "核心" -> "core";
+            case "有氧" -> "cardio";
+            default -> "other";
+        };
     }
 
     private ExerciseResponse toResponse(Exercise e) {

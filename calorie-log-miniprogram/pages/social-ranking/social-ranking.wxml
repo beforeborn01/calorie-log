@@ -1,0 +1,8 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">RANKING</view>
+  <view class="page-title">排行榜</view>
+  <view class="card"><view class="grid-2"><view class="field"><text class="field-label">类型</text><picker mode="selector" range="{{typeLabels}}" value="{{typeIndex}}" bindchange="onTypeChange"><view class="picker-box">{{typeLabels[typeIndex]}}</view></picker></view><view class="field"><text class="field-label">周期</text><picker mode="selector" range="{{periodLabels}}" value="{{periodIndex}}" bindchange="onPeriodChange"><view class="picker-box">{{periodLabels[periodIndex]}}</view></picker></view></view></view>
+  <view class="card self-card" wx:if="{{ranking && ranking.self}}"><view class="row-between"><view><view class="card-title">我的排名 #{{ranking.self.rank}}</view><view class="card-subtitle">{{ranking.self.nickname}}</view></view><view class="stat-value mono">{{ranking.self.score}}</view></view><view class="muted small">距上一名 {{ranking.gapToPrevious}}</view></view>
+  <view class="card" wx:if="{{entries.length === 0}}"><view class="empty">暂无排行数据</view></view>
+  <view class="card rank-row {{item.isSelf ? 'self' : ''}}" wx:for="{{entries}}" wx:key="userId"><view class="rank mono">#{{item.rank}}</view><view class="flex-1"><view class="card-title">{{item.nickname}}</view><view class="card-subtitle">Lv{{item.level}}</view></view><view class="stat-value mono">{{item.score}}</view></view>
+</view>

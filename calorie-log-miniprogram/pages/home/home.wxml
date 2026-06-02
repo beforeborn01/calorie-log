@@ -1,0 +1,95 @@
+<view class="container safe-bottom">
+  <view class="row-between header-row">
+    <view>
+      <view class="page-kicker">TODAY</view>
+      <view class="page-title">今日食养</view>
+    </view>
+    <button class="btn btn-sm btn-ghost" bindtap="goStats">统计</button>
+  </view>
+
+  <view class="card warning" wx:if="{{showBindPhoneTip}}">
+    <view class="row-between">
+      <view class="flex-1">
+        <view class="card-title">未绑定手机号</view>
+        <view class="card-subtitle">你当前使用微信账号登录，建议后续在设置里绑定手机号，避免换设备时找回困难。</view>
+      </view>
+      <button class="btn btn-sm" bindtap="onCloseBindTip">知道了</button>
+    </view>
+  </view>
+
+  <view class="card date-card">
+    <view class="row-between">
+      <button class="btn btn-sm" bindtap="onPrevDay">前一天</button>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange">
+        <view class="date-picker">
+          <view class="mono">{{date}}</view>
+          <view class="muted small">{{displayDate}}</view>
+        </view>
+      </picker>
+      <button class="btn btn-sm" bindtap="onNextDay">后一天</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="row-between gap">
+      <view class="ring">
+        <view class="ring-main mono">{{caloriesText}}</view>
+        <view class="ring-sub">kcal</view>
+      </view>
+      <view class="flex-1">
+        <view class="row-between">
+          <text class="card-title">热量进度</text>
+          <text class="mono muted">{{caloriesPct}}%</text>
+        </view>
+        <view class="progress-track progress-home"><view class="progress-fill" style="width: {{caloriesPct}}%;"></view></view>
+        <view class="grid-3 macro-grid">
+          <view wx:for="{{macroStats}}" wx:key="label">
+            <view class="stat-value mono">{{item.value}}</view>
+            <view class="stat-label">{{item.label}} {{item.unit}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="grid-3 net-grid" wx:if="{{daily && daily.tdee != null}}">
+    <view class="card mini-stat" wx:for="{{netStats}}" wx:key="label">
+      <view class="stat-value mono">{{item.value}}</view>
+      <view class="stat-label">{{item.label}} {{item.unit}}</view>
+    </view>
+  </view>
+
+  <view class="card exp-card" wx:if="{{experience}}">
+    <view class="row-between">
+      <view>
+        <view class="card-title">Lv{{experience.level}} · 连续记录 {{experience.continuousDays}} 天</view>
+        <view class="card-subtitle">{{experience.totalExp}} / {{experience.nextLevelExp}} exp，距下一级 {{experience.expToNextLevel}}</view>
+      </view>
+      <text>👑</text>
+    </view>
+    <view class="progress-track"><view class="progress-fill exp-fill" style="width: {{expPct}}%;"></view></view>
+  </view>
+
+  <view class="section-title">餐次记录</view>
+  <view class="card meal-card" wx:for="{{meals}}" wx:for-index="mealIndex" wx:key="type">
+    <view class="row-between meal-head">
+      <view>
+        <view class="card-title">{{item.label}}</view>
+        <view class="card-subtitle">{{item.list.length}} 条记录</view>
+      </view>
+      <button class="btn btn-sm btn-primary" data-meal="{{item.type}}" bindtap="onAddFood">添加</button>
+    </view>
+
+    <view class="empty" wx:if="{{item.list.length === 0}}">暂无记录</view>
+    <view class="record-row" wx:for="{{item.list}}" wx:for-item="record" wx:for-index="recordIndex" wx:key="id">
+      <view class="flex-1">
+        <view class="record-name">{{record.foodName}}</view>
+        <view class="muted small">{{record.quantity}} g · {{record.calories}} kcal</view>
+      </view>
+      <button class="btn btn-sm" data-meal-index="{{mealIndex}}" data-record-index="{{recordIndex}}" bindtap="onEditRecord">改</button>
+      <button class="btn btn-sm btn-danger" data-meal-index="{{mealIndex}}" data-record-index="{{recordIndex}}" bindtap="onDeleteRecord">删</button>
+    </view>
+  </view>
+
+  <button class="btn btn-primary fab" data-meal="1" bindtap="onAddFood">+</button>
+</view>

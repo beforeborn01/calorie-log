@@ -1,0 +1,4 @@
+.self-card { margin:22rpx 0; }
+.rank-row { display:flex; align-items:center; gap:18rpx; margin-bottom:14rpx; }
+.rank-row.self { border-style:solid; border-color:#2C2620; }
+.rank { width:76rpx; font-size:34rpx; font-weight:800; }

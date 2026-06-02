@@ -80,6 +80,8 @@ services:
       # 百度 AI（Phase 5）
       BAIDU_AI_API_KEY: ${BAIDU_AI_API_KEY:-}
       BAIDU_AI_SECRET_KEY: ${BAIDU_AI_SECRET_KEY:-}
+    volumes:
+      - app-uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -95,3 +97,4 @@ services:
 volumes:
   postgres-data:
   redis-data:
+  app-uploads:

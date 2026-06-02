@@ -1,0 +1,85 @@
+<view class="container safe-bottom">
+  <view class="row-between">
+    <view>
+      <view class="page-kicker">SPORT</view>
+      <view class="page-title">运动计划</view>
+    </view>
+    <button class="btn btn-sm btn-primary" bindtap="openCreate">新建</button>
+  </view>
+
+  <view class="sport-nav">
+    <button class="sport-nav-item" bindtap="goQuick">速记</button>
+    <button class="sport-nav-item active">计划</button>
+    <button class="sport-nav-item" bindtap="goSessions">历史</button>
+    <button class="sport-nav-item" bindtap="goStats">统计</button>
+  </view>
+
+  <view class="card active-card" wx:if="{{activeSession}}">
+    <view class="row-between gap">
+      <view class="flex-1">
+        <view class="card-title">有进行中的运动</view>
+        <view class="card-subtitle">{{activeSession.name}}</view>
+      </view>
+      <button class="btn btn-sm btn-primary" bindtap="continueActive">继续</button>
+    </view>
+  </view>
+
+
+  <view class="card create-card" wx:if="{{editorOpen}}">
+    <view class="row-between editor-head">
+      <view class="card-title">{{editorTitle}}</view>
+      <button class="btn btn-sm" bindtap="closeEditor">关闭</button>
+    </view>
+
+    <view class="field"><text class="field-label">计划名</text><input class="input" value="{{planForm.name}}" data-field="name" bindinput="onPlanInput" /></view>
+    <view class="field"><text class="field-label">描述</text><input class="input" value="{{planForm.description}}" data-field="description" bindinput="onPlanInput" /></view>
+    <view class="grid-2">
+      <view class="field"><text class="field-label">类型</text><picker mode="selector" range="{{typeLabels}}" value="{{typeIndex}}" bindchange="onTypeChange"><view class="picker-box">{{typeLabels[typeIndex]}}</view></picker></view>
+      <view class="field"><text class="field-label">预计分钟</text><input class="input" type="number" value="{{planForm.estimatedDuration}}" placeholder="留空自动估算" data-field="estimatedDuration" bindinput="onPlanInput" /></view>
+    </view>
+
+    <view class="section-title inner-title">添加动作</view>
+    <view class="field"><text class="field-label">动作</text><picker mode="selector" range="{{exerciseNames}}" value="{{exerciseIndex}}" bindchange="onExerciseChange"><view class="picker-box">{{exerciseIndex >= 0 ? exerciseNames[exerciseIndex] : '选择动作'}}</view></picker></view>
+    <view class="grid-3">
+      <view class="field"><text class="field-label">组数</text><input class="input" type="number" value="{{exerciseForm.sets}}" data-field="sets" bindinput="onExerciseInput" /></view>
+      <view class="field"><text class="field-label">次数</text><input class="input" type="number" value="{{exerciseForm.reps}}" data-field="reps" bindinput="onExerciseInput" /></view>
+      <view class="field"><text class="field-label">重量 kg</text><input class="input" type="digit" value="{{exerciseForm.weight}}" data-field="weight" bindinput="onExerciseInput" /></view>
+    </view>
+    <view class="grid-2">
+      <view class="field"><text class="field-label">休息秒</text><input class="input" type="number" value="{{exerciseForm.restSeconds}}" data-field="restSeconds" bindinput="onExerciseInput" /></view>
+      <view class="field"><text class="field-label">备注</text><input class="input" value="{{exerciseForm.notes}}" data-field="notes" bindinput="onExerciseInput" /></view>
+    </view>
+    <button class="btn" style="width:100%;" bindtap="addOrUpdateExercise">{{exerciseEditIndex >= 0 ? '更新动作' : '加入计划'}}</button>
+
+    <view class="section-title inner-title">计划动作</view>
+    <view class="empty compact" wx:if="{{draftExercises.length === 0}}">还没有动作</view>
+    <view class="draft-row" wx:for="{{draftExercises}}" wx:for-index="index" wx:key="order">
+      <view class="flex-1" data-index="{{index}}" bindtap="editDraftExercise">
+        <view class="draft-name">{{index + 1}}. {{item.exerciseName}}</view>
+        <view class="muted tiny">{{item.sets}}组 × {{item.reps || '-'}} {{item.weight ? '@ ' + item.weight + 'kg' : ''}} · 休息 {{item.restSeconds}}s</view>
+      </view>
+      <button class="btn btn-sm" data-index="{{index}}" data-dir="-1" bindtap="moveDraftExercise">上</button>
+      <button class="btn btn-sm" data-index="{{index}}" data-dir="1" bindtap="moveDraftExercise">下</button>
+      <button class="btn btn-sm btn-danger" data-index="{{index}}" bindtap="removeDraftExercise">删</button>
+    </view>
+
+    <button class="btn btn-primary" style="width:100%; margin-top:22rpx;" bindtap="savePlan" loading="{{saving}}">保存计划</button>
+  </view>
+
+  <view class="card" wx:if="{{plans.length === 0}}"><view class="empty">还没有计划，新建一个开始吧</view></view>
+  <view class="card plan-card" wx:for="{{plans}}" wx:for-index="index" wx:key="id">
+    <view class="row-between gap">
+      <view class="flex-1">
+        <view class="card-title">{{item.name}}</view>
+        <view class="card-subtitle">{{item.typeLabel}} · {{item.exercises.length}} 个动作 · {{item.totalMinutes}} 分钟</view>
+      </view>
+      <button class="btn btn-sm btn-primary" data-index="{{index}}" bindtap="onStart">开始</button>
+    </view>
+    <view class="muted small desc" wx:if="{{item.description}}">{{item.description}}</view>
+    <view class="exercise-line" wx:for="{{item.exercises}}" wx:key="order">{{item.exerciseName || ('动作#' + item.exerciseId)}} · {{item.sets}}组×{{item.reps || '-'}} {{item.weight ? item.weight + 'kg' : ''}}</view>
+    <view class="row gap plan-actions">
+      <button class="btn btn-sm" data-index="{{index}}" bindtap="openEdit">编辑</button>
+      <button class="btn btn-sm btn-danger" data-index="{{index}}" bindtap="onDelete">删除</button>
+    </view>
+  </view>
+</view>

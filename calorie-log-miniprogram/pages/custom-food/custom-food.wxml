@@ -1,0 +1,24 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">CUSTOM FOOD</view>
+  <view class="page-title">手动录入食物</view>
+  <view class="card">
+    <view class="field"><text class="field-label">食物名称 *</text><input class="input" value="{{form.name}}" placeholder="如 蒸紫薯" data-field="name" bindinput="onInput" /></view>
+    <view class="field"><text class="field-label">别名</text><input class="input" value="{{form.alias}}" placeholder="空格分隔，便于搜索" data-field="alias" bindinput="onInput" /></view>
+    <view class="field">
+      <text class="field-label">分类</text>
+      <picker mode="selector" range="{{categoryOptions}}" bindchange="onCategoryChange">
+        <view class="picker-box">{{categoryIndex >= 0 ? categoryOptions[categoryIndex] : '请选择分类（选填）'}}</view>
+      </picker>
+    </view>
+    <view class="section-title inner-title">每100g营养成分</view>
+    <view class="grid-2">
+      <view class="field"><text class="field-label">热量 kcal *</text><input class="input" type="digit" value="{{form.calories}}" data-field="calories" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">蛋白质 g</text><input class="input" type="digit" value="{{form.protein}}" data-field="protein" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">碳水 g</text><input class="input" type="digit" value="{{form.carbohydrate}}" data-field="carbohydrate" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">脂肪 g</text><input class="input" type="digit" value="{{form.fat}}" data-field="fat" bindinput="onInput" /></view>
+    </view>
+    <view class="row-between hard-row"><text>难称重（带骨/带壳等）</text><switch checked="{{isHardToWeigh}}" bindchange="onHardChange" /></view>
+    <view class="field"><text class="field-label">本次摄入（g，可选）</text><input class="input" type="digit" value="{{form.logQuantity}}" placeholder="留空则仅补录到食物库" data-field="logQuantity" bindinput="onInput" /></view>
+    <button class="btn btn-primary" style="width: 100%;" bindtap="onSubmit" loading="{{saving}}">保存</button>
+  </view>
+</view>

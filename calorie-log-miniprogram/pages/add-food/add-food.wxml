@@ -1,0 +1,42 @@
+<view class="container safe-bottom">
+  <view class="page-kicker">ADD FOOD</view>
+  <view class="page-title">添加食物</view>
+  <view class="tag">{{date}} · {{mealLabel}}</view>
+
+  <view class="card search-card">
+    <view class="row gap">
+      <input class="input flex-1" placeholder="搜索食物，例如 土豆 / 鸡胸肉" value="{{keyword}}" confirm-type="search" bindinput="onKeywordInput" bindconfirm="onSearch" />
+      <button class="btn btn-primary" bindtap="onSearch" loading="{{loading}}">搜索</button>
+    </view>
+    <button class="btn btn-ghost manual-btn" bindtap="onGoCustom">没找到？手动录入并补全到食物库</button>
+  </view>
+
+  <view class="section-title">搜索结果</view>
+  <view class="card" wx:if="{{list.length === 0}}">
+    <view class="empty">{{keyword ? '暂无结果，可手动录入' : '输入关键词后开始搜索'}}</view>
+  </view>
+  <view class="card food-row" wx:for="{{list}}" wx:key="id">
+    <view class="flex-1">
+      <view class="food-name">{{item.name}} <text class="tag" wx:if="{{item.isHardToWeigh}}">难称重</text></view>
+      <view class="muted small">每100g {{item.calories}} kcal · 蛋白{{item.protein}}g · 碳水{{item.carbohydrate}}g · 脂肪{{item.fat}}g</view>
+    </view>
+    <button class="btn btn-sm btn-primary" data-index="{{index}}" bindtap="onChoose">选择</button>
+  </view>
+
+  <view class="card selected-card" wx:if="{{selected}}">
+    <view class="card-title">{{selected.name}}</view>
+    <view class="card-subtitle">每100g {{selected.calories}} kcal</view>
+    <view class="field qty-field">
+      <text class="field-label">本次分量（g）</text>
+      <input class="input" type="digit" value="{{quantity}}" bindinput="onQuantityInput" />
+    </view>
+    <button wx:if="{{selected.isHardToWeigh}}" class="btn btn-sm {{isGross ? 'btn-primary' : 'btn-ghost'}}" bindtap="onToggleGross">
+      {{isGross ? '按毛重输入' : '按净重输入'}}
+    </button>
+    <view class="computed" wx:if="{{computed}}">
+      <view class="mono">热量 {{computed.calories}} kcal</view>
+      <view class="muted small">蛋白 {{computed.protein}}g · 碳水 {{computed.carb}}g · 脂肪 {{computed.fat}}g</view>
+    </view>
+    <button class="btn btn-primary confirm-btn" bindtap="onConfirm">确认添加</button>
+  </view>
+</view>

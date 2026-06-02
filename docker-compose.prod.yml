@@ -124,6 +124,9 @@ services:
       - ./ssl/acme-webroot:/var/www/certbot
     depends_on:
       - app
+    networks:
+      - default
+      - bc-edge
     healthcheck:
       # 容器内 wget 解 localhost 优先 ipv6（::1）但 nginx 只 listen ipv4 0.0.0.0 → refused；
       # 改用 curl + 127.0.0.1 显式 ipv4 走 80 上的 /healthz。
@@ -131,6 +134,11 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+
+networks:
+  bc-edge:
+    external: true
+    name: bc-edge
 
 volumes:
   postgres-data:

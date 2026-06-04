@@ -68,6 +68,8 @@ public class DietSuggestionService {
         String absStr = String.format("%.0f", Math.abs(gap));
         if (surplus) {
             g.setTitle("热量摄入超标");
+            // 超标白天就成立，非日终专属
+            g.setEndOfDayOnly(false);
             if (goal != null && goal.getGoalType() == 2) {
                 g.setDetail("今日热量盈余 " + absStr + " kcal，与减脂目标冲突。建议减少高脂零食与含糖饮料。");
             } else {
@@ -75,6 +77,8 @@ public class DietSuggestionService {
             }
         } else {
             g.setTitle("热量摄入不足");
+            // 缺口要等吃完一天才有意义，进行中的当天隐藏
+            g.setEndOfDayOnly(true);
             if (goal != null && goal.getGoalType() == 1) {
                 g.setDetail("今日热量缺口 " + absStr + " kcal，影响增肌效率。建议加餐补充主食或蛋白质。");
                 g.setRecommendedFoods(HIGH_CARB_FOODS.subList(0, 3));
@@ -101,28 +105,28 @@ public class DietSuggestionService {
         if (pro < proteinTargetG * 0.8) {
             out.add(build("nutrient", "warn", "蛋白质摄入不足",
                     String.format("今日蛋白质 %.0fg，建议目标 %.0fg。", pro, proteinTargetG),
-                    HIGH_PROTEIN_FOODS.subList(0, 4)));
+                    HIGH_PROTEIN_FOODS.subList(0, 4), true));
         } else if (pro > proteinTargetG * 1.3) {
             out.add(build("nutrient", "info", "蛋白质摄入偏高",
-                    String.format("今日蛋白质 %.0fg，超目标 %.0fg。肾功能正常时无妨，但建议适度。", pro, proteinTargetG), null));
+                    String.format("今日蛋白质 %.0fg，超目标 %.0fg。肾功能正常时无妨，但建议适度。", pro, proteinTargetG), null, false));
         }
         if (carb < carbTargetG * 0.7) {
             out.add(build("nutrient", "warn", "碳水摄入偏低",
                     String.format("今日碳水 %.0fg，目标 %.0fg。训练后需要碳水补充糖原。", carb, carbTargetG),
-                    HIGH_CARB_FOODS.subList(0, 3)));
+                    HIGH_CARB_FOODS.subList(0, 3), true));
         }
         if (fat > fatTargetG * 1.3) {
             out.add(build("nutrient", "warn", "脂肪摄入偏高",
-                    String.format("今日脂肪 %.0fg，目标 %.0fg。建议替换为低脂烹饪方式。", fat, fatTargetG), null));
+                    String.format("今日脂肪 %.0fg，目标 %.0fg。建议替换为低脂烹饪方式。", fat, fatTargetG), null, false));
         } else if (fat < fatTargetG * 0.6) {
             out.add(build("nutrient", "info", "脂肪摄入偏低",
                     String.format("今日脂肪 %.0fg，目标 %.0fg。适度健康脂肪有助激素平衡。", fat, fatTargetG),
-                    HEALTHY_FAT_FOODS.subList(0, 3)));
+                    HEALTHY_FAT_FOODS.subList(0, 3), true));
         }
         if (fiber < 25) {
             out.add(build("nutrient", "info", "膳食纤维不足",
                     String.format("今日膳食纤维 %.0fg，建议 ≥25g。", fiber),
-                    HIGH_FIBER_FOODS.subList(0, 4)));
+                    HIGH_FIBER_FOODS.subList(0, 4), true));
         }
     }
 
@@ -143,13 +147,13 @@ public class DietSuggestionService {
             String mealName = mealLabel(entry.getKey());
             if (deviation > 0) {
                 out.add(build("meal_distribution", "info", mealName + "热量占比偏高",
-                        String.format("%s 占 %.0f%%，建议 %.0f%%。", mealName, actualRatio * 100, targetRatio * 100), null));
+                        String.format("%s 占 %.0f%%，建议 %.0f%%。", mealName, actualRatio * 100, targetRatio * 100), null, false));
             } else if (byMeal.getOrDefault(entry.getKey(), 0.0) == 0 && entry.getKey() <= 3) {
                 out.add(build("meal_distribution", "warn", "缺少" + mealName,
-                        "未记录" + mealName + "。跳过正餐易导致下一餐暴食。", null));
+                        "未记录" + mealName + "。跳过正餐易导致下一餐暴食。", null, true));
             } else {
                 out.add(build("meal_distribution", "info", mealName + "热量占比偏低",
-                        String.format("%s 占 %.0f%%，建议 %.0f%%。", mealName, actualRatio * 100, targetRatio * 100), null));
+                        String.format("%s 占 %.0f%%，建议 %.0f%%。", mealName, actualRatio * 100, targetRatio * 100), null, true));
             }
         }
     }
@@ -164,17 +168,19 @@ public class DietSuggestionService {
         String severity = distinct < 5 ? "warn" : "info";
         out.add(build("variety", severity, "食物种类偏少",
                 String.format("今日仅 %d 种食物，建议 ≥12 种以覆盖不同微量营养素。", distinct),
-                List.of("蓝莓", "西兰花", "核桃仁", "鸡蛋", "三文鱼")));
+                List.of("蓝莓", "西兰花", "核桃仁", "鸡蛋", "三文鱼"), true));
     }
 
     private DietSuggestionResponse.Suggestion build(String category, String severity,
-                                                    String title, String detail, List<String> foods) {
+                                                    String title, String detail, List<String> foods,
+                                                    boolean endOfDayOnly) {
         DietSuggestionResponse.Suggestion s = new DietSuggestionResponse.Suggestion();
         s.setCategory(category);
         s.setSeverity(severity);
         s.setTitle(title);
         s.setDetail(detail);
         s.setRecommendedFoods(foods);
+        s.setEndOfDayOnly(endOfDayOnly);
         return s;
     }
 

@@ -103,9 +103,23 @@ public class DailySummaryService {
 
     public DailySummary getOrInit(Long userId, LocalDate date) {
         DailySummary s = summaryMapper.findByDate(userId, date);
-        if (s != null) return s;
-        recompute(userId, date);
-        return summaryMapper.findByDate(userId, date);
+        if (s == null) {
+            recompute(userId, date);
+            return summaryMapper.findByDate(userId, date);
+        }
+        // 自愈：行已存在但目标热量为空（多半是在设目标/完善资料之前生成的旧汇总），
+        // 若用户当前已具备完整资料 + active 目标，则重算一次把 tdee/target/gap 补齐。
+        if (s.getTargetCalories() == null && eligibleForTarget(userId)) {
+            recompute(userId, date);
+            s = summaryMapper.findByDate(userId, date);
+        }
+        return s;
+    }
+
+    /** 是否具备算出目标热量的前提：资料完整 + 存在 active 健身目标。 */
+    private boolean eligibleForTarget(Long userId) {
+        User user = userMapper.selectById(userId);
+        return user != null && hasCompleteProfile(user) && goalService.findActiveOrNull(userId) != null;
     }
 
     public BigDecimal resolveTargetCalories(Long userId, LocalDate date) {

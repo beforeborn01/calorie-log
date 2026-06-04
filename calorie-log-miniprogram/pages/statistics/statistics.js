@@ -51,6 +51,7 @@ Page({
     displayDate: dateUtil.displayDate(dateUtil.today()),
     loading: false,
     inProgress: false,
+    noRecord: false,
     daily: null,
     score: null,
     statusText: '',
@@ -67,13 +68,21 @@ Page({
   async load() {
     const date = this.data.date;
     const inProgress = date >= dateUtil.today(); // 今天或未来 = 进行中
-    this.setData({ loading: true, inProgress, displayDate: dateUtil.displayDate(date) });
+    this.setData({ loading: true, inProgress, noRecord: false, displayDate: dateUtil.displayDate(date) });
     try {
       const [daily, score, suggestionsResp] = await Promise.all([
         statApi.getDailyStatistics(date).catch(() => null),
         statApi.getDietScore(date).catch(() => null),
         statApi.getDietSuggestions(date).catch(() => ({ suggestions: [] }))
       ]);
+
+      const hasRecords = !!(daily && (Number(daily.totalCalories) > 0 || Number(daily.foodVarietyCount) > 0));
+      // 历史日且当天无任何录入 → 只提示未录入，不做分析
+      const noRecord = !inProgress && !hasRecords;
+      if (noRecord) {
+        this.setData({ daily, noRecord: true, cards: [], scoreView: null, statusText: '', visibleSuggestions: [] });
+        return;
+      }
 
       const cards = this.buildCards(daily, score, inProgress);
       const scoreView = this.buildScoreView(score);
@@ -90,7 +99,7 @@ Page({
       }));
       if (inProgress) suggestions = suggestions.filter((s) => !s.endOfDayOnly);
 
-      this.setData({ daily, score, cards, scoreView, statusText, macro, visibleSuggestions: suggestions });
+      this.setData({ daily, score, noRecord: false, cards, scoreView, statusText, macro, visibleSuggestions: suggestions });
     } catch (e) {
       fmt.showError(e, '加载分析失败');
     } finally {

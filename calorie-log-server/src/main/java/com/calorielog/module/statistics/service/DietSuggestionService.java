@@ -146,8 +146,9 @@ public class DietSuggestionService {
             if (Math.abs(deviation) <= 0.08) continue;
             String mealName = mealLabel(entry.getKey());
             if (deviation > 0) {
+                // 餐次占比 = 各餐 ÷ 当日已摄入总量；一天没吃完时分母不完整，结论无意义，故仅日终。
                 out.add(build("meal_distribution", "info", mealName + "热量占比偏高",
-                        String.format("%s 占 %.0f%%，建议 %.0f%%。", mealName, actualRatio * 100, targetRatio * 100), null, false));
+                        String.format("%s 占 %.0f%%，建议 %.0f%%。", mealName, actualRatio * 100, targetRatio * 100), null, true));
             } else if (byMeal.getOrDefault(entry.getKey(), 0.0) == 0 && entry.getKey() <= 3) {
                 out.add(build("meal_distribution", "warn", "缺少" + mealName,
                         "未记录" + mealName + "。跳过正餐易导致下一餐暴食。", null, true));

@@ -3,6 +3,11 @@
   <view class="page-title">每日分析</view>
   <view class="card"><view class="row-between"><button class="btn btn-sm" bindtap="onPrevDay">前一天</button><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="date-picker"><view class="mono">{{date}}</view><view class="muted small">{{displayDate}}</view></view></picker><button class="btn btn-sm" bindtap="onNextDay">后一天</button></view></view>
 
+  <view class="card empty-day" wx:if="{{noRecord}}">
+    <view class="empty">这一天没有饮食记录，暂无分析</view>
+  </view>
+
+  <block wx:else>
   <view class="card banner" wx:if="{{inProgress}}">
     <view class="muted small">今日仍在进行中：评分与“摄入不足”类建议将在日终结算，下面是截至当前的情况。</view>
   </view>
@@ -46,4 +51,5 @@
     <view class="muted small detail">{{item.detail}}</view>
     <view class="row-wrap" wx:if="{{item.recommendedFoods}}"><view class="tag" wx:for="{{item.recommendedFoods}}" wx:for-item="food" wx:key="*this">{{food}}</view></view>
   </view>
+  </block>
 </view>

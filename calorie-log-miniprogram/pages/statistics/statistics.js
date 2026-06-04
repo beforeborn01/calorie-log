@@ -40,7 +40,7 @@ Page({
         { label: '饮食评分', value: fmt.num(daily.dietScore), unit: '分' }
       ] : [];
       this.setData({ daily, score, suggestions: suggestionsResp.suggestions || [], nutrientDetail: detailList(score && score.nutrientDetail), cards });
-    } catch (e) { fmt.showError(e, '加载统计失败'); }
+    } catch (e) { fmt.showError(e, '加载分析失败'); }
     finally { this.setData({ loading: false }); }
   },
   onPrevDay() { this.setData({ date: dateUtil.addDays(this.data.date, -1) }); this.load(); },

@@ -1,6 +1,6 @@
 <view class="container safe-bottom">
-  <view class="page-kicker">STATISTICS</view>
-  <view class="page-title">每日统计</view>
+  <view class="page-kicker">ANALYSIS</view>
+  <view class="page-title">每日分析</view>
   <view class="card"><view class="row-between"><button class="btn btn-sm" bindtap="onPrevDay">前一天</button><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="date-picker"><view class="mono">{{date}}</view><view class="muted small">{{displayDate}}</view></view></picker><button class="btn btn-sm" bindtap="onNextDay">后一天</button></view></view>
   <view class="grid-2 card-grid">
     <view class="card" wx:for="{{cards}}" wx:key="label"><view class="stat-value mono">{{item.value}}</view><view class="stat-label">{{item.label}} {{item.unit}}</view></view>

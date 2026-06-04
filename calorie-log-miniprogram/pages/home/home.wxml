@@ -4,7 +4,7 @@
       <view class="page-kicker">TODAY</view>
       <view class="page-title">今日食养</view>
     </view>
-    <button class="btn btn-sm btn-ghost" bindtap="goStats">统计</button>
+    <button class="btn btn-sm btn-ghost" bindtap="goStats">分析</button>
   </view>
 
   <view class="card warning" wx:if="{{showBindPhoneTip}}">

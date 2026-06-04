@@ -17,19 +17,6 @@
     </view>
   </view>
 
-  <view class="card date-card">
-    <view class="row-between">
-      <button class="btn btn-sm" bindtap="onPrevDay">前一天</button>
-      <picker mode="date" value="{{date}}" bindchange="onDateChange">
-        <view class="date-picker">
-          <view class="mono">{{date}}</view>
-          <view class="muted small">{{displayDate}}</view>
-        </view>
-      </picker>
-      <button class="btn btn-sm" bindtap="onNextDay">后一天</button>
-    </view>
-  </view>
-
   <view class="card">
     <view class="row-between gap">
       <view class="ring">
@@ -52,12 +39,18 @@
     </view>
   </view>
 
-  <view class="grid-3 net-grid" wx:if="{{daily && daily.tdee != null}}">
-    <view class="card mini-stat" wx:for="{{netStats}}" wx:key="label">
-      <view class="stat-value mono">{{item.value}}</view>
-      <view class="stat-label">{{item.label}} {{item.unit}}</view>
+  <block wx:if="{{daily && daily.tdee != null}}">
+    <view class="row-between section-title-row net-title">
+      <view class="section-title">热量收支</view>
+      <view class="help-link" bindtap="onShowNetHelp">说明</view>
     </view>
-  </view>
+    <view class="grid-3 net-grid">
+      <view class="card mini-stat" wx:for="{{netStats}}" wx:key="label">
+        <view class="stat-value mono">{{item.value}}</view>
+        <view class="stat-label">{{item.label}} {{item.unit}}</view>
+      </view>
+    </view>
+  </block>
 
   <view class="card exp-card" wx:if="{{experience}}">
     <view class="row-between">
@@ -70,12 +63,12 @@
     <view class="progress-track"><view class="progress-fill exp-fill" style="width: {{expPct}}%;"></view></view>
   </view>
 
-  <view class="section-title">餐次记录</view>
+  <view class="section-title">餐饮记录</view>
   <view class="card meal-card" wx:for="{{meals}}" wx:for-index="mealIndex" wx:key="type">
     <view class="row-between meal-head">
       <view>
         <view class="card-title">{{item.label}}</view>
-        <view class="card-subtitle">{{item.list.length}} 条记录</view>
+        <view class="card-subtitle">{{item.list.length}} 条 · {{item.kcal}} kcal</view>
       </view>
       <button class="btn btn-sm btn-primary" data-meal="{{item.type}}" bindtap="onAddFood">添加</button>
     </view>

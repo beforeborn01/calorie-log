@@ -20,11 +20,14 @@ function buildView(daily) {
       { label: '脂肪', value: fmt.num(daily && daily.totalFat, 1), unit: 'g' }
     ],
     netStats: [
-      { label: 'TDEE', value: fmt.num(daily && daily.tdee), unit: 'kcal' },
+      { label: '日常消耗', value: fmt.num(daily && daily.tdee), unit: 'kcal' },
       { label: '运动消耗', value: fmt.num(daily && daily.exerciseCalories), unit: 'kcal' },
-      { label: '净赤字', value: fmt.num(daily && daily.netDeficit), unit: 'kcal' }
+      { label: '净消耗', value: fmt.num(daily && daily.netDeficit), unit: 'kcal' }
     ],
-    meals: fmt.normalizeMeals(daily)
+    meals: fmt.normalizeMeals(daily).map((m) => ({
+      ...m,
+      kcal: fmt.num(m.list.reduce((sum, r) => sum + Number(r.calories || 0), 0))
+    }))
   };
 }
 
@@ -63,8 +66,9 @@ Page({
   },
 
   async loadAll() {
-    const date = this.data.date;
-    this.setData({ loading: true, displayDate: dateUtil.displayDate(date) });
+    // 首页只关注今天，每次进入都锁定为当天（避免跨天后日期滞留）
+    const date = dateUtil.today();
+    this.setData({ loading: true, date, displayDate: dateUtil.displayDate(date) });
     try {
       const [daily, experience] = await Promise.all([
         recordApi.getDailyRecords(date),
@@ -80,21 +84,15 @@ Page({
     }
   },
 
-  onPrevDay() {
-    this.setDate(dateUtil.addDays(this.data.date, -1));
-  },
-
-  onNextDay() {
-    this.setDate(dateUtil.addDays(this.data.date, 1));
-  },
-
-  onDateChange(e) {
-    this.setDate(e.detail.value);
-  },
-
-  setDate(date) {
-    this.setData({ date, displayDate: dateUtil.displayDate(date) });
-    this.loadAll();
+  onShowNetHelp() {
+    wx.showModal({
+      title: '热量收支',
+      content: '日常消耗：身体每天的基础代谢 + 日常活动消耗（不含你记录的运动）。\n' +
+        '运动消耗：你记录的运动额外燃烧的热量。\n' +
+        '净消耗 = 日常消耗 + 运动消耗 − 饮食摄入。\n正数表示今天消耗大于吃进的（利于减脂）；负数表示摄入超过消耗。',
+      showCancel: false,
+      confirmText: '知道了'
+    });
   },
 
   onCloseBindTip() {

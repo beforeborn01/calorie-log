@@ -4,6 +4,7 @@ const fmt = require('../../utils/format');
 const training = require('../../services/training');
 
 const BODY_PARTS = fmt.BODY_PARTS;
+const QUICK_RECORD_SOURCES = ['quick_form', 'quick_log'];
 
 function buildSessionPayload(date, exercise, sets, repsPerSet, weight, note) {
   const occurredAt = dateUtil.toIsoNoMs(dateUtil.addHoursToDate(date, 12));
@@ -28,7 +29,7 @@ function buildSessionPayload(date, exercise, sets, repsPerSet, weight, note) {
 }
 
 function flattenSessions(sessions) {
-  return (sessions || []).filter((s) => s.source === 'quick_form').map((s) => {
+  return (sessions || []).filter((s) => QUICK_RECORD_SOURCES.includes(s.source)).map((s) => {
     const ex = (s.exercises || [])[0] || {};
     const sets = ex.completedSets || [];
     const first = sets[0] || {};

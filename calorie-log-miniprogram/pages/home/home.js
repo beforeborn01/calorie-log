@@ -105,6 +105,17 @@ Page({
     wx.navigateTo({ url: `/pages/add-food/add-food?date=${this.data.date}&mealType=${mealType}` });
   },
 
+  // 悬浮快捷录入：按当前时段智能选默认餐次，避免写死早餐导致误录入
+  onQuickAdd() {
+    const h = new Date().getHours();
+    let mealType = 4; // 加餐
+    if (h < 10) mealType = 1;        // 早餐
+    else if (h < 14) mealType = 2;   // 午餐
+    else if (h < 16) mealType = 4;   // 下午加餐
+    else if (h < 21) mealType = 3;   // 晚餐
+    wx.navigateTo({ url: `/pages/add-food/add-food?date=${this.data.date}&mealType=${mealType}` });
+  },
+
   onEditRecord(e) {
     const mealIndex = Number(e.currentTarget.dataset.mealIndex);
     const recordIndex = Number(e.currentTarget.dataset.recordIndex);

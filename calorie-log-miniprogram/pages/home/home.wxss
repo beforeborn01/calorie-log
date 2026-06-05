@@ -7,6 +7,8 @@
 .ring-sub { color: #8A7F73; font-size: 22rpx; margin-top: 4rpx; }
 .progress-home { margin: 18rpx 0 24rpx; }
 .macro-grid { margin-top: 18rpx; }
+.progress-head-right { display: flex; align-items: center; gap: 16rpx; }
+.goal-link { font-size: 24rpx; color: #5D6BEA; }
 .net-title { margin-top: 22rpx; align-items: center; }
 .help-link { font-size: 24rpx; color: #8A7F73; padding: 6rpx 0; }
 .net-grid { margin-top: 12rpx; }

@@ -17,10 +17,14 @@
       <view><view class="stat-value mono">{{profile.weight || '-'}}</view><view class="stat-label">体重 kg</view></view>
     </view>
   </view>
+  <view class="card menu-row goal-entry" bindtap="goGoal">
+    <view class="flex-1"><view class="menu-title">🎯 健身目标</view><view class="muted small">目标热量 · 营养比例 · 餐次分配（影响首页与分析的所有数字）</view></view><view class="muted">›</view>
+  </view>
+
   <view class="card" wx:if="{{experience}}">
     <view class="row-between"><view><view class="card-title">Lv{{experience.level}}</view><view class="card-subtitle">连续记录 {{experience.continuousDays}} 天 · {{experience.totalExp}} exp</view></view><text>👑</text></view>
   </view>
-  <view class="section-title">功能</view>
+  <view class="section-title">更多</view>
   <view class="card menu-row" wx:for="{{menu}}" wx:key="title" data-url="{{item.url}}" bindtap="goPage">
     <view class="flex-1"><view class="menu-title">{{item.title}}</view><view class="muted small">{{item.desc}}</view></view><view class="muted">›</view>
   </view>

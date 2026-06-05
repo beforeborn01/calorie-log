@@ -1,0 +1,2 @@
+.menu-row { display: flex; align-items: center; margin-bottom: 16rpx; }
+.menu-title { font-weight: 700; margin-bottom: 4rpx; }

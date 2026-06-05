@@ -4,7 +4,17 @@
       <view class="page-kicker">TODAY</view>
       <view class="page-title">今日食养</view>
     </view>
-    <button class="btn btn-sm btn-ghost" bindtap="goStats">分析</button>
+    <button class="btn btn-sm btn-primary" bindtap="goStats">📊 今日分析</button>
+  </view>
+
+  <view class="card warning" wx:if="{{daily && !daily.targetCalories}}">
+    <view class="row-between">
+      <view class="flex-1">
+        <view class="card-title">尚未设置健身目标</view>
+        <view class="card-subtitle">设置后才能看到热量目标、收支与每日分析。</view>
+      </view>
+      <button class="btn btn-sm btn-primary" bindtap="goGoal">去设置</button>
+    </view>
   </view>
 
   <view class="card warning" wx:if="{{showBindPhoneTip}}">
@@ -26,7 +36,7 @@
       <view class="flex-1">
         <view class="row-between">
           <text class="card-title">热量进度</text>
-          <text class="mono muted">{{caloriesPct}}%</text>
+          <view class="progress-head-right"><text class="mono muted">{{caloriesPct}}%</text><text class="goal-link" bindtap="goGoal">目标 ›</text></view>
         </view>
         <view class="progress-track progress-home"><view class="progress-fill" style="width: {{caloriesPct}}%;"></view></view>
         <view class="grid-3 macro-grid">
@@ -84,5 +94,5 @@
     </view>
   </view>
 
-  <button class="btn btn-primary fab" data-meal="1" bindtap="onAddFood">+</button>
+  <button class="btn btn-primary fab" bindtap="onQuickAdd">+</button>
 </view>

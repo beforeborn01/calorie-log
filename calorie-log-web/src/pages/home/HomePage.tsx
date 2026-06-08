@@ -268,19 +268,19 @@ function NetDeficitCard({
   return (
     <Card size="small" style={{ marginBottom: 16, background: bg }} title="今日能量闭环">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
-        <CellStat label="基础消耗 TDEE" value={Math.round(tdee)} unit="kcal" />
+        <CellStat label="基础代谢" value={Math.round(tdee)} unit="kcal" />
         <CellStat label="运动消耗" value={Math.round(burn)} unit="kcal" color="#1677ff" />
         <CellStat label="饮食摄入" value={Math.round(totalCalories)} unit="kcal" />
         <CellStat
-          label={isDeficit ? '净赤字' : deficit < 0 ? '净盈余' : '基本持平'}
-          value={Math.abs(Math.round(deficit))}
+          label="当前缺口"
+          value={Math.round(deficit)}
           unit="kcal"
           color={color}
           strong
         />
       </div>
       <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-        净赤字 = TDEE + 运动 − 摄入 · {isDeficit ? '长期保持会减脂' : deficit < 0 ? '长期保持会增重' : ''}
+        当前缺口 = 基础代谢 + 运动消耗 − 饮食摄入 · {isDeficit ? '长期保持会减脂' : deficit < 0 ? '负数表示摄入超过消耗' : ''}
       </Typography.Text>
     </Card>
   );

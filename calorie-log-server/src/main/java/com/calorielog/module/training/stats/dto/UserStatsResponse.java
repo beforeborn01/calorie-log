@@ -18,7 +18,7 @@ public class UserStatsResponse {
     private LocalDateTime updatedAt;
     /** 今日运动总消耗 kcal（来自 t_daily_summary.exercise_calories） */
     private BigDecimal todayExerciseCalories;
-    /** 今日饮食卡 - (TDEE + 运动) 的净赤字；正数=赤字、负数=盈余。前端展示 */
+    /** 今日当前差额 = 生活消耗 + 运动消耗 - 饮食摄入；正数=缺口、负数=超出。 */
     private BigDecimal todayNetDeficit;
 
     @Data

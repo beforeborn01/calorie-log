@@ -4,7 +4,7 @@
 
   <view class="section-title">饮食</view>
   <view class="card menu-row" data-url="/pages/statistics/statistics" bindtap="goPage">
-    <view class="flex-1"><view class="menu-title">每日分析</view><view class="muted small">评分 · 建议 · 营养拆解</view></view><view class="muted">›</view>
+    <view class="flex-1"><view class="menu-title">饮食分析</view><view class="muted small">评分 · 建议 · 营养拆解</view></view><view class="muted">›</view>
   </view>
   <view class="card menu-row" data-url="/pages/history/history" bindtap="goPage">
     <view class="flex-1"><view class="menu-title">饮食历史</view><view class="muted small">按日期回看每天的饮食记录</view></view><view class="muted">›</view>

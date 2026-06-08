@@ -7,7 +7,7 @@
       <view><view class="stat-value mono">{{goal.targetCaloriesTraining}}</view><view class="stat-label">训练日 kcal</view></view>
       <view><view class="stat-value mono">{{goal.targetCaloriesRest}}</view><view class="stat-label">休息日 kcal</view></view>
       <view><view class="stat-value mono">{{goal.bmr}}</view><view class="stat-label">BMR</view></view>
-      <view><view class="stat-value mono">{{goal.tdeeBase}}</view><view class="stat-label">基础 TDEE</view></view>
+      <view><view class="stat-value mono">{{goal.tdeeBase}}</view><view class="stat-label">生活消耗</view></view>
     </view>
   </view>
   <view class="card" wx:else><view class="empty">尚未设置目标。先完善资料，再设置目标热量。</view></view>

@@ -53,17 +53,17 @@ export default function TrainingStatsPage() {
             valueStyle={{ color: '#1677ff' }}
           />
           <Statistic
-            title="今日净赤字"
+            title="当前缺口"
             value={netDeficit.toFixed(0)}
             suffix="kcal"
             valueStyle={{ color: netDeficit > 0 ? '#52c41a' : '#fa8c16' }}
           />
           <div style={{ fontSize: 13, color: '#888', maxWidth: 320 }}>
             {netDeficit > 0
-              ? '今天处于赤字，长期保持会减脂。'
+              ? '今天消耗大于摄入，长期保持会减脂。'
               : netDeficit < 0
-              ? '今天处于盈余，长期保持会增重。'
-              : '请先在「健身目标」填好 TDEE、并记录饮食与运动'}
+              ? '今天摄入超过消耗，长期保持会增重。'
+              : '请先在「健身目标」填好资料，并记录饮食与运动'}
           </div>
         </Space>
       </Card>

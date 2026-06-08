@@ -35,7 +35,7 @@ public class DietScoreService {
     private final GoalService goalService;
     private final ObjectProvider<RankingService> rankingServiceProvider;
 
-    /** 餐次推荐占比：早 25% / 午 35% / 晚 30% / 加餐 10% */
+    /** 餐次推荐占比：早 25% / 午 35% / 晚 30% / 加餐 10%；加餐没录入时视为可选。 */
     private static final Map<Integer, Double> MEAL_TARGET_RATIO = Map.of(
             1, 0.25, 2, 0.35, 3, 0.30, 4, 0.10);
     /** 每餐允许的偏差（占目标热量的百分比） */
@@ -153,8 +153,9 @@ public class DietScoreService {
             double v = r.getCalories() == null ? 0 : r.getCalories().doubleValue();
             caloriesByMeal.merge(r.getMealType(), v, Double::sum);
         }
+        Map<Integer, Double> targetRatios = effectiveMealTargetRatios(caloriesByMeal);
         double score = 20;
-        for (Map.Entry<Integer, Double> entry : MEAL_TARGET_RATIO.entrySet()) {
+        for (Map.Entry<Integer, Double> entry : targetRatios.entrySet()) {
             double actualRatio = caloriesByMeal.getOrDefault(entry.getKey(), 0.0) / total;
             double deviation = Math.abs(actualRatio - entry.getValue());
             // 每餐允许 5% 误差，超出每 1% 扣 0.5
@@ -163,6 +164,18 @@ public class DietScoreService {
             }
         }
         return Math.max(0, score);
+    }
+
+    private Map<Integer, Double> effectiveMealTargetRatios(Map<Integer, Double> caloriesByMeal) {
+        boolean hasSnack = caloriesByMeal.getOrDefault(4, 0.0) > 0;
+        if (hasSnack) return MEAL_TARGET_RATIO;
+
+        double mainTotal = MEAL_TARGET_RATIO.get(1) + MEAL_TARGET_RATIO.get(2) + MEAL_TARGET_RATIO.get(3);
+        Map<Integer, Double> mainOnly = new HashMap<>();
+        mainOnly.put(1, MEAL_TARGET_RATIO.get(1) / mainTotal);
+        mainOnly.put(2, MEAL_TARGET_RATIO.get(2) / mainTotal);
+        mainOnly.put(3, MEAL_TARGET_RATIO.get(3) / mainTotal);
+        return mainOnly;
     }
 
     private VarietyScore scoreVariety(List<DietRecord> records) {

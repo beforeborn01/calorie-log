@@ -146,7 +146,7 @@ export interface UserStatsResponse {
   personalRecords: Record<string, { weight: number; date: string }>;
   /** 今日运动总消耗 kcal */
   todayExerciseCalories?: number;
-  /** 今日净赤字 = TDEE + 运动消耗 - 饮食卡（正=赤字、负=盈余） */
+  /** 今日当前缺口 = 生活消耗 + 运动消耗 - 饮食卡（正=缺口、负=超出） */
   todayNetDeficit?: number;
 }
 

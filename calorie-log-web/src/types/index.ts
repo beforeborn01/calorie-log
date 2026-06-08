@@ -76,11 +76,11 @@ export interface DailyRecords {
   totalFat: number;
   totalFiber: number;
   targetCalories: number;
-  /** 基础代谢 + 活动消耗 */
+  /** 生活消耗基线：基础代谢 + 日常活动估算，不含已记录运动 */
   tdee?: number | null;
   /** 当日运动总消耗 kcal */
   exerciseCalories?: number | null;
-  /** 净赤字 = tdee + exerciseCalories − totalCalories；正=赤字（减脂） */
+  /** 当前缺口 = tdee + exerciseCalories − totalCalories；正=缺口，负=超出 */
   netDeficit?: number | null;
 }
 

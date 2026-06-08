@@ -84,7 +84,7 @@ export default function GoalSetupScreen({ navigation }: Props) {
         <Card style={{ marginBottom: 12 }}>
           <Card.Content>
             <Text>BMR: {Number(goal.bmr).toFixed(0)} kcal</Text>
-            <Text>基础 TDEE: {Number(goal.tdeeBase).toFixed(0)} kcal</Text>
+            <Text>生活消耗: {Number(goal.tdeeBase).toFixed(0)} kcal</Text>
             <Text>训练日目标: {Number(goal.targetCaloriesTraining).toFixed(0)} kcal</Text>
             <Text>休息日目标: {Number(goal.targetCaloriesRest).toFixed(0)} kcal</Text>
             <Text>蛋白/碳水/脂肪: {goal.proteinRatio}% / {goal.carbRatio}% / {goal.fatRatio}%</Text>

@@ -77,7 +77,7 @@ export default function GoalSetupPage() {
             description={
               <Descriptions size="small" column={2}>
                 <Descriptions.Item label="BMR">{Number(goal.bmr).toFixed(0)} kcal</Descriptions.Item>
-                <Descriptions.Item label="基础 TDEE">{Number(goal.tdeeBase).toFixed(0)} kcal</Descriptions.Item>
+                <Descriptions.Item label="生活消耗">{Number(goal.tdeeBase).toFixed(0)} kcal</Descriptions.Item>
                 <Descriptions.Item label="运动日目标">{Number(goal.targetCaloriesTraining).toFixed(0)} kcal</Descriptions.Item>
                 <Descriptions.Item label="休息日目标">{Number(goal.targetCaloriesRest).toFixed(0)} kcal</Descriptions.Item>
                 <Descriptions.Item label="蛋白/碳水/脂肪">

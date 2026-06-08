@@ -187,6 +187,23 @@ class DietScoreServiceTest {
     }
 
     @Test
+    void mealDistribution_no_snack_can_still_be_full() {
+        // 未记录加餐时，加餐 10% 视为可选；早午晚按 25/35/30 归一化后仍可满分。
+        List<DietRecord> list = List.of(
+                record(1, "食物A", 1L, "500"),
+                record(2, "食物B", 2L, "700"),
+                record(3, "食物C", 3L, "600")
+        );
+        when(dailySummaryService.getOrInit(uid, date))
+                .thenReturn(summary("2000", "1800", "0", "0", "0", "0"));
+        when(dietRecordMapper.findByDate(uid, date)).thenReturn(list);
+        when(goalService.findActiveOrNull(uid)).thenReturn(null);
+
+        DietScoreResponse r = svc.compute(uid, date);
+        assertEquals(bd("20.00"), r.getMealDistributionScore());
+    }
+
+    @Test
     void mealDistribution_only_dinner_penalized_heavily() {
         List<DietRecord> list = List.of(record(3, "晚餐", 1L, "2000"));
         when(dailySummaryService.getOrInit(uid, date))
@@ -195,9 +212,8 @@ class DietScoreServiceTest {
         when(goalService.findActiveOrNull(uid)).thenReturn(null);
 
         DietScoreResponse r = svc.compute(uid, date);
-        // 偏离：早 25%(扣 5 顶)，午 35%(扣 5 顶)，晚 70%(扣 5 顶)，加餐 10%(扣 (0.10-0.05)*100*0.5=2.5)
-        // 20 - (5 + 5 + 5 + 2.5) = 2.5
-        assertEquals(bd("2.50"), r.getMealDistributionScore());
+        // 未记录加餐时只比较早午晚：早、午、晚各扣到单餐上限 5。
+        assertEquals(bd("5.00"), r.getMealDistributionScore());
     }
 
     // ---------- variety ----------

@@ -71,12 +71,12 @@ public class UserStatsService {
         }
         r.setPersonalRecords(prMap);
 
-        // 今日运动消耗 + 净赤字
+        // 今日运动消耗 + 当前差额
         DailySummary today = dailySummaryMapper.findByDate(userId, java.time.LocalDate.now());
         if (today != null) {
             BigDecimal exKcal = today.getExerciseCalories() != null ? today.getExerciseCalories() : BigDecimal.ZERO;
             r.setTodayExerciseCalories(exKcal);
-            // 净赤字 = TDEE + exerciseCalories - totalCalories
+            // 当前差额 = 生活消耗 + 运动消耗 - 饮食摄入
             BigDecimal tdee = today.getTdee() != null ? today.getTdee() : BigDecimal.ZERO;
             BigDecimal intake = today.getTotalCalories() != null ? today.getTotalCalories() : BigDecimal.ZERO;
             r.setTodayNetDeficit(tdee.add(exKcal).subtract(intake));

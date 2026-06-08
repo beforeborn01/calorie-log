@@ -25,7 +25,7 @@ public class DietSuggestionService {
     private final DietRecordMapper dietRecordMapper;
     private final GoalService goalService;
 
-    // 餐次推荐占比与打分同步
+    // 餐次推荐占比与打分同步；加餐没录入时视为可选。
     private static final Map<Integer, Double> MEAL_TARGET_RATIO = Map.of(1, 0.25, 2, 0.35, 3, 0.30, 4, 0.10);
 
     // 营养素补充推荐食物
@@ -139,7 +139,8 @@ public class DietSuggestionService {
             if (r.getMealType() == null) continue;
             byMeal.merge(r.getMealType(), r.getCalories() == null ? 0 : r.getCalories().doubleValue(), Double::sum);
         }
-        for (Map.Entry<Integer, Double> entry : MEAL_TARGET_RATIO.entrySet()) {
+        Map<Integer, Double> targetRatios = effectiveMealTargetRatios(byMeal);
+        for (Map.Entry<Integer, Double> entry : targetRatios.entrySet()) {
             double actualRatio = byMeal.getOrDefault(entry.getKey(), 0.0) / total;
             double targetRatio = entry.getValue();
             double deviation = actualRatio - targetRatio;
@@ -157,6 +158,18 @@ public class DietSuggestionService {
                         String.format("%s 占 %.0f%%，建议 %.0f%%。", mealName, actualRatio * 100, targetRatio * 100), null, true));
             }
         }
+    }
+
+    private Map<Integer, Double> effectiveMealTargetRatios(Map<Integer, Double> caloriesByMeal) {
+        boolean hasSnack = caloriesByMeal.getOrDefault(4, 0.0) > 0;
+        if (hasSnack) return MEAL_TARGET_RATIO;
+
+        double mainTotal = MEAL_TARGET_RATIO.get(1) + MEAL_TARGET_RATIO.get(2) + MEAL_TARGET_RATIO.get(3);
+        Map<Integer, Double> mainOnly = new HashMap<>();
+        mainOnly.put(1, MEAL_TARGET_RATIO.get(1) / mainTotal);
+        mainOnly.put(2, MEAL_TARGET_RATIO.get(2) / mainTotal);
+        mainOnly.put(3, MEAL_TARGET_RATIO.get(3) / mainTotal);
+        return mainOnly;
     }
 
     private void addVarietySuggestions(List<DietSuggestionResponse.Suggestion> out, List<DietRecord> records) {

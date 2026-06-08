@@ -1,6 +1,6 @@
 <view class="container safe-bottom">
   <view class="page-kicker">ANALYSIS</view>
-  <view class="page-title">每日分析</view>
+  <view class="page-title">饮食分析</view>
   <view class="card"><view class="row-between"><button class="btn btn-sm" bindtap="onPrevDay">前一天</button><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="date-picker"><view class="mono">{{date}}</view><view class="muted small">{{displayDate}}</view></view></picker><button class="btn btn-sm" bindtap="onNextDay">后一天</button></view></view>
 
   <view class="card empty-day" wx:if="{{noRecord}}">
@@ -9,7 +9,8 @@
 
   <block wx:else>
   <view class="card banner" wx:if="{{inProgress}}">
-    <view class="muted small">今日仍在进行中：评分与“摄入不足”类建议将在日终结算，下面是截至当前的情况。</view>
+    <view class="muted small" wx:if="{{scoreView && scoreView.source === 'progress'}}">当前应完成：{{scoreView.meta.label}} · 目标 {{scoreView.meta.expectedPct}}% · 已记录 {{scoreView.meta.recordedPct}}%</view>
+    <view class="muted small" wx:else>今日仍在进行中，下面是截至当前的情况。</view>
   </view>
 
   <view class="grid-2 card-grid">
@@ -32,15 +33,13 @@
       <view class="section-title">评分拆解</view>
       <view class="help-link" data-key="all" bindtap="onShowScoreHelp">评分说明</view>
     </view>
-    <view class="card" wx:if="{{!inProgress}}">
-      <view class="score-row score-total"><text>总分</text><text class="mono">{{scoreView.total}} / 100</text></view>
+    <view class="card">
+      <view class="score-row score-total"><text>{{scoreView.source === 'progress' ? '当前评分' : '总分'}}</text><text class="mono">{{scoreView.total}} / 100</text></view>
+      <view class="muted small progress-meta" wx:if="{{scoreView.meta}}">按 {{scoreView.meta.label}} 折算，当前目标 {{scoreView.meta.targetCalories}} kcal。</view>
       <view class="score-row" wx:for="{{scoreView.rows}}" wx:key="key" data-key="{{item.key}}" bindtap="onShowScoreHelp">
         <text>{{item.label}}<text class="help-q">?</text></text>
         <text class="mono">{{item.value}} / {{item.max}}</text>
       </view>
-    </view>
-    <view class="card" wx:else>
-      <view class="muted small">评分将在日终结算。点右上「评分说明」了解每项怎么算。</view>
     </view>
   </block>
 

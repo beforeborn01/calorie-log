@@ -183,7 +183,7 @@ public class DietRecordService {
         resp.setTotalFiber(fib);
         resp.setTargetCalories(summaryService.resolveTargetCalories(userId, date));
 
-        // 净赤字 = TDEE + 运动消耗 - 饮食卡。从 daily_summary 取，没填资料就为 null
+        // 当前差额 = 生活消耗 + 运动消耗 - 饮食卡。从 daily_summary 取，没填资料就为 null
         com.calorielog.module.record.entity.DailySummary summary = summaryMapper.findByDate(userId, date);
         BigDecimal tdee = summary != null ? summary.getTdee() : null;
         BigDecimal exKcal = (summary != null && summary.getExerciseCalories() != null)

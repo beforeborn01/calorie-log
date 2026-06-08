@@ -59,7 +59,8 @@ public class DailySummaryService {
                 TdeeCalculationService.DailyCalories dc = tdeeCalculationService.computeDaily(
                         user, goal.getGoalType(), info.trainingDay, info.intensity);
                 tdee = dc.tdee;
-                target = dc.targetCalories;
+                target = info.trainingDay ? goal.getTargetCaloriesTraining() : goal.getTargetCaloriesRest();
+                if (target == null) target = dc.targetCalories;
             } catch (BizException e) {
                 log.warn("recompute daily TDEE failed: userId={} {}", userId, e.getMessage());
             }

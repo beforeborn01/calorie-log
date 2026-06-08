@@ -20,9 +20,9 @@ function buildView(daily) {
       { label: '脂肪', value: fmt.num(daily && daily.totalFat, 1), unit: 'g' }
     ],
     netStats: [
-      { label: '日常消耗', value: fmt.num(daily && daily.tdee), unit: 'kcal' },
+      { label: '基础代谢', value: fmt.num(daily && daily.tdee), unit: 'kcal' },
       { label: '运动消耗', value: fmt.num(daily && daily.exerciseCalories), unit: 'kcal' },
-      { label: '净消耗', value: fmt.num(daily && daily.netDeficit), unit: 'kcal' }
+      { label: '当前缺口', value: fmt.num(daily && daily.netDeficit), unit: 'kcal' }
     ],
     meals: fmt.normalizeMeals(daily).map((m) => ({
       ...m,
@@ -87,9 +87,9 @@ Page({
   onShowNetHelp() {
     wx.showModal({
       title: '热量收支',
-      content: '日常消耗：身体每天的基础代谢 + 日常活动消耗（不含你记录的运动）。\n' +
+      content: '基础代谢：按你的基础代谢和日常活动水平估算，不包含你记录的运动。\n' +
         '运动消耗：你记录的运动额外燃烧的热量。\n' +
-        '净消耗 = 日常消耗 + 运动消耗 − 饮食摄入。\n正数表示今天消耗大于吃进的（利于减脂）；负数表示摄入超过消耗。',
+        '当前缺口 = 基础代谢 + 运动消耗 − 饮食摄入。\n正数表示消耗大于摄入；负数表示摄入超过消耗。',
       showCancel: false,
       confirmText: '知道了'
     });

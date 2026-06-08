@@ -12,7 +12,9 @@ import java.math.RoundingMode;
 
 /**
  * TDEE 计算核心逻辑（架构文档 6.1 节）：
- *   BMR (Mifflin-St Jeor) → 基础活动系数 → 日期类型调整 → TDEE → 目标热量 → 营养素比例
+ *   BMR (Mifflin-St Jeor) → 日常活动系数 → 生活基线消耗。
+ *
+ * <p>已记录运动消耗单独进入能量收支，避免在 TDEE 和 exerciseCalories 中重复计算训练消耗。</p>
  */
 @Service
 public class TdeeCalculationService {
@@ -25,10 +27,7 @@ public class TdeeCalculationService {
         double bmr = NutritionCalculator.bmrMifflin(
                 user.getGender(), user.getWeight(), user.getHeight(), user.getAge());
         double baseFactor = NutritionCalculator.baseActivityFactor(user.getActivityLevel());
-
-        // 训练日按中等强度（+0.2）估算基础 TDEE；实际每日 target 会在 /statistics/daily 时按当日强度重算
-        double tdeeTrainingMid = bmr * (baseFactor + 0.2);
-        double tdeeRest = bmr * (baseFactor - 0.1);
+        double baselineTdee = bmr * baseFactor;
 
         double targetTraining;
         double targetRest;
@@ -38,13 +37,13 @@ public class TdeeCalculationService {
 
         if (goalType == 1) {
             // 增肌塑型：训练日 +17.5% / 休息日 +12.5%
-            targetTraining = tdeeTrainingMid * 1.175;
-            targetRest = tdeeRest * 1.125;
+            targetTraining = baselineTdee * 1.175;
+            targetRest = baselineTdee * 1.125;
             proteinRatio = 30; carbRatio = 45; fatRatio = 25;
         } else if (goalType == 2) {
             // 减脂增肌：训练日 -12.5% / 休息日 -17.5%
-            targetTraining = tdeeTrainingMid * 0.875;
-            targetRest = tdeeRest * 0.825;
+            targetTraining = baselineTdee * 0.875;
+            targetRest = baselineTdee * 0.825;
             proteinRatio = 35; carbRatio = 40; fatRatio = 25;
         } else {
             throw new BizException(ErrorCode.PARAM_INVALID, "goalType 仅支持 1(增肌) 或 2(减脂)");
@@ -52,7 +51,7 @@ public class TdeeCalculationService {
 
         GoalCalculation gc = new GoalCalculation();
         gc.bmr = round(bmr);
-        gc.tdeeBase = round(bmr * baseFactor);
+        gc.tdeeBase = round(baselineTdee);
         gc.targetCaloriesTraining = round(targetTraining);
         gc.targetCaloriesRest = round(targetRest);
         gc.proteinRatio = BigDecimal.valueOf(proteinRatio);
@@ -61,16 +60,13 @@ public class TdeeCalculationService {
         return gc;
     }
 
-    /**
-     * 某一天的实际 TDEE 与目标热量。trainingDay + intensity 由 GoalService 按规则 + 例外表推导。
-     */
+    /** 某一天的生活基线消耗与默认目标热量。已记录运动消耗在 DailySummary 里单独累加。 */
     public DailyCalories computeDaily(User user, int goalType, boolean trainingDay, int intensity) {
         requireProfile(user);
         double bmr = NutritionCalculator.bmrMifflin(
                 user.getGender(), user.getWeight(), user.getHeight(), user.getAge());
         double baseFactor = NutritionCalculator.baseActivityFactor(user.getActivityLevel());
-        double adjustment = NutritionCalculator.dayTypeAdjustment(trainingDay, intensity);
-        double tdee = bmr * (baseFactor + adjustment);
+        double tdee = bmr * baseFactor;
 
         double multiplier;
         if (goalType == 1) {

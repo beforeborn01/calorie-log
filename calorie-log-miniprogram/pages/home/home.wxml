@@ -4,14 +4,14 @@
       <view class="page-kicker">TODAY</view>
       <view class="page-title">今日食养</view>
     </view>
-    <button class="btn btn-sm btn-primary" bindtap="goStats">📊 今日分析</button>
+    <button class="btn btn-sm btn-primary" bindtap="goStats">📊 饮食分析</button>
   </view>
 
   <view class="card warning" wx:if="{{daily && !daily.targetCalories}}">
     <view class="row-between">
       <view class="flex-1">
         <view class="card-title">尚未设置健身目标</view>
-        <view class="card-subtitle">设置后才能看到热量目标、收支与每日分析。</view>
+        <view class="card-subtitle">设置后才能看到热量目标、收支与饮食分析。</view>
       </view>
       <button class="btn btn-sm btn-primary" bindtap="goGoal">去设置</button>
     </view>

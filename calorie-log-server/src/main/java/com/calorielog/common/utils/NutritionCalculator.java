@@ -69,7 +69,7 @@ public final class NutritionCalculator {
         };
     }
 
-    /** 日期类型系数调整：trainingDay=true 时依据强度 +0.1 / +0.2；否则 -0.1 */
+    /** 旧版日期类型系数调整；当前记录模型下 TDEE 不再使用该调整，运动消耗由训练记录单独提供。 */
     public static double dayTypeAdjustment(boolean trainingDay, int intensity) {
         if (!trainingDay) return -0.1;
         return intensity >= 2 ? 0.2 : 0.1;

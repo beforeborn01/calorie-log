@@ -24,6 +24,7 @@ public class DailySummary {
     private BigDecimal totalFat;
     private BigDecimal totalFiber;
     private BigDecimal targetCalories;
+    /** 生活消耗基线：基础代谢 + 日常活动估算，不含已记录运动 */
     private BigDecimal tdee;
     /**
      * 与目标卡的差：totalCalories − targetCalories；正=吃过头、负=吃少了。
@@ -34,7 +35,7 @@ public class DailySummary {
     private BigDecimal dietScore;
     private Integer foodVarietyCount;
 
-    /** 当日运动总消耗 kcal（来自训练 session 完成） */
+    /** 当日运动总消耗 kcal（来自训练 session 完成，单独加到能量收支） */
     private BigDecimal exerciseCalories;
 
     @Version

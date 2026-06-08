@@ -35,7 +35,7 @@
     "backgroundColor": "#F5F1E8",
     "borderStyle": "white",
     "list": [
-      { "pagePath": "pages/home/home", "text": "今天" },
+      { "pagePath": "pages/home/home", "text": "饮食" },
       { "pagePath": "pages/training-quick/training-quick", "text": "运动" },
       { "pagePath": "pages/insights/insights", "text": "洞察" },
       { "pagePath": "pages/profile/profile", "text": "我的" }

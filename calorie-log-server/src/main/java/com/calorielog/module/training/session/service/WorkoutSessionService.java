@@ -304,7 +304,7 @@ public class WorkoutSessionService {
         if (req.getNotes() != null) s.setNotes(req.getNotes());
         sessionMapper.updateById(s);
 
-        // 训练 → 当日运动消耗（净赤字依赖项）；走 user+day 全量重算，幂等
+        // 训练 → 当日运动消耗（当前差额依赖项）；走 user+day 全量重算，幂等
         recomputeDailyExerciseCalories(userId, sessionDay(s));
 
         List<UserStatsService.ExerciseMaxWeight> maxList = maxWeightByExercise.entrySet().stream()

@@ -12,6 +12,9 @@
   <view class="card"><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="picker-box date-pick full-date">{{date}}</view></picker></view>
   <view class="grid-2 quick-summary"><view class="card"><view class="stat-value mono">{{flatRecords.length}}</view><view class="stat-label">当日记录 条</view></view><view class="card"><view class="stat-value mono">{{totalVolume}}</view><view class="stat-label">累计容量 kg</view></view></view>
 
+  <view class="section-title">文字速记</view>
+  <view class="card"><textarea class="textarea" placeholder="例：卧推 3组 每组10次 40kg" value="{{form.quickText}}" data-field="quickText" bindinput="onInput" /><button class="btn" style="width:100%; margin-top:18rpx;" bindtap="onQuickText" loading="{{parsing}}">解析并记录</button></view>
+
   <view class="section-title">表单速记</view>
   <view class="card">
     <view class="grid-2"><view class="field"><text class="field-label">部位</text><picker mode="selector" range="{{bodyParts}}" value="{{bodyPartIndex}}" bindchange="onBodyPartChange"><view class="picker-box">{{bodyParts[bodyPartIndex]}}</view></picker></view><view class="field"><text class="field-label">动作</text><picker mode="selector" range="{{exerciseNames}}" value="{{exerciseIndex}}" bindchange="onExerciseChange"><view class="picker-box">{{exerciseIndex >= 0 ? exerciseNames[exerciseIndex] : '选择动作'}}</view></picker></view></view>
@@ -20,9 +23,6 @@
     <view class="field"><text class="field-label">备注</text><input class="input" value="{{form.note}}" data-field="note" bindinput="onInput" /></view>
     <button class="btn btn-primary" style="width:100%;" bindtap="onSubmit" loading="{{saving}}">保存速记</button>
   </view>
-
-  <view class="section-title">自然语言补录</view>
-  <view class="card"><textarea class="textarea" placeholder="例：卧推 3组 每组10次 40kg" value="{{form.quickText}}" data-field="quickText" bindinput="onInput" /><button class="btn" style="width:100%; margin-top:18rpx;" bindtap="onQuickText" loading="{{parsing}}">解析并记录</button></view>
 
   <view class="section-title">当日记录</view>
   <view class="card" wx:if="{{flatRecords.length === 0}}"><view class="empty">今天还没有运动记录</view></view>

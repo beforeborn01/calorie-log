@@ -108,9 +108,9 @@ public class DailySummaryService {
             recompute(userId, date);
             return summaryMapper.findByDate(userId, date);
         }
-        // 自愈：行已存在但目标热量为空（多半是在设目标/完善资料之前生成的旧汇总），
+        // 自愈：行已存在但目标热量或 TDEE 为空（多半是在设目标/完善资料之前生成的旧汇总），
         // 若用户当前已具备完整资料 + active 目标，则重算一次把 tdee/target/gap 补齐。
-        if (s.getTargetCalories() == null && eligibleForTarget(userId)) {
+        if ((s.getTargetCalories() == null || s.getTdee() == null) && eligibleForTarget(userId)) {
             recompute(userId, date);
             s = summaryMapper.findByDate(userId, date);
         }

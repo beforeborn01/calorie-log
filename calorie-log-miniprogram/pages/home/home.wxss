@@ -1,4 +1,11 @@
-.header-row { align-items: flex-start; }
+.header-row { align-items: flex-end; }
+.analysis-btn {
+  margin-bottom: 24rpx;
+  background: #EEE6D7;
+  color: #2C2620;
+  border-color: rgba(44, 38, 32, 0.12);
+  box-shadow: none;
+}
 .warning { margin-bottom: 22rpx; background: #FFF8E6; }
 .date-card { margin-bottom: 22rpx; }
 .date-picker { text-align: center; min-width: 250rpx; }

@@ -9,6 +9,7 @@ import com.calorielog.module.record.dto.CreateRecordRequest;
 import com.calorielog.module.record.dto.DailyRecordsResponse;
 import com.calorielog.module.record.dto.DietRecordResponse;
 import com.calorielog.module.record.dto.UpdateRecordRequest;
+import com.calorielog.module.record.entity.DailySummary;
 import com.calorielog.module.record.entity.DietRecord;
 import com.calorielog.module.record.mapper.DietRecordMapper;
 import com.calorielog.module.social.service.ExperienceService;
@@ -30,7 +31,6 @@ public class DietRecordService {
     private final FoodMapper foodMapper;
     private final GrossNetWeightService grossNetWeightService;
     private final DailySummaryService summaryService;
-    private final com.calorielog.module.record.mapper.DailySummaryMapper summaryMapper;
     private final DietScoreService dietScoreService;
     private final ExperienceService experienceService;
 
@@ -181,10 +181,12 @@ public class DietRecordService {
         resp.setTotalCarb(carb);
         resp.setTotalFat(fat);
         resp.setTotalFiber(fib);
-        resp.setTargetCalories(summaryService.resolveTargetCalories(userId, date));
+        DailySummary summary = summaryService.getOrInit(userId, date);
+        resp.setTargetCalories(summary != null && summary.getTargetCalories() != null
+                ? summary.getTargetCalories()
+                : summaryService.resolveTargetCalories(userId, date));
 
-        // 当前差额 = 生活消耗 + 运动消耗 - 饮食卡。从 daily_summary 取，没填资料就为 null
-        com.calorielog.module.record.entity.DailySummary summary = summaryMapper.findByDate(userId, date);
+        // 当前差额 = 消耗基线 + 运动消耗 - 饮食卡。从 daily_summary 取，没填资料就为 null。
         BigDecimal tdee = summary != null ? summary.getTdee() : null;
         BigDecimal exKcal = (summary != null && summary.getExerciseCalories() != null)
                 ? summary.getExerciseCalories() : BigDecimal.ZERO;

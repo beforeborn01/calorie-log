@@ -1,5 +1,4 @@
 const authGuard = require('../../utils/authGuard');
-const storage = require('../../utils/storage');
 const dateUtil = require('../../utils/date');
 const fmt = require('../../utils/format');
 const recordApi = require('../../services/record');
@@ -43,8 +42,7 @@ Page({
     caloriesPct: 0,
     caloriesText: '-',
     experience: null,
-    expPct: 0,
-    showBindPhoneTip: false
+    expPct: 0
   },
 
   onLoad() {
@@ -55,7 +53,6 @@ Page({
     if (!authGuard.ensureToken()) return;
     this.checkProfile();
     this.loadAll();
-    this.setData({ showBindPhoneTip: storage.get(storage.NEED_BIND_PHONE_KEY) === '1' });
   },
 
   async checkProfile() {
@@ -93,11 +90,6 @@ Page({
       showCancel: false,
       confirmText: '知道了'
     });
-  },
-
-  onCloseBindTip() {
-    storage.remove(storage.NEED_BIND_PHONE_KEY);
-    this.setData({ showBindPhoneTip: false });
   },
 
   onAddFood(e) {

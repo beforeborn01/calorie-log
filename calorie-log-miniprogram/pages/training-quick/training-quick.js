@@ -108,7 +108,7 @@ Page({
   },
   async onQuickText() {
     const text = String(this.data.form.quickText || '').trim();
-    if (!text) return fmt.toast('请输入自然语言记录');
+    if (!text) return fmt.toast('请输入文字速记');
     this.setData({ parsing: true });
     try {
       await training.quickLog(text, dateUtil.toIsoNoMs(dateUtil.addHoursToDate(this.data.date, 12)));

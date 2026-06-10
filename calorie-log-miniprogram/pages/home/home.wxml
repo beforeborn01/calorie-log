@@ -4,7 +4,7 @@
       <view class="page-kicker">TODAY</view>
       <view class="page-title">今日食养</view>
     </view>
-    <button class="btn btn-sm btn-primary" bindtap="goStats">📊 饮食分析</button>
+    <button class="btn btn-sm analysis-btn" bindtap="goStats">饮食分析</button>
   </view>
 
   <view class="card warning" wx:if="{{daily && !daily.targetCalories}}">
@@ -14,16 +14,6 @@
         <view class="card-subtitle">设置后才能看到热量目标、收支与饮食分析。</view>
       </view>
       <button class="btn btn-sm btn-primary" bindtap="goGoal">去设置</button>
-    </view>
-  </view>
-
-  <view class="card warning" wx:if="{{showBindPhoneTip}}">
-    <view class="row-between">
-      <view class="flex-1">
-        <view class="card-title">未绑定手机号</view>
-        <view class="card-subtitle">你当前使用微信账号登录，建议后续在设置里绑定手机号，避免换设备时找回困难。</view>
-      </view>
-      <button class="btn btn-sm" bindtap="onCloseBindTip">知道了</button>
     </view>
   </view>
 
@@ -49,7 +39,7 @@
     </view>
   </view>
 
-  <block wx:if="{{daily && daily.tdee != null}}">
+  <block wx:if="{{daily}}">
     <view class="row-between section-title-row net-title">
       <view class="section-title">热量收支</view>
       <view class="help-link" bindtap="onShowNetHelp">说明</view>

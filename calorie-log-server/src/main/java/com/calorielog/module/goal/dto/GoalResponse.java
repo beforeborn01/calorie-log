@@ -13,6 +13,7 @@ public class GoalResponse {
     private String goalTypeLabel;
     private BigDecimal bmr;
     private BigDecimal tdeeBase;
+    private BigDecimal targetCalories;
     private BigDecimal targetCaloriesTraining;
     private BigDecimal targetCaloriesRest;
     private BigDecimal proteinRatio;
@@ -27,6 +28,7 @@ public class GoalResponse {
         r.setGoalTypeLabel(g.getGoalType() == 1 ? "增肌塑型" : "减脂增肌");
         r.setBmr(g.getBmr());
         r.setTdeeBase(g.getTdeeBase());
+        r.setTargetCalories(g.getTargetCaloriesRest());
         r.setTargetCaloriesTraining(g.getTargetCaloriesTraining());
         r.setTargetCaloriesRest(g.getTargetCaloriesRest());
         r.setProteinRatio(g.getProteinRatio());

@@ -13,7 +13,7 @@ public class SetGoalRequest {
     @NotNull @Min(1) @Max(2)
     private Integer goalType;
 
-    /** 手动微调目标热量（训练日），不传则用系统计算 */
+    /** 手动微调每日饮食目标。为兼容旧接口，两个字段任一传入都会按固定每日目标处理。 */
     private BigDecimal targetCaloriesTraining;
     private BigDecimal targetCaloriesRest;
 

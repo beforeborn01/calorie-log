@@ -22,7 +22,11 @@ Page({
     } catch (e) { fmt.showError(e, '加载运动统计失败'); }
     finally { this.setData({ loading: false }); }
   },
-  goQuick() { wx.switchTab({ url: '/pages/training-quick/training-quick' }); },
-  goPlans() { wx.redirectTo({ url: '/pages/training-plans/training-plans' }); },
-  goSessions() { wx.redirectTo({ url: '/pages/training-sessions/training-sessions' }); }
+  goQuick() { this.openTrainingTab('quick'); },
+  goPlans() { this.openTrainingTab('plans'); },
+  goSessions() { this.openTrainingTab('sessions'); },
+  openTrainingTab(tab) {
+    wx.setStorageSync('trainingActiveTab', tab);
+    wx.switchTab({ url: '/pages/training-quick/training-quick' });
+  }
 });

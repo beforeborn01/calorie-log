@@ -21,13 +21,14 @@
     <view class="row-between gap">
       <view class="ring">
         <view class="ring-main mono">{{caloriesText}}</view>
-        <view class="ring-sub">kcal</view>
+        <view class="ring-sub">已吃 / 目标 kcal</view>
       </view>
       <view class="flex-1">
         <view class="row-between">
-          <text class="card-title">热量进度</text>
+          <text class="card-title">今日摄入</text>
           <view class="progress-head-right"><text class="mono muted">{{caloriesPct}}%</text><text class="goal-link" bindtap="goGoal">目标 ›</text></view>
         </view>
+        <view class="card-subtitle intake-hint">{{intakeHint}}</view>
         <view class="progress-track progress-home"><view class="progress-fill" style="width: {{caloriesPct}}%;"></view></view>
         <view class="grid-3 macro-grid">
           <view wx:for="{{macroStats}}" wx:key="label">
@@ -44,10 +45,15 @@
       <view class="section-title">热量收支</view>
       <view class="help-link" bindtap="onShowNetHelp">说明</view>
     </view>
+    <view class="card net-summary">
+      <view class="card-title">{{netHeadline}}</view>
+      <view class="card-subtitle">{{netFormula}}</view>
+    </view>
     <view class="grid-3 net-grid">
       <view class="card mini-stat" wx:for="{{netStats}}" wx:key="label">
         <view class="stat-value mono">{{item.value}}</view>
         <view class="stat-label">{{item.label}} {{item.unit}}</view>
+        <view class="stat-hint">{{item.hint}}</view>
       </view>
     </view>
   </block>

@@ -33,15 +33,21 @@ export default function GoalSetupPage() {
   }, []);
 
   const handleSubmit = async (values: {
-    targetCaloriesTraining?: number;
-    targetCaloriesRest?: number;
+    targetCalories?: number;
     proteinRatio?: number;
     carbRatio?: number;
     fatRatio?: number;
   }) => {
     setSaving(true);
     try {
-      const updated = await setGoal({ goalType, ...values });
+      const updated = await setGoal({
+        goalType,
+        targetCaloriesTraining: values.targetCalories,
+        targetCaloriesRest: values.targetCalories,
+        proteinRatio: values.proteinRatio,
+        carbRatio: values.carbRatio,
+        fatRatio: values.fatRatio,
+      });
       await saveTrainingSchedule({ trainingWeekdays: weekdays, defaultIntensity: intensity });
       setGoalState(updated);
       message.success('目标已保存');
@@ -78,10 +84,14 @@ export default function GoalSetupPage() {
               <Descriptions size="small" column={2}>
                 <Descriptions.Item label="BMR">{Number(goal.bmr).toFixed(0)} kcal</Descriptions.Item>
                 <Descriptions.Item label="生活消耗">{Number(goal.tdeeBase).toFixed(0)} kcal</Descriptions.Item>
-                <Descriptions.Item label="运动日目标">{Number(goal.targetCaloriesTraining).toFixed(0)} kcal</Descriptions.Item>
-                <Descriptions.Item label="休息日目标">{Number(goal.targetCaloriesRest).toFixed(0)} kcal</Descriptions.Item>
+                <Descriptions.Item label="每日目标">
+                  {Number(goal.targetCalories || goal.targetCaloriesRest).toFixed(0)} kcal
+                </Descriptions.Item>
                 <Descriptions.Item label="蛋白/碳水/脂肪">
                   {goal.proteinRatio}% / {goal.carbRatio}% / {goal.fatRatio}%
+                </Descriptions.Item>
+                <Descriptions.Item label="运动记录" span={2}>
+                  只影响运动消耗和热量差额，不会自动抬高每日饮食目标
                 </Descriptions.Item>
               </Descriptions>
             }
@@ -94,8 +104,7 @@ export default function GoalSetupPage() {
           initialValues={
             goal
               ? {
-                  targetCaloriesTraining: Number(goal.targetCaloriesTraining),
-                  targetCaloriesRest: Number(goal.targetCaloriesRest),
+                  targetCalories: Number(goal.targetCalories || goal.targetCaloriesRest),
                   proteinRatio: Number(goal.proteinRatio),
                   carbRatio: Number(goal.carbRatio),
                   fatRatio: Number(goal.fatRatio),
@@ -103,10 +112,7 @@ export default function GoalSetupPage() {
               : {}
           }
         >
-          <Form.Item label="运动日目标热量 (kcal, 可微调)" name="targetCaloriesTraining">
-            <InputNumber style={{ width: '100%' }} min={800} max={5000} />
-          </Form.Item>
-          <Form.Item label="休息日目标热量 (kcal, 可微调)" name="targetCaloriesRest">
+          <Form.Item label="每日目标热量 (kcal, 可微调)" name="targetCalories">
             <InputNumber style={{ width: '100%' }} min={800} max={5000} />
           </Form.Item>
           <Space>

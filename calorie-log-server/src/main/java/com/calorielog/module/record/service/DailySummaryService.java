@@ -46,7 +46,8 @@ public class DailySummaryService {
         Integer varietyCount = agg.get("food_variety_count") == null ? 0
                 : ((Number) agg.get("food_variety_count")).intValue();
 
-        // 日期类型 + 目标热量 + TDEE（若目标未设或资料不全则留空）
+        // 日期类型仍保留用于展示/计划，但饮食目标不再按计划训练日浮动；
+        // 实际运动只进入 exerciseCalories 和 netDeficit。
         Integer dayType = null;
         BigDecimal tdee = null;
         BigDecimal target = null;
@@ -59,7 +60,7 @@ public class DailySummaryService {
                 TdeeCalculationService.DailyCalories dc = tdeeCalculationService.computeDaily(
                         user, goal.getGoalType(), info.trainingDay, info.intensity);
                 tdee = dc.tdee;
-                target = info.trainingDay ? goal.getTargetCaloriesTraining() : goal.getTargetCaloriesRest();
+                target = fixedTargetOrComputed(goal, dc.targetCalories);
                 if (target == null) target = dc.targetCalories;
             } catch (BizException e) {
                 log.warn("recompute daily TDEE failed: userId={} {}", userId, e.getMessage());
@@ -108,19 +109,31 @@ public class DailySummaryService {
             recompute(userId, date);
             return summaryMapper.findByDate(userId, date);
         }
-        // 自愈：行已存在但目标热量或 TDEE 为空（多半是在设目标/完善资料之前生成的旧汇总），
+        // 自愈：行已存在但目标热量/TDEE 为空，或目标仍是旧版「训练日/休息日浮动」模型时，
         // 若用户当前已具备完整资料 + active 目标，则重算一次把 tdee/target/gap 补齐。
-        if ((s.getTargetCalories() == null || s.getTdee() == null) && eligibleForTarget(userId)) {
+        if (needsTargetRefresh(userId, s)) {
             recompute(userId, date);
             s = summaryMapper.findByDate(userId, date);
         }
         return s;
     }
 
-    /** 是否具备算出目标热量的前提：资料完整 + 存在 active 健身目标。 */
-    private boolean eligibleForTarget(Long userId) {
+    /** 是否需要刷新目标热量：资料完整 + active 目标 + 当前汇总缺失或不符合新模型。 */
+    private boolean needsTargetRefresh(Long userId, DailySummary summary) {
         User user = userMapper.selectById(userId);
-        return user != null && hasCompleteProfile(user) && goalService.findActiveOrNull(userId) != null;
+        UserGoal goal = goalService.findActiveOrNull(userId);
+        if (user == null || !hasCompleteProfile(user) || goal == null) return false;
+        if (summary.getTargetCalories() == null || summary.getTdee() == null) return true;
+        try {
+            TrainingScheduleService.DayInfo info = trainingScheduleService.resolve(userId, summary.getSummaryDate());
+            TdeeCalculationService.DailyCalories dc = tdeeCalculationService.computeDaily(
+                    user, goal.getGoalType(), info.trainingDay, info.intensity);
+            BigDecimal expectedTarget = fixedTargetOrComputed(goal, dc.targetCalories);
+            return summary.getTdee().compareTo(dc.tdee) != 0
+                    || summary.getTargetCalories().compareTo(expectedTarget) != 0;
+        } catch (BizException e) {
+            return false;
+        }
     }
 
     public BigDecimal resolveTargetCalories(Long userId, LocalDate date) {
@@ -157,6 +170,13 @@ public class DailySummaryService {
         return u.getGender() != null && u.getGender() > 0
                 && u.getAge() != null && u.getHeight() != null
                 && u.getWeight() != null && u.getActivityLevel() != null;
+    }
+
+    private static BigDecimal fixedTargetOrComputed(UserGoal goal, BigDecimal computed) {
+        BigDecimal training = goal.getTargetCaloriesTraining();
+        BigDecimal rest = goal.getTargetCaloriesRest();
+        if (training != null && rest != null && training.compareTo(rest) == 0) return rest;
+        return computed;
     }
 
     private static BigDecimal asDecimal(Object v) {

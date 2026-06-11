@@ -34,11 +34,11 @@ class TdeeCalculationServiceTest {
 
         assertEquals(new BigDecimal("1648.75"), g.bmr);
         assertEquals(new BigDecimal("2555.56"), g.tdeeBase); // 2555.5625 → HALF_UP → 2555.56
-        // goal=1（增肌塑型）训练日 +17.5%，休息日 +12.5%
-        // 2555.5625 * 1.175 = 3002.7859375 → 3002.79
-        // 2555.5625 * 1.125 = 2875.0078125 → 2875.01
-        assertEquals(new BigDecimal("3002.79"), g.targetCaloriesTraining);
-        assertEquals(new BigDecimal("2875.01"), g.targetCaloriesRest);
+        // goal=1（增肌塑型）固定每日目标 +15%
+        // 2555.5625 * 1.15 = 2938.896875 → 2938.90
+        assertEquals(new BigDecimal("2938.90"), g.targetCalories);
+        assertEquals(new BigDecimal("2938.90"), g.targetCaloriesTraining);
+        assertEquals(new BigDecimal("2938.90"), g.targetCaloriesRest);
         assertEquals(new BigDecimal("30.0"), g.proteinRatio);
         assertEquals(new BigDecimal("45.0"), g.carbRatio);
         assertEquals(new BigDecimal("25.0"), g.fatRatio);
@@ -48,11 +48,11 @@ class TdeeCalculationServiceTest {
     void computeForGoal_cut_goal2_male_activity3() {
         User u = user(1, 30, "175", "70", 3);
         TdeeCalculationService.GoalCalculation g = svc.computeForGoal(u, 2);
-        // goal=2（减脂增肌）训练日 -12.5%，休息日 -17.5%
-        // 2555.5625 * 0.875 = 2236.1171875 → 2236.12
-        // 2555.5625 * 0.825 = 2108.3390625 → 2108.34
-        assertEquals(new BigDecimal("2236.12"), g.targetCaloriesTraining);
-        assertEquals(new BigDecimal("2108.34"), g.targetCaloriesRest);
+        // goal=2（减脂增肌）固定每日目标 -15%
+        // 2555.5625 * 0.85 = 2172.228125 → 2172.23
+        assertEquals(new BigDecimal("2172.23"), g.targetCalories);
+        assertEquals(new BigDecimal("2172.23"), g.targetCaloriesTraining);
+        assertEquals(new BigDecimal("2172.23"), g.targetCaloriesRest);
         assertEquals(new BigDecimal("35.0"), g.proteinRatio);
         assertEquals(new BigDecimal("40.0"), g.carbRatio);
         assertEquals(new BigDecimal("25.0"), g.fatRatio);
@@ -96,13 +96,13 @@ class TdeeCalculationServiceTest {
     // ---------- computeDaily ----------
 
     @Test
-    void computeDaily_rest_day_uses_baseline_and_rest_multiplier() {
+    void computeDaily_rest_day_uses_baseline_and_fixed_goal_multiplier() {
         User u = user(1, 30, "175", "70", 3);
         TdeeCalculationService.DailyCalories d = svc.computeDaily(u, 2, false, 0);
         // tdee = 1648.75 * 1.55 = 2555.5625 → 2555.56
-        // target goal=2 休息日 multiplier 0.825 → 2555.5625 * 0.825 = 2108.3390625 → 2108.34
+        // target goal=2 固定 multiplier 0.85 → 2555.5625 * 0.85 = 2172.228125 → 2172.23
         assertEquals(new BigDecimal("2555.56"), d.tdee);
-        assertEquals(new BigDecimal("2108.34"), d.targetCalories);
+        assertEquals(new BigDecimal("2172.23"), d.targetCalories);
         assertFalse(d.trainingDay);
     }
 
@@ -118,8 +118,8 @@ class TdeeCalculationServiceTest {
     void computeDaily_training_high_intensity_keeps_baseline_tdee() {
         User u = user(1, 30, "175", "70", 3);
         TdeeCalculationService.DailyCalories d = svc.computeDaily(u, 1, true, 3);
-        // target goal=1 训练 +17.5% → 2555.5625 * 1.175 = 3002.79
+        // target goal=1 固定 +15% → 2555.5625 * 1.15 = 2938.90
         assertEquals(new BigDecimal("2555.56"), d.tdee);
-        assertEquals(new BigDecimal("3002.79"), d.targetCalories);
+        assertEquals(new BigDecimal("2938.90"), d.targetCalories);
     }
 }

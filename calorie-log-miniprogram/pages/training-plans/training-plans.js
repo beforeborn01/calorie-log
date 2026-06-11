@@ -304,7 +304,11 @@ Page({
     });
   },
 
-  goQuick() { wx.switchTab({ url: '/pages/training-quick/training-quick' }); },
-  goSessions() { wx.redirectTo({ url: '/pages/training-sessions/training-sessions' }); },
-  goStats() { wx.redirectTo({ url: '/pages/training-stats/training-stats' }); }
+  goQuick() { this.openTrainingTab('quick'); },
+  goSessions() { this.openTrainingTab('sessions'); },
+  goStats() { this.openTrainingTab('stats'); },
+  openTrainingTab(tab) {
+    wx.setStorageSync('trainingActiveTab', tab);
+    wx.switchTab({ url: '/pages/training-quick/training-quick' });
+  }
 });

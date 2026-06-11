@@ -11,15 +11,18 @@
 .date-picker { text-align: center; min-width: 250rpx; }
 .ring { width: 190rpx; height: 190rpx; border-radius: 96rpx; border: 14rpx solid #2C2620; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F5F1E8; }
 .ring-main { font-size: 30rpx; font-weight: 800; }
-.ring-sub { color: #8A7F73; font-size: 22rpx; margin-top: 4rpx; }
+.ring-sub { color: #8A7F73; font-size: 20rpx; margin-top: 4rpx; max-width: 132rpx; text-align: center; line-height: 1.25; }
+.intake-hint { margin-top: 8rpx; }
 .progress-home { margin: 18rpx 0 24rpx; }
 .macro-grid { margin-top: 18rpx; }
 .progress-head-right { display: flex; align-items: center; gap: 16rpx; }
 .goal-link { font-size: 24rpx; color: #5D6BEA; }
 .net-title { margin-top: 22rpx; align-items: center; }
 .help-link { font-size: 24rpx; color: #8A7F73; padding: 6rpx 0; }
+.net-summary { margin-bottom: 14rpx; background: #FFFDF8; }
 .net-grid { margin-top: 12rpx; }
 .mini-stat { padding: 20rpx; }
+.stat-hint { color: #8A7F73; font-size: 20rpx; margin-top: 6rpx; line-height: 1.2; }
 .exp-card { margin-top: 22rpx; }
 .exp-fill { background: #5D6BEA; }
 .meal-card { margin-bottom: 22rpx; }

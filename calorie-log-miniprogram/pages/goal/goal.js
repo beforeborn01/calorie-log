@@ -12,8 +12,7 @@ Page({
     goalOptions: ['增肌塑型', '减脂增肌'],
     form: {
       goalType: 2,
-      targetCaloriesTraining: '',
-      targetCaloriesRest: '',
+      targetCalories: '',
       proteinRatio: '',
       carbRatio: '',
       fatRatio: ''
@@ -29,8 +28,7 @@ Page({
       ]);
       const form = goal ? {
         goalType: Number(goal.goalType || 2),
-        targetCaloriesTraining: goal.targetCaloriesTraining || '',
-        targetCaloriesRest: goal.targetCaloriesRest || '',
+        targetCalories: goal.targetCalories || goal.targetCaloriesRest || goal.targetCaloriesTraining || '',
         proteinRatio: goal.proteinRatio || '',
         carbRatio: goal.carbRatio || '',
         fatRatio: goal.fatRatio || ''
@@ -49,8 +47,8 @@ Page({
     try {
       await goalApi.setGoal({
         goalType: Number(f.goalType),
-        targetCaloriesTraining: f.targetCaloriesTraining === '' ? undefined : Number(f.targetCaloriesTraining),
-        targetCaloriesRest: f.targetCaloriesRest === '' ? undefined : Number(f.targetCaloriesRest),
+        targetCaloriesTraining: f.targetCalories === '' ? undefined : Number(f.targetCalories),
+        targetCaloriesRest: f.targetCalories === '' ? undefined : Number(f.targetCalories),
         proteinRatio: f.proteinRatio === '' ? undefined : Number(f.proteinRatio),
         carbRatio: f.carbRatio === '' ? undefined : Number(f.carbRatio),
         fatRatio: f.fatRatio === '' ? undefined : Number(f.fatRatio)

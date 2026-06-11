@@ -2,3 +2,17 @@
 .full-date { width: 100%; justify-content: center; font-size: 34rpx; }
 .quick-summary { margin:22rpx 0; }
 .record-row { display:flex; align-items:center; gap:18rpx; margin-bottom:14rpx; }
+.panel-head { margin: 0 0 22rpx; }
+.active-card { margin-bottom:22rpx; border-style:solid; border-color:#2C2620; }
+.create-card { margin-bottom:22rpx; border-style:solid; }
+.editor-head { margin-bottom:18rpx; }
+.inner-title { margin-top:26rpx; }
+.compact { padding:24rpx 0; }
+.draft-row { display:flex; align-items:center; gap:10rpx; padding:16rpx 0; border-top:2rpx dashed rgba(44,38,32,.08); }
+.draft-name { font-weight:800; margin-bottom:6rpx; }
+.plan-card { margin-bottom:18rpx; }
+.desc { margin-top:14rpx; }
+.exercise-line { color:#8A7F73; font-size:24rpx; margin-top:12rpx; }
+.plan-actions { margin-top:18rpx; }
+.session-row { display:flex; align-items:center; gap:18rpx; margin-bottom:14rpx; }
+.pr-row { display:flex; align-items:center; gap:18rpx; margin-bottom:14rpx; }

@@ -17,7 +17,7 @@
   <view class="card menu-row" data-url="/pages/body/body" bindtap="goPage">
     <view class="flex-1"><view class="menu-title">体重趋势</view><view class="muted small">体重 / 体脂变化</view></view><view class="muted">›</view>
   </view>
-  <view class="card menu-row" data-url="/pages/training-stats/training-stats" bindtap="goPage">
+  <view class="card menu-row" data-training-tab="stats" bindtap="goTrainingTab">
     <view class="flex-1"><view class="menu-title">运动统计</view><view class="muted small">PR · 连续训练 · 容量</view></view><view class="muted">›</view>
   </view>
 </view>

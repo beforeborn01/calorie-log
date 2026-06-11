@@ -27,7 +27,11 @@ Page({
       catch (err) { fmt.showError(err, '删除失败'); }
     }});
   },
-  goQuick() { wx.switchTab({ url: '/pages/training-quick/training-quick' }); },
-  goPlans() { wx.redirectTo({ url: '/pages/training-plans/training-plans' }); },
-  goStats() { wx.redirectTo({ url: '/pages/training-stats/training-stats' }); }
+  goQuick() { this.openTrainingTab('quick'); },
+  goPlans() { this.openTrainingTab('plans'); },
+  goStats() { this.openTrainingTab('stats'); },
+  openTrainingTab(tab) {
+    wx.setStorageSync('trainingActiveTab', tab);
+    wx.switchTab({ url: '/pages/training-quick/training-quick' });
+  }
 });

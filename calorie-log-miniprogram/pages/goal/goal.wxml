@@ -4,11 +4,11 @@
   <view class="card" wx:if="{{goal}}">
     <view class="card-title">当前：{{goal.goalTypeLabel}}</view>
     <view class="grid-2 goal-grid">
-      <view><view class="stat-value mono">{{goal.targetCaloriesTraining}}</view><view class="stat-label">训练日 kcal</view></view>
-      <view><view class="stat-value mono">{{goal.targetCaloriesRest}}</view><view class="stat-label">休息日 kcal</view></view>
+      <view><view class="stat-value mono">{{goal.targetCalories || goal.targetCaloriesRest}}</view><view class="stat-label">每日目标 kcal</view></view>
       <view><view class="stat-value mono">{{goal.bmr}}</view><view class="stat-label">BMR</view></view>
       <view><view class="stat-value mono">{{goal.tdeeBase}}</view><view class="stat-label">生活消耗</view></view>
     </view>
+    <view class="card-subtitle goal-note">运动记录只影响首页的运动消耗和热量差额，不会自动抬高每日饮食目标。</view>
   </view>
   <view class="card" wx:else><view class="empty">尚未设置目标。先完善资料，再设置目标热量。</view></view>
 
@@ -16,8 +16,7 @@
   <view class="card">
     <view class="field"><text class="field-label">目标类型</text><picker mode="selector" range="{{goalOptions}}" value="{{form.goalType - 1}}" bindchange="onGoalTypeChange"><view class="picker-box">{{goalOptions[form.goalType - 1]}}</view></picker></view>
     <view class="grid-2">
-      <view class="field"><text class="field-label">训练日目标 kcal</text><input class="input" type="digit" value="{{form.targetCaloriesTraining}}" placeholder="留空自动计算" data-field="targetCaloriesTraining" bindinput="onInput" /></view>
-      <view class="field"><text class="field-label">休息日目标 kcal</text><input class="input" type="digit" value="{{form.targetCaloriesRest}}" placeholder="留空自动计算" data-field="targetCaloriesRest" bindinput="onInput" /></view>
+      <view class="field"><text class="field-label">每日目标 kcal</text><input class="input" type="digit" value="{{form.targetCalories}}" placeholder="留空自动计算" data-field="targetCalories" bindinput="onInput" /></view>
       <view class="field"><text class="field-label">蛋白比例 %</text><input class="input" type="digit" value="{{form.proteinRatio}}" data-field="proteinRatio" bindinput="onInput" /></view>
       <view class="field"><text class="field-label">碳水比例 %</text><input class="input" type="digit" value="{{form.carbRatio}}" data-field="carbRatio" bindinput="onInput" /></view>
       <view class="field"><text class="field-label">脂肪比例 %</text><input class="input" type="digit" value="{{form.fatRatio}}" data-field="fatRatio" bindinput="onInput" /></view>

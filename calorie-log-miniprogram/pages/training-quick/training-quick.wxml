@@ -1,30 +1,213 @@
 <view class="container safe-bottom">
   <view class="page-kicker">SPORT</view>
-  <view class="page-title">运动速记</view>
+  <view class="page-title">{{pageTitle}}</view>
 
   <view class="sport-nav">
-    <button class="sport-nav-item active">速记</button>
-    <button class="sport-nav-item" bindtap="goPlans">计划</button>
-    <button class="sport-nav-item" bindtap="goSessions">历史</button>
-    <button class="sport-nav-item" bindtap="goStats">统计</button>
+    <button
+      wx:for="{{tabs}}"
+      wx:key="key"
+      class="sport-nav-item {{activeTab === item.key ? 'active' : ''}}"
+      data-tab="{{item.key}}"
+      bindtap="onTabTap"
+    >
+      {{item.label}}
+    </button>
   </view>
 
-  <view class="card"><picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="picker-box date-pick full-date">{{date}}</view></picker></view>
-  <view class="grid-2 quick-summary"><view class="card"><view class="stat-value mono">{{flatRecords.length}}</view><view class="stat-label">当日记录 条</view></view><view class="card"><view class="stat-value mono">{{totalVolume}}</view><view class="stat-label">累计容量 kg</view></view></view>
+  <view wx:if="{{activeTab === 'quick'}}">
+    <view class="card">
+      <picker mode="date" value="{{date}}" bindchange="onDateChange">
+        <view class="picker-box date-pick full-date">{{date}}</view>
+      </picker>
+    </view>
+    <view class="grid-2 quick-summary">
+      <view class="card">
+        <view class="stat-value mono">{{flatRecords.length}}</view>
+        <view class="stat-label">当日记录 条</view>
+      </view>
+      <view class="card">
+        <view class="stat-value mono">{{totalVolume}}</view>
+        <view class="stat-label">累计容量 kg</view>
+      </view>
+    </view>
 
-  <view class="section-title">文字速记</view>
-  <view class="card"><textarea class="textarea" placeholder="例：卧推 3组 每组10次 40kg" value="{{form.quickText}}" data-field="quickText" bindinput="onInput" /><button class="btn" style="width:100%; margin-top:18rpx;" bindtap="onQuickText" loading="{{parsing}}">解析并记录</button></view>
+    <view class="section-title">文字速记</view>
+    <view class="card">
+      <textarea
+        class="textarea"
+        placeholder="例：卧推 3组 每组10次 40kg"
+        value="{{form.quickText}}"
+        data-field="quickText"
+        bindinput="onInput"
+      />
+      <button class="btn" style="width:100%; margin-top:18rpx;" bindtap="onQuickText" loading="{{parsing}}">
+        解析并记录
+      </button>
+    </view>
 
-  <view class="section-title">表单速记</view>
-  <view class="card">
-    <view class="grid-2"><view class="field"><text class="field-label">部位</text><picker mode="selector" range="{{bodyParts}}" value="{{bodyPartIndex}}" bindchange="onBodyPartChange"><view class="picker-box">{{bodyParts[bodyPartIndex]}}</view></picker></view><view class="field"><text class="field-label">动作</text><picker mode="selector" range="{{exerciseNames}}" value="{{exerciseIndex}}" bindchange="onExerciseChange"><view class="picker-box">{{exerciseIndex >= 0 ? exerciseNames[exerciseIndex] : '选择动作'}}</view></picker></view></view>
-    <view class="field"><text class="field-label">或新建自定义动作</text><input class="input" placeholder="例如 哑铃卧推" value="{{customExerciseName}}" bindinput="onCustomInput" /></view>
-    <view class="grid-3"><view class="field"><text class="field-label">组数</text><input class="input" type="number" value="{{form.sets}}" data-field="sets" bindinput="onInput" /></view><view class="field"><text class="field-label">每组次数</text><input class="input" type="number" value="{{form.repsPerSet}}" data-field="repsPerSet" bindinput="onInput" /></view><view class="field"><text class="field-label">重量 kg</text><input class="input" type="digit" value="{{form.weight}}" data-field="weight" bindinput="onInput" /></view></view>
-    <view class="field"><text class="field-label">备注</text><input class="input" value="{{form.note}}" data-field="note" bindinput="onInput" /></view>
-    <button class="btn btn-primary" style="width:100%;" bindtap="onSubmit" loading="{{saving}}">保存速记</button>
+    <view class="section-title">表单速记</view>
+    <view class="card">
+      <view class="grid-2">
+        <view class="field">
+          <text class="field-label">部位</text>
+          <picker mode="selector" range="{{bodyParts}}" value="{{bodyPartIndex}}" bindchange="onBodyPartChange">
+            <view class="picker-box">{{bodyParts[bodyPartIndex]}}</view>
+          </picker>
+        </view>
+        <view class="field">
+          <text class="field-label">动作</text>
+          <picker mode="selector" range="{{quickExerciseNames}}" value="{{quickExerciseIndex}}" bindchange="onQuickExerciseChange">
+            <view class="picker-box">{{quickExerciseIndex >= 0 ? quickExerciseNames[quickExerciseIndex] : '选择动作'}}</view>
+          </picker>
+        </view>
+      </view>
+      <view class="field">
+        <text class="field-label">或新建自定义动作</text>
+        <input class="input" placeholder="例如 哑铃卧推" value="{{customExerciseName}}" bindinput="onCustomInput" />
+      </view>
+      <view class="grid-3">
+        <view class="field"><text class="field-label">组数</text><input class="input" type="number" value="{{form.sets}}" data-field="sets" bindinput="onInput" /></view>
+        <view class="field"><text class="field-label">每组次数</text><input class="input" type="number" value="{{form.repsPerSet}}" data-field="repsPerSet" bindinput="onInput" /></view>
+        <view class="field"><text class="field-label">重量 kg</text><input class="input" type="digit" value="{{form.weight}}" data-field="weight" bindinput="onInput" /></view>
+      </view>
+      <view class="field"><text class="field-label">备注</text><input class="input" value="{{form.note}}" data-field="note" bindinput="onInput" /></view>
+      <button class="btn btn-primary" style="width:100%;" bindtap="onSubmit" loading="{{saving}}">保存速记</button>
+    </view>
+
+    <view class="section-title">当日记录</view>
+    <view class="card" wx:if="{{flatRecords.length === 0}}">
+      <view class="empty">{{quickLoading ? '加载中...' : '今天还没有运动记录'}}</view>
+    </view>
+    <view class="card record-row" wx:for="{{flatRecords}}" wx:key="sessionId">
+      <view class="flex-1">
+        <view class="card-title">{{item.exerciseName}}</view>
+        <view class="card-subtitle">{{item.sets}} 组 x {{item.repsPerSet}} 次 @ {{item.weight}}kg {{item.note}}</view>
+      </view>
+      <button class="btn btn-sm btn-danger" data-id="{{item.sessionId}}" bindtap="onQuickDelete">删</button>
+    </view>
   </view>
 
-  <view class="section-title">当日记录</view>
-  <view class="card" wx:if="{{flatRecords.length === 0}}"><view class="empty">今天还没有运动记录</view></view>
-  <view class="card record-row" wx:for="{{flatRecords}}" wx:key="sessionId"><view class="flex-1"><view class="card-title">{{item.exerciseName}}</view><view class="card-subtitle">{{item.sets}} 组 × {{item.repsPerSet}} 次 @ {{item.weight}}kg {{item.note}}</view></view><button class="btn btn-sm btn-danger" data-id="{{item.sessionId}}" bindtap="onDelete">删</button></view>
+  <view wx:elif="{{activeTab === 'plans'}}">
+    <view class="row-between panel-head">
+      <view class="muted small">管理常用运动计划</view>
+      <button class="btn btn-sm btn-primary" bindtap="openCreate">新建</button>
+    </view>
+
+    <view class="card active-card" wx:if="{{activeSession}}">
+      <view class="row-between gap">
+        <view class="flex-1">
+          <view class="card-title">有进行中的运动</view>
+          <view class="card-subtitle">{{activeSession.name}}</view>
+        </view>
+        <button class="btn btn-sm btn-primary" bindtap="continueActive">继续</button>
+      </view>
+    </view>
+
+    <view class="card create-card" wx:if="{{editorOpen}}">
+      <view class="row-between editor-head">
+        <view class="card-title">{{editorTitle}}</view>
+        <button class="btn btn-sm" bindtap="closeEditor">关闭</button>
+      </view>
+
+      <view class="field"><text class="field-label">计划名</text><input class="input" value="{{planForm.name}}" data-field="name" bindinput="onPlanInput" /></view>
+      <view class="field"><text class="field-label">描述</text><input class="input" value="{{planForm.description}}" data-field="description" bindinput="onPlanInput" /></view>
+      <view class="grid-2">
+        <view class="field">
+          <text class="field-label">类型</text>
+          <picker mode="selector" range="{{typeLabels}}" value="{{typeIndex}}" bindchange="onTypeChange">
+            <view class="picker-box">{{typeLabels[typeIndex]}}</view>
+          </picker>
+        </view>
+        <view class="field"><text class="field-label">预计分钟</text><input class="input" type="number" value="{{planForm.estimatedDuration}}" placeholder="留空自动估算" data-field="estimatedDuration" bindinput="onPlanInput" /></view>
+      </view>
+
+      <view class="section-title inner-title">添加动作</view>
+      <view class="field">
+        <text class="field-label">动作</text>
+        <picker mode="selector" range="{{planExerciseNames}}" value="{{planExerciseIndex}}" bindchange="onPlanExerciseChange">
+          <view class="picker-box">{{planExerciseIndex >= 0 ? planExerciseNames[planExerciseIndex] : '选择动作'}}</view>
+        </picker>
+      </view>
+      <view class="grid-3">
+        <view class="field"><text class="field-label">组数</text><input class="input" type="number" value="{{exerciseForm.sets}}" data-field="sets" bindinput="onExerciseInput" /></view>
+        <view class="field"><text class="field-label">次数</text><input class="input" type="number" value="{{exerciseForm.reps}}" data-field="reps" bindinput="onExerciseInput" /></view>
+        <view class="field"><text class="field-label">重量 kg</text><input class="input" type="digit" value="{{exerciseForm.weight}}" data-field="weight" bindinput="onExerciseInput" /></view>
+      </view>
+      <view class="grid-2">
+        <view class="field"><text class="field-label">休息秒</text><input class="input" type="number" value="{{exerciseForm.restSeconds}}" data-field="restSeconds" bindinput="onExerciseInput" /></view>
+        <view class="field"><text class="field-label">备注</text><input class="input" value="{{exerciseForm.notes}}" data-field="notes" bindinput="onExerciseInput" /></view>
+      </view>
+      <button class="btn" style="width:100%;" bindtap="addOrUpdateExercise">{{exerciseEditIndex >= 0 ? '更新动作' : '加入计划'}}</button>
+
+      <view class="section-title inner-title">计划动作</view>
+      <view class="empty compact" wx:if="{{draftExercises.length === 0}}">还没有动作</view>
+      <view class="draft-row" wx:for="{{draftExercises}}" wx:for-index="index" wx:key="order">
+        <view class="flex-1" data-index="{{index}}" bindtap="editDraftExercise">
+          <view class="draft-name">{{index + 1}}. {{item.exerciseName}}</view>
+          <view class="muted tiny">{{item.sets}}组 x {{item.reps || '-'}} {{item.weight ? '@ ' + item.weight + 'kg' : ''}} · 休息 {{item.restSeconds}}s</view>
+        </view>
+        <button class="btn btn-sm" data-index="{{index}}" data-dir="-1" bindtap="moveDraftExercise">上</button>
+        <button class="btn btn-sm" data-index="{{index}}" data-dir="1" bindtap="moveDraftExercise">下</button>
+        <button class="btn btn-sm btn-danger" data-index="{{index}}" bindtap="removeDraftExercise">删</button>
+      </view>
+
+      <button class="btn btn-primary" style="width:100%; margin-top:22rpx;" bindtap="savePlan" loading="{{planSaving}}">保存计划</button>
+    </view>
+
+    <view class="card" wx:if="{{plans.length === 0}}">
+      <view class="empty">{{plansLoading ? '加载中...' : '还没有计划，新建一个开始吧'}}</view>
+    </view>
+    <view class="card plan-card" wx:for="{{plans}}" wx:for-index="index" wx:key="id">
+      <view class="row-between gap">
+        <view class="flex-1">
+          <view class="card-title">{{item.name}}</view>
+          <view class="card-subtitle">{{item.typeLabel}} · {{item.exercises.length}} 个动作 · {{item.totalMinutes}} 分钟</view>
+        </view>
+        <button class="btn btn-sm btn-primary" data-index="{{index}}" bindtap="onPlanStart">开始</button>
+      </view>
+      <view class="muted small desc" wx:if="{{item.description}}">{{item.description}}</view>
+      <view class="exercise-line" wx:for="{{item.exercises}}" wx:key="order">{{item.exerciseName || ('动作#' + item.exerciseId)}} · {{item.sets}}组 x {{item.reps || '-'}} {{item.weight ? item.weight + 'kg' : ''}}</view>
+      <view class="row gap plan-actions">
+        <button class="btn btn-sm" data-index="{{index}}" bindtap="openEdit">编辑</button>
+        <button class="btn btn-sm btn-danger" data-index="{{index}}" bindtap="onPlanDelete">删除</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:elif="{{activeTab === 'sessions'}}">
+    <view class="card" wx:if="{{historySessions.length === 0}}">
+      <view class="empty">{{historyLoading ? '加载中...' : '暂无运动记录'}}</view>
+    </view>
+    <view class="card session-row" wx:for="{{historySessions}}" wx:for-index="index" wx:key="id" data-index="{{index}}" bindtap="onOpenSession">
+      <view class="flex-1">
+        <view class="card-title">{{item.name}}</view>
+        <view class="card-subtitle">{{item.statusLabel}} · {{item.exerciseCount}} 个动作 · {{item.duration || 0}} 秒</view>
+        <view class="muted tiny">{{item.startTime}}</view>
+      </view>
+      <button class="btn btn-sm btn-danger" catchtap="onSessionDelete" data-index="{{index}}">删</button>
+    </view>
+  </view>
+
+  <view wx:elif="{{activeTab === 'stats'}}">
+    <view class="grid-2">
+      <view class="card" wx:for="{{statsCards}}" wx:key="label">
+        <view class="stat-value mono">{{item.value}}</view>
+        <view class="stat-label">{{item.label}} {{item.unit}}</view>
+      </view>
+    </view>
+    <view class="card" wx:if="{{statsCards.length === 0}}">
+      <view class="empty">{{statsLoading ? '加载中...' : '暂无统计数据'}}</view>
+    </view>
+    <view class="section-title">个人记录 PR</view>
+    <view class="card" wx:if="{{prs.length === 0}}">
+      <view class="empty">暂无 PR</view>
+    </view>
+    <view class="card pr-row" wx:for="{{prs}}" wx:key="name">
+      <view class="flex-1">
+        <view class="card-title">{{item.name}}</view>
+        <view class="card-subtitle">{{item.date}}</view>
+      </view>
+      <view class="mono stat-value">{{item.weight}}kg</view>
+    </view>
+  </view>
 </view>

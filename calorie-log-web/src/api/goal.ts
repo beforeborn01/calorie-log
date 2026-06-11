@@ -6,6 +6,7 @@ export interface Goal {
   goalTypeLabel: string;
   bmr: number;
   tdeeBase: number;
+  targetCalories: number;
   targetCaloriesTraining: number;
   targetCaloriesRest: number;
   proteinRatio: number;

@@ -105,7 +105,10 @@ Page({
         const resp = await training.finishSession(this.data.id, { endTime: dateUtil.toIsoNoMs(new Date()), duration, notes: this.data.session.notes });
         const prCount = resp && resp.newPersonalRecords ? Object.keys(resp.newPersonalRecords).length : 0;
         fmt.toast(prCount ? `完成！新增 ${prCount} 个 PR` : '运动已完成', 'success');
-        setTimeout(() => wx.redirectTo({ url: '/pages/training-sessions/training-sessions' }), 600);
+        setTimeout(() => {
+          wx.setStorageSync('trainingActiveTab', 'sessions');
+          wx.switchTab({ url: '/pages/training-quick/training-quick' });
+        }, 600);
       } catch (e) { fmt.showError(e, '结束失败'); }
       finally { this.setData({ finishing: false }); }
     }});

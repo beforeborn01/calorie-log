@@ -1,5 +1,15 @@
 const api = require('../utils/request');
 
+function markHomeRefresh() {
+  try {
+    const app = getApp();
+    if (app && app.globalData) app.globalData.refreshHome = true;
+  } catch (e) {}
+  try {
+    wx.setStorageSync('refreshHomeAt', Date.now());
+  } catch (e) {}
+}
+
 module.exports = {
   // 老 Strength 动作库：运动速记仍复用它。
   listStrengthExercises(params) {
@@ -50,24 +60,36 @@ module.exports = {
     return api.get('/training/sessions/active');
   },
   createSession(data) {
-    return api.post('/training/sessions', data);
+    return api.post('/training/sessions', data).then((res) => {
+      if (data && data.status === 'completed') markHomeRefresh();
+      return res;
+    });
   },
   updateSession(id, data) {
     return api.put(`/training/sessions/${id}`, data);
   },
   finishSession(id, data) {
-    return api.post(`/training/sessions/${id}/finish`, data || {});
+    return api.post(`/training/sessions/${id}/finish`, data || {}).then((res) => {
+      markHomeRefresh();
+      return res;
+    });
   },
   abortSession(id) {
     return api.post(`/training/sessions/${id}/abort`, {});
   },
   deleteSession(id) {
-    return api.del(`/training/sessions/${id}`);
+    return api.del(`/training/sessions/${id}`).then((res) => {
+      markHomeRefresh();
+      return res;
+    });
   },
   getTrainingStats() {
     return api.get('/training/stats');
   },
   quickLog(text, now) {
-    return api.post('/training/sessions/quick-log', { text, now });
+    return api.post('/training/sessions/quick-log', { text, now }).then((res) => {
+      markHomeRefresh();
+      return res;
+    });
   }
 };

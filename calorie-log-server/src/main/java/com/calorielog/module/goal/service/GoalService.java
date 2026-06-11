@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -57,10 +58,12 @@ public class GoalService {
         g.setGoalType(req.getGoalType());
         g.setBmr(calc.bmr);
         g.setTdeeBase(calc.tdeeBase);
-        g.setTargetCaloriesTraining(
-                req.getTargetCaloriesTraining() != null ? req.getTargetCaloriesTraining() : calc.targetCaloriesTraining);
-        g.setTargetCaloriesRest(
-                req.getTargetCaloriesRest() != null ? req.getTargetCaloriesRest() : calc.targetCaloriesRest);
+        BigDecimal fixedTarget = req.getTargetCaloriesRest() != null
+                ? req.getTargetCaloriesRest()
+                : req.getTargetCaloriesTraining();
+        if (fixedTarget == null) fixedTarget = calc.targetCalories;
+        g.setTargetCaloriesTraining(fixedTarget);
+        g.setTargetCaloriesRest(fixedTarget);
         g.setProteinRatio(req.getProteinRatio() != null ? req.getProteinRatio() : calc.proteinRatio);
         g.setCarbRatio(req.getCarbRatio() != null ? req.getCarbRatio() : calc.carbRatio);
         g.setFatRatio(req.getFatRatio() != null ? req.getFatRatio() : calc.fatRatio);

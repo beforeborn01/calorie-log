@@ -26,6 +26,14 @@ module.exports = {
   searchExercises(params = {}) {
     return api.get('/training/exercises/search', params);
   },
+  // 动作库目录树（部位+小类+器械），喂选择器左栏与筛选
+  catalogExercises() {
+    return api.get('/training/exercises/catalog');
+  },
+  // 按 部位/小类/器械/关键词 过滤动作（选择器列表）
+  filterExercises(params = {}) {
+    return api.get('/training/exercises/filter', params);
+  },
   getExercise(id) {
     return api.get(`/training/exercises/${id}`);
   },

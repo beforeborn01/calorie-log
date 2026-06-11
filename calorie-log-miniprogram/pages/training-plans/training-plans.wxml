@@ -39,11 +39,13 @@
     </view>
 
     <view class="section-title inner-title">添加动作</view>
-    <view class="field"><text class="field-label">动作</text><picker mode="selector" range="{{exerciseNames}}" value="{{exerciseIndex}}" bindchange="onExerciseChange"><view class="picker-box">{{exerciseIndex >= 0 ? exerciseNames[exerciseIndex] : '选择动作'}}</view></picker></view>
-    <view class="grid-3">
+    <view class="field"><text class="field-label">动作</text>
+      <view class="picker-box" bindtap="openPicker">{{selectedExercise ? selectedExercise.name : '选择动作'}}</view>
+    </view>
+    <view class="{{showWeight ? 'grid-3' : 'grid-2'}}">
       <view class="field"><text class="field-label">组数</text><input class="input" type="number" value="{{exerciseForm.sets}}" data-field="sets" bindinput="onExerciseInput" /></view>
       <view class="field"><text class="field-label">次数</text><input class="input" type="number" value="{{exerciseForm.reps}}" data-field="reps" bindinput="onExerciseInput" /></view>
-      <view class="field"><text class="field-label">重量 kg</text><input class="input" type="digit" value="{{exerciseForm.weight}}" data-field="weight" bindinput="onExerciseInput" /></view>
+      <view wx:if="{{showWeight}}" class="field"><text class="field-label">重量 kg</text><input class="input" type="digit" value="{{exerciseForm.weight}}" placeholder="选填" data-field="weight" bindinput="onExerciseInput" /></view>
     </view>
     <view class="grid-2">
       <view class="field"><text class="field-label">休息秒</text><input class="input" type="number" value="{{exerciseForm.restSeconds}}" data-field="restSeconds" bindinput="onExerciseInput" /></view>
@@ -82,4 +84,6 @@
       <button class="btn btn-sm btn-danger" data-index="{{index}}" bindtap="onDelete">删除</button>
     </view>
   </view>
+
+  <exercise-picker show="{{pickerOpen}}" bind:select="onPickerSelect" bind:close="closePicker" />
 </view>

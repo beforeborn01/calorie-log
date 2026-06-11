@@ -2,6 +2,7 @@ package com.calorielog.module.training.exercise.controller;
 
 import com.calorielog.common.result.Result;
 import com.calorielog.common.security.CurrentUser;
+import com.calorielog.module.training.exercise.dto.ExerciseCatalogDTO;
 import com.calorielog.module.training.exercise.dto.ExerciseDTO;
 import com.calorielog.module.training.exercise.dto.SaveExerciseRequest;
 import com.calorielog.module.training.exercise.service.ExerciseService;
@@ -45,6 +46,24 @@ public class ExerciseController {
             @RequestParam(value = "limit", required = false, defaultValue = "100") int limit) {
         return Result.success(exerciseService.search(
                 CurrentUser.requireUserId(), q, category, !all, limit));
+    }
+
+    @Operation(summary = "动作库目录树（部位+小类+器械），喂选择器左栏与筛选")
+    @GetMapping("/catalog")
+    public Result<ExerciseCatalogDTO> catalog() {
+        return Result.success(exerciseService.catalog(CurrentUser.requireUserId()));
+    }
+
+    @Operation(summary = "按 部位/小类/器械/关键词 过滤动作（选择器列表用）")
+    @GetMapping("/filter")
+    public Result<List<ExerciseDTO>> filter(
+            @RequestParam(value = "bodyPart", required = false) String bodyPart,
+            @RequestParam(value = "subRegionId", required = false) Long subRegionId,
+            @RequestParam(value = "equipment", required = false) String equipment,
+            @RequestParam(value = "q", required = false) String q,
+            @RequestParam(value = "limit", required = false, defaultValue = "300") int limit) {
+        return Result.success(exerciseService.filter(
+                CurrentUser.requireUserId(), bodyPart, subRegionId, equipment, q, limit));
     }
 
     @Operation(summary = "获取单个动作")

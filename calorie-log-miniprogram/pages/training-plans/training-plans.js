@@ -6,6 +6,12 @@ const training = require('../../services/training');
 const TYPE_OPTIONS = ['strength', 'cardio', 'mobility', 'mixed'];
 const TYPE_LABELS = ['力量', '有氧', '柔韧', '混合'];
 
+// 只有这些器械才显示「重量」输入（其余如自重/弹力带/有氧器械重量无意义）
+const WEIGHTED_EQUIP = ['杠铃', '哑铃', '史密斯', '器械', '绳索'];
+function shouldShowWeight(equipment) {
+  return WEIGHTED_EQUIP.indexOf(equipment) >= 0;
+}
+
 function totalMinutes(plan) {
   if (plan.estimatedDuration) return plan.estimatedDuration;
   let secs = 0;
@@ -42,9 +48,9 @@ Page({
     editorTitle: '新建计划',
     typeLabels: TYPE_LABELS,
     typeIndex: 0,
-    exercises: [],
-    exerciseNames: [],
-    exerciseIndex: -1,
+    pickerOpen: false,
+    selectedExercise: null,
+    showWeight: true,
     exerciseEditIndex: -1,
     planForm: defaultPlanForm(),
     exerciseForm: defaultExerciseForm(),
@@ -53,7 +59,6 @@ Page({
 
   onLoad() {
     authGuard.ensureToken();
-    this.loadExercises();
     this.load();
   },
 
@@ -84,15 +89,6 @@ Page({
     }
   },
 
-  async loadExercises() {
-    try {
-      const exercises = await training.searchExercises({ all: true, limit: 200 });
-      this.setData({ exercises, exerciseNames: (exercises || []).map((e) => e.name) });
-    } catch (e) {
-      fmt.showError(e, '加载动作库失败');
-    }
-  },
-
   openCreate() {
     this.setData({
       editorOpen: true,
@@ -101,7 +97,8 @@ Page({
       typeIndex: 0,
       planForm: defaultPlanForm(),
       exerciseForm: defaultExerciseForm(),
-      exerciseIndex: -1,
+      selectedExercise: null,
+      showWeight: true,
       exerciseEditIndex: -1,
       draftExercises: []
     });
@@ -132,7 +129,8 @@ Page({
         estimatedDuration: plan.estimatedDuration || ''
       },
       exerciseForm: defaultExerciseForm(),
-      exerciseIndex: -1,
+      selectedExercise: null,
+      showWeight: true,
       exerciseEditIndex: -1,
       draftExercises
     });
@@ -143,19 +141,32 @@ Page({
   },
 
   onTypeChange(e) { this.setData({ typeIndex: Number(e.detail.value) }); },
-  onExerciseChange(e) { this.setData({ exerciseIndex: Number(e.detail.value) }); },
   onPlanInput(e) { this.setData({ [`planForm.${e.currentTarget.dataset.field}`]: e.detail.value }); },
   onExerciseInput(e) { this.setData({ [`exerciseForm.${e.currentTarget.dataset.field}`]: e.detail.value }); },
 
+  // —— 动作选择器 ——
+  openPicker() { this.setData({ pickerOpen: true }); },
+  closePicker() { this.setData({ pickerOpen: false }); },
+  onPickerSelect(e) {
+    const ex = e.detail.exercise;
+    if (!ex) return;
+    this.setData({
+      selectedExercise: ex,
+      showWeight: shouldShowWeight(ex.equipment),
+      pickerOpen: false
+    });
+  },
+
   addOrUpdateExercise() {
-    if (this.data.exerciseIndex < 0) return fmt.toast('请选择动作');
-    const exercise = this.data.exercises[this.data.exerciseIndex];
+    const exercise = this.data.selectedExercise;
+    if (!exercise) return fmt.toast('请选择动作');
     const f = this.data.exerciseForm;
     if (!Number(f.sets)) return fmt.toast('请填写组数');
     const item = {
       exerciseId: exercise.id,
       exerciseName: exercise.name,
       bodyPart: exercise.bodyPart || '',
+      equipment: exercise.equipment || '',
       sets: Number(f.sets),
       reps: f.reps === '' ? undefined : Number(f.reps),
       weight: f.weight === '' ? undefined : Number(f.weight),
@@ -169,7 +180,8 @@ Page({
     this.setData({
       draftExercises: list.map((x, i) => ({ ...x, order: i })),
       exerciseForm: defaultExerciseForm(),
-      exerciseIndex: -1,
+      selectedExercise: null,
+      showWeight: true,
       exerciseEditIndex: -1
     });
   },
@@ -177,10 +189,15 @@ Page({
   editDraftExercise(e) {
     const index = Number(e.currentTarget.dataset.index);
     const item = this.data.draftExercises[index];
-    const exerciseIndex = this.data.exercises.findIndex((x) => x.id === item.exerciseId);
     this.setData({
       exerciseEditIndex: index,
-      exerciseIndex,
+      selectedExercise: {
+        id: item.exerciseId,
+        name: item.exerciseName,
+        bodyPart: item.bodyPart,
+        equipment: item.equipment || ''
+      },
+      showWeight: shouldShowWeight(item.equipment),
       exerciseForm: {
         sets: item.sets,
         reps: item.reps == null ? '' : item.reps,

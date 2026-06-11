@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "运动计划"
+  "navigationBarTitleText": "运动计划",
+  "usingComponents": {
+    "exercise-picker": "../../components/exercise-picker/exercise-picker"
+  }
 }

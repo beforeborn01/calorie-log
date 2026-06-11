@@ -1,0 +1,109 @@
+.ep-mask {
+  position: fixed; inset: 0; z-index: 900;
+  background: rgba(44,38,32,.45);
+  display: flex; align-items: flex-end;
+}
+.ep-sheet {
+  position: relative;
+  width: 100%; height: 86vh;
+  background: #FFFDF8;
+  border-radius: 28rpx 28rpx 0 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* 头部 */
+.ep-head {
+  display: flex; align-items: center; gap: 16rpx;
+  padding: 20rpx 24rpx; border-bottom: 2rpx solid #EEE6D7;
+}
+.ep-search {
+  flex: 1; height: 64rpx; padding: 0 24rpx;
+  background: #F5F1E8; border-radius: 32rpx;
+  font-size: 28rpx; color: #2C2620;
+}
+.ep-close { color: #8A7F73; font-size: 28rpx; padding: 8rpx 12rpx; }
+
+/* 主体：左栏 + 右列 */
+.ep-body { flex: 1; display: flex; min-height: 0; }
+
+.ep-rail {
+  width: 196rpx; height: 100%;
+  background: #F5F1E8;
+}
+.ep-rail-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 26rpx 20rpx; font-size: 28rpx; color: #2C2620;
+}
+.ep-rail-item.on { background: #FFFDF8; font-weight: 800; box-shadow: inset 6rpx 0 0 #B0413E; }
+.ep-rail-sub {
+  padding: 18rpx 20rpx 18rpx 32rpx; font-size: 25rpx; color: #665B50;
+  background: #FFFDF8;
+}
+.ep-rail-sub.on { color: #B0413E; font-weight: 700; }
+.ep-rail-cnt { font-size: 20rpx; color: #B8AEA2; margin-left: 8rpx; }
+
+.ep-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+/* 器械 chips */
+.ep-chips { white-space: nowrap; padding: 16rpx 16rpx 6rpx; border-bottom: 2rpx solid #EEE6D7; }
+.ep-chip {
+  display: inline-block; padding: 10rpx 24rpx; margin-right: 12rpx;
+  background: #F5F1E8; color: #665B50; border-radius: 28rpx; font-size: 25rpx;
+}
+.ep-chip.on { background: #2C2620; color: #FFFDF8; }
+
+/* 列表 */
+.ep-list { flex: 1; padding: 8rpx 16rpx 24rpx; }
+.ep-empty { text-align: center; color: #B8AEA2; padding: 80rpx 0; font-size: 26rpx; }
+.ep-group-h { font-size: 24rpx; color: #8A7F73; font-weight: 700; padding: 18rpx 4rpx 8rpx; }
+.ep-row {
+  display: flex; align-items: center; gap: 18rpx;
+  padding: 16rpx 8rpx; border-top: 2rpx dashed rgba(44,38,32,.08);
+}
+.ep-thumb { width: 96rpx; height: 96rpx; border-radius: 14rpx; background: #F5F1E8; flex-shrink: 0; }
+.ep-thumb-ph { background: #EEE6D7; }
+.ep-row-main { flex: 1; min-width: 0; }
+.ep-row-name { font-size: 28rpx; color: #2C2620; font-weight: 600; }
+.ep-row-sub { font-size: 22rpx; color: #8A7F73; margin-top: 6rpx; }
+.ep-row-pick {
+  flex-shrink: 0; padding: 10rpx 22rpx; font-size: 25rpx;
+  color: #B0413E; border: 2rpx solid #B0413E; border-radius: 28rpx;
+}
+
+/* 详情面板（覆盖在 sheet 内） */
+.ep-detail {
+  position: absolute; inset: 0; z-index: 5;
+  background: #FFFDF8; display: flex; flex-direction: column;
+}
+.ep-detail-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22rpx 24rpx; border-bottom: 2rpx solid #EEE6D7;
+}
+.ep-detail-title { font-size: 32rpx; font-weight: 800; color: #2C2620; }
+.ep-detail-body { flex: 1; padding: 0 24rpx; }
+.ep-detail-img { width: 100%; height: 520rpx; background: #F5F1E8; border-radius: 18rpx; margin: 18rpx 0; }
+.ep-detail-tags { display: flex; flex-wrap: wrap; gap: 12rpx; margin-bottom: 10rpx; }
+.ep-tag {
+  font-size: 22rpx; color: #FFFDF8; background: #8A7F73;
+  padding: 6rpx 16rpx; border-radius: 20rpx;
+}
+.ep-tag.ghost { color: #665B50; background: #F5F1E8; }
+.ep-sec-title { font-size: 28rpx; font-weight: 800; color: #2C2620; margin: 24rpx 0 10rpx; }
+.ep-sec-line { display: flex; gap: 12rpx; margin-bottom: 10rpx; }
+.ep-sec-idx {
+  flex-shrink: 0; width: 34rpx; height: 34rpx; line-height: 34rpx; text-align: center;
+  background: #B0413E; color: #FFFDF8; border-radius: 50%; font-size: 20rpx; margin-top: 4rpx;
+}
+.ep-sec-text { flex: 1; font-size: 26rpx; color: #665B50; line-height: 1.6; }
+.ep-detail-foot { padding: 18rpx 24rpx 36rpx; border-top: 2rpx solid #EEE6D7; }
+.ep-pick-btn {
+  width: 100%; background: #B0413E; color: #FFFDF8;
+  border-radius: 44rpx; font-size: 30rpx; font-weight: 700;
+}
+
+.ep-loading {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: rgba(44,38,32,.8); color: #FFFDF8;
+  padding: 16rpx 32rpx; border-radius: 16rpx; font-size: 26rpx; z-index: 10;
+}

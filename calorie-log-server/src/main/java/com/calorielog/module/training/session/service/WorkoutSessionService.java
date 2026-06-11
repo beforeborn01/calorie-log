@@ -81,12 +81,20 @@ public class WorkoutSessionService {
             if (!day.equals(ref.toLocalDate())) continue;
             if (s.getDuration() == null || s.getDuration() <= 0) continue;
 
-            String planType = "strength";
-            if (s.getPlanId() != null) {
-                WorkoutPlan p = planCache.computeIfAbsent(s.getPlanId(), planMapper::selectById);
-                if (p != null && p.getType() != null) planType = p.getType();
+            // 优先用 session 内各动作 met 的均值（更贴合实际练了什么）；
+            // 无动作 met 时回退到 planType 档位。
+            BigDecimal avgMet = exerciseSessionMapper.avgMetForSession(s.getId());
+            if (avgMet != null) {
+                total = total.add(MetTable.estimateKcalWithMet(
+                        s.getDuration(), bodyWeight, avgMet.doubleValue()));
+            } else {
+                String planType = "strength";
+                if (s.getPlanId() != null) {
+                    WorkoutPlan p = planCache.computeIfAbsent(s.getPlanId(), planMapper::selectById);
+                    if (p != null && p.getType() != null) planType = p.getType();
+                }
+                total = total.add(MetTable.estimateKcal(s.getDuration(), bodyWeight, planType));
             }
-            total = total.add(MetTable.estimateKcal(s.getDuration(), bodyWeight, planType));
         }
 
         DailySummary existing = dailySummaryMapper.findByDate(userId, day);

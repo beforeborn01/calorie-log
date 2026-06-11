@@ -1,0 +1,84 @@
+<view wx:if="{{show}}" class="ep-mask" catchtap="onClose">
+  <view class="ep-sheet" catchtap="noop">
+    <!-- 头部：搜索 + 关闭 -->
+    <view class="ep-head">
+      <input class="ep-search" placeholder="搜索动作" value="{{keyword}}" bindinput="onSearchInput" confirm-type="search" />
+      <view class="ep-close" catchtap="onClose">关闭</view>
+    </view>
+
+    <view class="ep-body">
+      <!-- 左栏：部位 + 小类手风琴 -->
+      <scroll-view scroll-y class="ep-rail">
+        <block wx:for="{{bodyParts}}" wx:key="code" wx:for-item="bp" wx:for-index="bi">
+          <view class="ep-rail-item {{activeBodyIdx === bi ? 'on' : ''}}" data-idx="{{bi}}" catchtap="onSelectBody">
+            <text>{{bp.name}}</text><text class="ep-rail-cnt">{{bp.count}}</text>
+          </view>
+          <!-- 选中部位时内联展开小类 -->
+          <block wx:if="{{activeBodyIdx === bi && bp.subRegions.length}}">
+            <view wx:for="{{bp.subRegions}}" wx:key="id" wx:for-item="sub"
+                  class="ep-rail-sub {{activeSubId === sub.id ? 'on' : ''}}"
+                  data-id="{{sub.id}}" catchtap="onSelectSub">
+              {{sub.name}}<text class="ep-rail-cnt">{{sub.count}}</text>
+            </view>
+          </block>
+        </block>
+      </scroll-view>
+
+      <!-- 右侧：器械 chips + 动作列表 -->
+      <view class="ep-main">
+        <scroll-view scroll-x class="ep-chips" wx:if="{{activeBody && activeBody.equipments.length}}">
+          <view class="ep-chip {{activeEquip === '' ? 'on' : ''}}" data-equip="" catchtap="onSelectEquip">全部</view>
+          <view wx:for="{{activeBody.equipments}}" wx:key="name" wx:for-item="eq"
+                class="ep-chip {{activeEquip === eq.name ? 'on' : ''}}"
+                data-equip="{{eq.name}}" catchtap="onSelectEquip">{{eq.name}}</view>
+        </scroll-view>
+
+        <scroll-view scroll-y class="ep-list">
+          <view wx:if="{{!loading && groups.length === 0}}" class="ep-empty">没有匹配的动作</view>
+          <block wx:for="{{groups}}" wx:key="equipment" wx:for-item="g">
+            <view class="ep-group-h">{{g.equipment}}</view>
+            <view wx:for="{{g.items}}" wx:key="id" wx:for-item="it" class="ep-row" data-id="{{it.id}}" catchtap="onOpenDetail">
+              <image wx:if="{{it.imageUrl}}" class="ep-thumb" src="{{it.imageUrl}}" mode="aspectFill" lazy-load />
+              <view wx:else class="ep-thumb ep-thumb-ph"></view>
+              <view class="ep-row-main">
+                <view class="ep-row-name">{{it.name}}</view>
+                <view class="ep-row-sub">{{it.targetMuscle || it.bodyPart}}{{it.equipmentDetail ? ' · ' + it.equipmentDetail : ''}}</view>
+              </view>
+              <view class="ep-row-pick" data-id="{{it.id}}" catchtap="onPickRow">选</view>
+            </view>
+          </block>
+        </scroll-view>
+      </view>
+    </view>
+
+    <!-- 详情面板 -->
+    <view wx:if="{{detailOpen && detail}}" class="ep-detail">
+      <view class="ep-detail-head">
+        <view class="ep-detail-title">{{detail.name}}</view>
+        <view class="ep-close" catchtap="closeDetail">返回</view>
+      </view>
+      <scroll-view scroll-y class="ep-detail-body">
+        <image wx:if="{{detail.imageUrl}}" class="ep-detail-img" src="{{detail.imageUrl}}" mode="aspectFit" />
+        <view class="ep-detail-tags">
+          <text class="ep-tag">{{detail.bodyPart}}</text>
+          <text wx:if="{{detail.targetMuscle}}" class="ep-tag">{{detail.targetMuscle}}</text>
+          <text wx:if="{{detail.equipment}}" class="ep-tag">{{detail.equipment}}</text>
+          <text wx:for="{{detail.subRegions}}" wx:key="*this" class="ep-tag ghost">{{item}}</text>
+        </view>
+        <block wx:for="{{detail.detailSections}}" wx:key="title" wx:for-item="sec">
+          <view class="ep-sec-title">{{sec.title}}</view>
+          <view wx:for="{{sec.items}}" wx:key="*this" wx:for-item="line" class="ep-sec-line">
+            <text wx:if="{{sec.title === '步骤'}}" class="ep-sec-idx">{{index + 1}}</text>
+            <text class="ep-sec-text">{{line}}</text>
+          </view>
+        </block>
+        <view style="height:140rpx;"></view>
+      </scroll-view>
+      <view class="ep-detail-foot">
+        <button class="ep-pick-btn" catchtap="onPickFromDetail">选择这个动作</button>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="ep-loading">加载中…</view>
+  </view>
+</view>

@@ -39,11 +39,20 @@ public final class MetTable {
      * @return 消耗的 kcal，保留 1 位小数
      */
     public static BigDecimal estimateKcal(Integer durationSeconds, BigDecimal bodyWeightKg, String planType) {
+        return estimateKcalWithMet(durationSeconds, bodyWeightKg, (double) metForType(planType));
+    }
+
+    /**
+     * 用显式 MET 估算（优先来源：session 内各动作 met 的均值）。
+     *
+     * @param met 代谢当量；为 null 时按 5.0 兜底
+     */
+    public static BigDecimal estimateKcalWithMet(Integer durationSeconds, BigDecimal bodyWeightKg, Double met) {
         if (durationSeconds == null || durationSeconds <= 0) return BigDecimal.ZERO;
         double hours = durationSeconds / 3600.0;
         double kg = bodyWeightKg != null ? bodyWeightKg.doubleValue() : 60.0;
-        double met = metForType(planType);
-        double kcal = met * kg * hours;
+        double m = met != null ? met : 5.0;
+        double kcal = m * kg * hours;
         return BigDecimal.valueOf(kcal).setScale(1, RoundingMode.HALF_UP);
     }
 }

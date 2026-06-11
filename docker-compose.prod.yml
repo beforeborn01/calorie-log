@@ -129,6 +129,8 @@ services:
       - ./ssl/live:/etc/nginx/ssl:ro
       # ACME http-01 challenge 共享给 certbot 写入
       - ./ssl/acme-webroot:/var/www/certbot
+      # 动作库演示图（开练抓取）：宿主 ./exercise-img → 容器 html 根下 /img/exercises
+      - ./exercise-img:/usr/share/nginx/html/img/exercises:ro
     depends_on:
       - app
     networks:

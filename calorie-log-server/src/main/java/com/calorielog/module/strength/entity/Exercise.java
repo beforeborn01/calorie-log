@@ -6,12 +6,15 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-@TableName("t_exercise")
+@TableName(value = "t_exercise", autoResultMap = true)
 public class Exercise {
     @TableId(type = IdType.AUTO)
     private Long id;
@@ -42,6 +45,18 @@ public class Exercise {
     private String imageUrl;
     /** 常用动作（前端默认筛选） */
     private Boolean isPopular;
+
+    /** 粗粒度器械（自重/杠铃/哑铃/史密斯/器械/绳索/弹力带/小工具/跑步机...）：筛选 + MET 键 */
+    private String equipment;
+    /** 细粒度器械（壶铃/药球/波速球...，小工具的展开，可空） */
+    private String equipmentDetail;
+    /** 目标肌（开练 target，如"中下胸"） */
+    private String targetMuscle;
+    /** 代谢当量 MET，用于 kcal = MET × 体重 × 时长 */
+    private BigDecimal met;
+    /** 结构化详情：步骤 / 呼吸 / 动作感觉 / 常见问题（JSONB） */
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<ExerciseSection> detailSections;
 
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;

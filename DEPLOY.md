@@ -198,6 +198,33 @@ cat backup-YYYYMMDD.sql | \
    0 3 * * * cd /opt/calorie-log && docker compose -f docker-compose.prod.yml exec -T postgres pg_dump -U $POSTGRES_USER $POSTGRES_DB | gzip > /opt/backups/calorie-log-$(date +\%Y\%m\%d).sql.gz
    ```
 
+### 8.1 HTTPS 证书自动续期（必须）
+
+Let's Encrypt 证书有效期较短，不能依赖人工记忆。当前项目使用一次性
+`certbot/certbot` 容器，因此不会自动获得系统 certbot 自带的定时器；部署证书后必须
+安装项目提供的 systemd timer：
+
+```bash
+cd /root/calorie-log
+./scripts/install-ssl-renewal.sh
+```
+
+它每天约 03:15 和 15:15（Asia/Shanghai）运行一次，服务器重启后会补跑；Certbot
+只有在进入续期窗口时才会真正申请新证书。续期脚本会复制证书、校验至少还有 30 天
+有效期，并 reload + 检查 Nginx 配置。
+
+检查任务和最近执行结果：
+
+```bash
+systemctl list-timers calorie-log-ssl-renew.timer
+systemctl status calorie-log-ssl-renew.timer --no-pager
+journalctl -u calorie-log-ssl-renew.service -n 100 --no-pager
+```
+
+建议再配置一个外部 HTTPS 监控（例如 UptimeRobot、云监控或自有告警），每天检查
+`https://bcappandgame.com/meet/api/health` 和证书到期天数。这样即使 DNS、80 端口、
+Docker 或 ACME 验证异常，仍能在证书真正过期前收到告警。
+
 ---
 
 ## 8. 资源占用预估（2C8G）

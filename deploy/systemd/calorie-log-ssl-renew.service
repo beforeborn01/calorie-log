@@ -1,0 +1,12 @@
+[Unit]
+Description=Renew calorie-log Let's Encrypt certificate
+Wants=network-online.target
+After=docker.service network-online.target
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/root/calorie-log
+# Prevent a manual renewal and the timer from running Certbot concurrently.
+ExecStart=/usr/bin/flock --nonblock --conflict-exit-code 0 /run/calorie-log-ssl-renew.lock /root/calorie-log/scripts/setup-ssl.sh renew
+TimeoutStartSec=15min

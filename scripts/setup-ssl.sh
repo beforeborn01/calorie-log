@@ -28,6 +28,7 @@ COMPOSE="docker compose -f docker-compose.prod.yml"
 WEBROOT="./ssl/acme-webroot"
 LIVE_DIR="./ssl/live"
 ENV_FILE=".env"
+MIN_VALID_SECONDS="${SSL_MIN_VALID_SECONDS:-2592000}" # 30 days
 
 log()  { printf '\033[36m[ssl]\033[0m %s\n' "$*"; }
 warn() { printf '\033[33m[ssl][WARN]\033[0m %s\n' "$*"; }
@@ -115,6 +116,14 @@ install_cert() {
   chmod 600 "$LIVE_DIR/privkey.pem"
 }
 
+verify_cert() {
+  local cert="${LIVE_DIR}/fullchain.pem"
+  [[ -f "$cert" ]] || err "找不到已部署证书：${cert}"
+  openssl x509 -in "$cert" -noout -checkend "$MIN_VALID_SECONDS" >/dev/null ||
+    err "已部署证书有效期不足 30 天或已过期：${cert}"
+  openssl x509 -in "$cert" -noout -subject -enddate
+}
+
 enable_https_in_env() {
   # 把 DOMAIN= 写进 .env，让 docker-compose 启 nginx 时注入
   if [[ ! -f "$ENV_FILE" ]]; then
@@ -150,8 +159,10 @@ renew() {
 
   if [[ -d ./ssl/letsencrypt/live/app ]]; then
     install_cert
+    verify_cert
     log "重载 nginx"
     $COMPOSE exec -T nginx nginx -s reload || $COMPOSE restart nginx
+    $COMPOSE exec -T nginx nginx -t
   else
     warn "未发现已签发的证书；跳过 install"
   fi

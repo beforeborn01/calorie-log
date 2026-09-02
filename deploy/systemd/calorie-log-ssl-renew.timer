@@ -1,0 +1,14 @@
+[Unit]
+Description=Run calorie-log certificate renewal twice daily
+
+[Timer]
+# Let's Encrypt certificates are short-lived; certbot renew is safe to run
+# frequently and only renews when the certificate is within its renewal window.
+OnCalendar=*-*-* 03:15:00 Asia/Shanghai
+OnCalendar=*-*-* 15:15:00 Asia/Shanghai
+RandomizedDelaySec=30m
+Persistent=true
+Unit=calorie-log-ssl-renew.service
+
+[Install]
+WantedBy=timers.target

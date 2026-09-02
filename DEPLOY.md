@@ -198,7 +198,7 @@ cat backup-YYYYMMDD.sql | \
    0 3 * * * cd /opt/calorie-log && docker compose -f docker-compose.prod.yml exec -T postgres pg_dump -U $POSTGRES_USER $POSTGRES_DB | gzip > /opt/backups/calorie-log-$(date +\%Y\%m\%d).sql.gz
    ```
 
-### 8.1 HTTPS 证书自动续期（必须）
+### 7.1 HTTPS 证书自动续期（必须）
 
 Let's Encrypt 证书有效期较短，不能依赖人工记忆。当前项目使用一次性
 `certbot/certbot` 容器，因此不会自动获得系统 certbot 自带的定时器；部署证书后必须
